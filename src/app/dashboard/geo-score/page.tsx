@@ -97,60 +97,77 @@ export default function GEOScorePage() {
   const barColor = (s: number) => s >= 80 ? 'bg-emerald-500' : s >= 60 ? 'bg-amber-500' : 'bg-red-500';
 
   return (
-    <div className="space-y-6 max-w-5xl relative">
+    <div className="w-full space-y-6">
       <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
       <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle,#2563eb 0%,transparent 70%)',zIndex:0}} />
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
-        <div className="flex-1 w-full">
+
+      {/* ── Top section: form (left) + avatar (right) ── */}
+      <div className="flex items-start gap-8 relative z-10">
+        {/* LEFT: title + form */}
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-1">GEO Optimizer</h1>
-          <p className="text-white/50 text-sm mb-6">Optimize for ChatGPT, Perplexity, Gemini, and all AI search engines</p>
-      <form onSubmit={handleAnalyze} className="bg-white/5 border border-blue-500/20 rounded-2xl p-6">
-        <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Analyze</label>
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://yourwebsite.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !url.trim()}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all text-sm"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            {loading ? 'Analyzing...' : 'Analyze GEO Score'}
-          </button>
+          <p className="text-white/50 text-sm mb-5">Optimize for ChatGPT, Perplexity, Gemini, and all AI search engines</p>
+
+          <form onSubmit={handleAnalyze} className="bg-white/5 border border-blue-500/20 rounded-2xl p-5">
+            <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Analyze</label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !url.trim()}
+                className="flex items-center justify-center gap-2 px-7 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                {loading ? 'Analyzing...' : 'Analyze GEO Score'}
+              </button>
+            </div>
+            {loading && (
+              <div className="mt-3 text-sm text-white/40">
+                Checking AI visibility across ChatGPT, Perplexity, and Gemini...
+              </div>
+            )}
+          </form>
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* Results placeholder */}
+          {!result && !loading && (
+            <div className="mt-5 border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                <Globe className="w-7 h-7 text-blue-400/60" />
+              </div>
+              <p className="text-white/40 text-sm font-medium">Your GEO analysis will appear here</p>
+              <p className="text-white/25 text-xs max-w-xs">Enter your website URL above to check your AI visibility score across ChatGPT, Perplexity, and Gemini.</p>
+            </div>
+          )}
         </div>
-        {loading && (
-          <div className="mt-3 text-sm text-white/40">
-            Checking AI visibility across ChatGPT, Perplexity, and Gemini...
-          </div>
-        )}
-      </form>
-        </div>{/* end left */}
-        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
+
+        {/* RIGHT: floating GEO-G avatar */}
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0 w-52">
           <div style={{animation:'floatAgent 3s ease-in-out infinite',filter:'drop-shadow(0 0 30px rgba(37,99,235,0.5))'}}>
-            <Image src="/agent-geog-transparent.png" alt="GEO-G" width={220} height={220} className="w-48 h-48 object-contain" />
+            <Image src="/agent-geog-transparent.png" alt="GEO-G" width={200} height={200} className="w-44 h-44 object-contain" />
           </div>
           <span className="text-sm font-semibold text-blue-300 mt-2">GEO-G</span>
           <span className="text-xs text-white/40">GEO Optimizer</span>
         </div>
-      </div>{/* end header split */}
+      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {/* Results */}
+      {/* ── Results (full width) ── */}
       {result && (
         <div className="space-y-4">
           {/* GEO Score */}
@@ -310,3 +327,4 @@ export default function GEOScorePage() {
     </div>
   );
 }
+

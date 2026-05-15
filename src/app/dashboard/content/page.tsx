@@ -90,13 +90,13 @@ export default function ContentPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl relative">
+    <div className="w-full space-y-6 relative">
       <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
       <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{ background: 'radial-gradient(circle,#d97706 0%,transparent 70%)', zIndex: 0 }} />
 
       {/* Header — left/right split */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
-        <div className="flex-1 w-full">
+      <div className="flex items-start gap-8 relative z-10">
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-1">Content Writer</h1>
           <p className="text-white/50 text-sm mb-6">Generate SEO-optimized content that ranks in both traditional and AI search</p>
 
@@ -166,7 +166,7 @@ export default function ContentPage() {
         </div>
 
         {/* Right: floating ContentAI avatar */}
-        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0 w-52">
           <div style={{ animation: 'floatAgent 3s ease-in-out infinite', filter: 'drop-shadow(0 0 30px rgba(217,119,6,0.5))' }}>
             <Image src="/agent-contentai-transparent.png" alt="ContentAI" width={220} height={220} className="w-48 h-48 object-contain" />
           </div>

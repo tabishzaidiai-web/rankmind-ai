@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2 } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3 } from 'lucide-react';
 
 interface AuditResult {
   url: string;
@@ -101,72 +101,84 @@ export default function SEOAuditPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl relative">
-      <style>{`
-        @keyframes floatAgent { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
-      `}</style>
-      {/* Radial glow background */}
-      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle, #7c3aed 0%, transparent 70%)', zIndex:0}} />
+    <div className="w-full space-y-6">
+      <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
+      {/* Radial glow */}
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle,#7c3aed 0%,transparent 70%)',zIndex:0}} />
 
-      {/* Page Header — left/right split */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
-        {/* Left: title + form */}
-        <div className="flex-1 w-full">
+      {/* ── Top section: form (left) + avatar (right) ── */}
+      <div className="flex items-start gap-8 relative z-10">
+
+        {/* LEFT: title + form — takes all remaining space */}
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-1">SEO Audit Agent</h1>
-          <p className="text-white/50 text-sm mb-6">Real-time website analysis powered by RankBot AI</p>
+          <p className="text-white/50 text-sm mb-5">Real-time website analysis powered by RankBot AI</p>
 
-      {/* Input Form */}
-      <form onSubmit={handleAudit} className="bg-white/5 border border-violet-500/20 rounded-2xl p-6">
-        <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Audit</label>
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://yourwebsite.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !url.trim()}
-            className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all text-sm"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            {loading ? 'Analyzing...' : 'Run Audit'}
-          </button>
+          <form onSubmit={handleAudit} className="bg-white/5 border border-violet-500/20 rounded-2xl p-5">
+            <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Audit</label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* URL input — full width */}
+              <div className="relative flex-1">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
+                />
+              </div>
+              {/* Run Audit button */}
+              <button
+                type="submit"
+                disabled={loading || !url.trim()}
+                className="flex items-center justify-center gap-2 px-7 py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                {loading ? 'Analyzing...' : 'Run Audit'}
+              </button>
+            </div>
+            {loading && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-white/50">
+                <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+                AI is crawling your website, analyzing SEO factors, and generating recommendations...
+              </div>
+            )}
+          </form>
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* Results placeholder — shown when no result yet */}
+          {!result && !loading && (
+            <div className="mt-5 border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-violet-500/10 flex items-center justify-center">
+                <BarChart3 className="w-7 h-7 text-violet-400/60" />
+              </div>
+              <p className="text-white/40 text-sm font-medium">Your audit results will appear here</p>
+              <p className="text-white/25 text-xs max-w-xs">Enter your website URL above and click Run Audit to get a full SEO analysis with scores, keyword data, and an action plan.</p>
+            </div>
+          )}
         </div>
-        {loading && (
-          <div className="mt-4 flex items-center gap-2 text-sm text-white/50">
-            <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-            AI is crawling your website, analyzing SEO factors, and generating recommendations...
-          </div>
-        )}
-      </form>
-        </div>{/* end left */}
-        {/* Right: floating avatar */}
-        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
-          <div style={{animation:'floatAgent 3s ease-in-out infinite', filter:'drop-shadow(0 0 30px rgba(124,58,237,0.5))'}}>
-            <Image src="/agent-rankbot-transparent.png" alt="RankBot" width={220} height={220} className="w-48 h-48 object-contain" />
+
+        {/* RIGHT: floating RankBot avatar — fixed width, never shrinks */}
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0 w-52">
+          <div style={{animation:'floatAgent 3s ease-in-out infinite',filter:'drop-shadow(0 0 30px rgba(124,58,237,0.5))'}}>
+            <Image src="/agent-rankbot-transparent.png" alt="RankBot" width={200} height={200} className="w-44 h-44 object-contain" />
           </div>
           <span className="text-sm font-semibold text-violet-300 mt-2">RankBot</span>
           <span className="text-xs text-white/40">SEO Audit Agent</span>
         </div>
-      </div>{/* end header split */}
+      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {/* Results */}
+      {/* ── Results (full width, below the top section) ── */}
       {result && (
-        <div className="space-y-4">
+        <div className="space-y-4 relative z-10">
           {/* Score Overview */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <div className="flex items-center gap-6">
@@ -177,7 +189,7 @@ export default function SEOAuditPage() {
                   <span className="text-white/50 text-sm">Overall SEO Score</span>
                 </div>
                 <div className="text-white/40 text-xs">{result.url} &bull; Analyzed {new Date(result.analyzed_at).toLocaleString()}</div>
-                <div className="mt-3 flex gap-4">
+                <div className="mt-3 flex gap-6">
                   <div className="text-center">
                     <div className="text-lg font-bold text-white">{result.keywords?.length || 0}</div>
                     <div className="text-xs text-white/40">Keywords</div>
@@ -280,7 +292,7 @@ export default function SEOAuditPage() {
                           <td className="px-5 py-3">
                             <span className="text-xs bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded-full">{kw.type}</span>
                           </td>
-                          <td className="px-5 py-3 text-right text-white/60">{kw.estimated_volume?.toLocaleString()}</td>
+                          <td className="px-5 py-3 text-right text-white/70">{kw.estimated_volume?.toLocaleString()}</td>
                           <td className="px-5 py-3 text-right">
                             <span className={kw.difficulty < 40 ? 'text-emerald-400' : kw.difficulty < 70 ? 'text-amber-400' : 'text-red-400'}>
                               {kw.difficulty}/100

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star } from 'lucide-react';
+import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star, Link2 } from 'lucide-react';
 
 interface BacklinkOpportunity {
   domain: string;
@@ -13,10 +13,7 @@ interface BacklinkOpportunity {
   contact_email?: string;
   has_write_for_us: boolean;
   status: string;
-  outreach_email?: {
-    subject: string;
-    body: string;
-  };
+  outreach_email?: { subject: string; body: string };
   notes?: string;
 }
 
@@ -67,78 +64,96 @@ export default function BacklinksPage() {
   const relevanceColor = (r: number) => r >= 8 ? 'text-emerald-400' : r >= 6 ? 'text-amber-400' : 'text-white/60';
 
   return (
-    <div className="space-y-6 max-w-5xl relative">
+    <div className="w-full space-y-6">
       <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
       <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle,#0d9488 0%,transparent 70%)',zIndex:0}} />
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
-        <div className="flex-1 w-full">
+
+      {/* ── Top section: form (left) + avatar (right) ── */}
+      <div className="flex items-start gap-8 relative z-10">
+
+        {/* LEFT: title + form */}
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-1">Backlink Builder Agent</h1>
-          <p className="text-white/50 text-sm mb-6">Find real DA 40+ backlink opportunities and generate outreach emails</p>
-      <form onSubmit={handleRun} className="bg-white/5 border border-teal-500/20 rounded-2xl p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Your Website URL</label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://yourwebsite.com"
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500 transition-colors text-sm"
-              />
+          <p className="text-white/50 text-sm mb-5">Find real DA 40+ backlink opportunities and generate personalised outreach emails</p>
+
+          <form onSubmit={handleRun} className="bg-white/5 border border-teal-500/20 rounded-2xl p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Your Website URL</label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://yourwebsite.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-teal-500 transition-colors text-sm"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Your Niche (optional)</label>
+                <input
+                  type="text"
+                  value={niche}
+                  onChange={(e) => setNiche(e.target.value)}
+                  placeholder="e.g. SaaS, e-commerce, health..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-teal-500 transition-colors text-sm"
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Your Niche (optional)</label>
-            <input
-              type="text"
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              placeholder="e.g. SaaS, e-commerce, health..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500 transition-colors text-sm"
-            />
-          </div>
+            <button
+              type="submit"
+              disabled={loading || !url.trim()}
+              className="flex items-center gap-2 px-7 py-3 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              {loading ? 'Finding Opportunities...' : 'Find Backlink Opportunities'}
+            </button>
+            {loading && (
+              <div className="mt-3 text-sm text-white/40">
+                AI is analyzing your site, searching for opportunities, and drafting outreach emails...
+              </div>
+            )}
+          </form>
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* Results placeholder */}
+          {!result && !loading && (
+            <div className="mt-5 border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center">
+                <Link2 className="w-7 h-7 text-teal-400/60" />
+              </div>
+              <p className="text-white/40 text-sm font-medium">Your backlink opportunities will appear here</p>
+              <p className="text-white/25 text-xs max-w-xs">Enter your website URL above and click Find Backlink Opportunities to discover DA 40+ sites and get ready-to-send outreach emails.</p>
+            </div>
+          )}
         </div>
-        <button
-          type="submit"
-          disabled={loading || !url.trim()}
-          className="flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all text-sm"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          {loading ? 'Finding Opportunities...' : 'Find Backlink Opportunities'}
-        </button>
-        {loading && (
-          <div className="mt-3 text-sm text-white/40">
-            AI is analyzing your site, searching for opportunities, and drafting outreach emails...
-          </div>
-        )}
-      </form>
-        </div>{/* end left */}
-        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
+
+        {/* RIGHT: floating LinkBot avatar */}
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0 w-52">
           <div style={{animation:'floatAgent 3s ease-in-out infinite',filter:'drop-shadow(0 0 30px rgba(13,148,136,0.5))'}}>
-            <Image src="/agent-linkbot-transparent.png" alt="LinkBot" width={220} height={220} className="w-48 h-48 object-contain" />
+            <Image src="/agent-linkbot-transparent.png" alt="LinkBot" width={200} height={200} className="w-44 h-44 object-contain" />
           </div>
           <span className="text-sm font-semibold text-teal-300 mt-2">LinkBot</span>
           <span className="text-xs text-white/40">Backlink Builder</span>
         </div>
-      </div>{/* end header split */}
+      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {/* Results */}
+      {/* ── Results (full width) ── */}
       {result && (
-        <div className="space-y-4">
+        <div className="space-y-4 relative z-10">
           {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Opportunities Found', value: result.opportunities?.length || 0, color: 'text-cyan-400' },
+              { label: 'Opportunities Found', value: result.opportunities?.length || 0, color: 'text-teal-400' },
               { label: 'Articles Written', value: result.articles_written || 0, color: 'text-violet-400' },
               { label: 'Outreach Emails', value: result.outreach_sent || 0, color: 'text-emerald-400' },
             ].map((s) => (
@@ -173,7 +188,7 @@ export default function BacklinksPage() {
                       <tr
                         key={i}
                         onClick={() => setSelectedOpp(selectedOpp?.domain === opp.domain ? null : opp)}
-                        className={`border-b border-white/5 last:border-0 cursor-pointer transition-colors ${selectedOpp?.domain === opp.domain ? 'bg-cyan-500/10' : 'hover:bg-white/5'}`}
+                        className={`border-b border-white/5 last:border-0 cursor-pointer transition-colors ${selectedOpp?.domain === opp.domain ? 'bg-teal-500/10' : 'hover:bg-white/5'}`}
                       >
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
@@ -185,7 +200,7 @@ export default function BacklinksPage() {
                           <div className="text-xs text-white/40 truncate max-w-[200px]">{opp.title}</div>
                         </td>
                         <td className="px-5 py-3">
-                          <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full">{opp.type}</span>
+                          <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full">{opp.type}</span>
                         </td>
                         <td className="px-5 py-3 text-center">
                           <span className={`font-bold ${daColor(opp.estimated_da)}`}>{opp.estimated_da}</span>
@@ -220,9 +235,9 @@ export default function BacklinksPage() {
 
           {/* Outreach Email Preview */}
           {selectedOpp?.outreach_email && (
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-2xl p-5">
+            <div className="bg-gradient-to-br from-teal-500/10 to-blue-500/10 border border-teal-500/20 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <Mail className="w-4 h-4 text-cyan-400" />
+                <Mail className="w-4 h-4 text-teal-400" />
                 <span className="font-semibold text-white text-sm">Outreach Email — {selectedOpp.domain}</span>
               </div>
               <div className="bg-black/20 rounded-xl p-4 space-y-3">
@@ -237,10 +252,8 @@ export default function BacklinksPage() {
                 </div>
               </div>
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`Subject: ${selectedOpp.outreach_email!.subject}\n\n${selectedOpp.outreach_email!.body}`);
-                }}
-                className="mt-3 flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                onClick={() => navigator.clipboard.writeText(`Subject: ${selectedOpp.outreach_email!.subject}\n\n${selectedOpp.outreach_email!.body}`)}
+                className="mt-3 flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 transition-colors"
               >
                 Copy to Clipboard
               </button>
@@ -254,7 +267,7 @@ export default function BacklinksPage() {
               <ul className="space-y-2">
                 {result.next_steps.map((step, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-white/60">
-                    <span className="text-cyan-400 mt-0.5">→</span>
+                    <span className="text-teal-400 mt-0.5">→</span>
                     {step}
                   </li>
                 ))}

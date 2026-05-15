@@ -81,10 +81,11 @@ const FLOAT_DELAYS = ['0s', '0.6s', '1.2s', '1.8s'];
 interface Props {
   plan: string;
   isActive: boolean;
+  isAdmin?: boolean;
   userName: string;
 }
 
-export default function DashboardOverviewClient({ plan, isActive, userName }: Props) {
+export default function DashboardOverviewClient({ plan, isActive, isAdmin = false, userName }: Props) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [checklist, setChecklist] = useState([false, false, false]);
@@ -177,8 +178,8 @@ export default function DashboardOverviewClient({ plan, isActive, userName }: Pr
         </div>
       </div>
 
-      {/* Plan Banner */}
-      {!isActive && (
+      {/* Plan Banner — hidden for admin accounts */}
+      {!isActive && !isAdmin && (
         <div className="bg-gradient-to-r from-violet-600/20 to-cyan-600/20 border border-violet-500/30 rounded-2xl p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
