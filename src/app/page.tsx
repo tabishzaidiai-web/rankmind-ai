@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { ArrowRight, Zap, Globe, Link2, BarChart3, CheckCircle, Star } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Globe, Link2, BarChart3, CheckCircle, Star, Zap } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -9,9 +10,7 @@ export default function HomePage() {
       <nav className="fixed top-0 w-full z-50 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <Image src="/logo-icon-v2.png" alt="RankMind AI" width={36} height={36} className="rounded-xl" />
             <span className="font-bold text-xl">RankMind AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
@@ -43,7 +42,7 @@ export default function HomePage() {
             {' '}—<br />Automatically
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10">
-            RankMind AI deploys autonomous SEO agents that build real backlinks, optimize for AI search engines, 
+            RankMind AI deploys autonomous SEO agents that build real backlinks, optimize for AI search engines,
             write SEO content, and get your clients measurable results — 100% automated.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -75,11 +74,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Agent Showcase */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Everything Your SEO Needs</h2>
+            <h2 className="text-4xl font-bold mb-4">Meet Your AI Agents</h2>
             <p className="text-white/60 text-lg max-w-2xl mx-auto">
               Four powerful AI agents working 24/7 to dominate search rankings for your clients.
             </p>
@@ -87,46 +86,86 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                icon: BarChart3,
+                avatar: '/agent-rankbot-transparent.png',
+                name: 'RankBot',
                 title: 'SEO Audit Agent',
                 description: 'Deep crawls your website, scores 20+ SEO factors, finds quick wins, and creates a prioritized action plan.',
-                color: 'from-violet-500 to-purple-600',
+                glow: 'shadow-violet-500/30',
+                border: 'border-violet-500/30',
+                bg: 'from-violet-500/10 to-purple-600/5',
+                badge: 'bg-violet-500/20 text-violet-300',
                 tier: 'Starter',
               },
               {
-                icon: Link2,
+                avatar: '/agent-linkbot-transparent.png',
+                name: 'LinkBot',
                 title: 'Backlink Builder',
-                description: 'Finds real DA 40+ websites in your niche, writes guest posts, sends outreach emails, and tracks results in Google Sheets.',
-                color: 'from-blue-500 to-cyan-600',
+                description: 'Finds real DA 40+ websites in your niche, writes guest posts, sends outreach emails, and tracks results.',
+                glow: 'shadow-teal-500/30',
+                border: 'border-teal-500/30',
+                bg: 'from-teal-500/10 to-cyan-600/5',
+                badge: 'bg-teal-500/20 text-teal-300',
                 tier: 'Growth',
               },
               {
-                icon: Globe,
+                avatar: '/agent-geog-transparent.png',
+                name: 'GEO-G',
                 title: 'GEO Optimizer',
                 description: 'Optimizes your content to appear in ChatGPT, Perplexity, Google AI Overviews, and other AI search engines.',
-                color: 'from-cyan-500 to-teal-600',
+                glow: 'shadow-blue-500/30',
+                border: 'border-blue-500/30',
+                bg: 'from-blue-500/10 to-cyan-600/5',
+                badge: 'bg-blue-500/20 text-blue-300',
                 tier: 'Enterprise',
               },
               {
-                icon: Zap,
+                avatar: '/agent-contentai-transparent.png',
+                name: 'ContentAI',
                 title: 'Content Writer',
                 description: 'Generates SEO-optimized blog posts, landing pages, and meta content that ranks and converts.',
-                color: 'from-orange-500 to-pink-600',
+                glow: 'shadow-amber-500/30',
+                border: 'border-amber-500/30',
+                bg: 'from-amber-500/10 to-orange-600/5',
+                badge: 'bg-amber-500/20 text-amber-300',
                 tier: 'Enterprise',
               },
-            ].map((feature) => (
-              <div key={feature.title} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4`}>
-                  <feature.icon className="w-6 h-6 text-white" />
+            ].map((agent) => (
+              <div
+                key={agent.name}
+                className={`relative bg-gradient-to-b ${agent.bg} border ${agent.border} rounded-2xl p-6 hover:scale-105 transition-transform duration-300 overflow-hidden`}
+              >
+                {/* Floating agent avatar */}
+                <div className="flex justify-center mb-4">
+                  <div className={`relative w-32 h-32 drop-shadow-2xl ${agent.glow}`}
+                    style={{ animation: 'float 3s ease-in-out infinite' }}>
+                    <Image
+                      src={agent.avatar}
+                      alt={agent.name}
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 </div>
-                <div className="text-xs text-white/40 font-medium mb-2 uppercase tracking-wider">{feature.tier}</div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed">{feature.description}</p>
+                <div className={`inline-block text-xs font-medium px-2 py-1 rounded-full mb-2 ${agent.badge}`}>
+                  {agent.tier}
+                </div>
+                <h3 className="text-lg font-bold mb-1">{agent.name}</h3>
+                <p className="text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">{agent.title}</p>
+                <p className="text-white/60 text-sm leading-relaxed">{agent.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Floating animation keyframes */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
 
       {/* How It Works */}
       <section id="how-it-works" className="py-24 px-6 bg-white/2">
@@ -178,7 +217,6 @@ export default function HomePage() {
                 ],
                 cta: 'Start with Starter',
                 popular: false,
-                priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
               },
               {
                 name: 'Growth',
@@ -194,7 +232,6 @@ export default function HomePage() {
                 ],
                 cta: 'Start with Growth',
                 popular: true,
-                priceId: process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID,
               },
               {
                 name: 'Enterprise',
@@ -211,7 +248,6 @@ export default function HomePage() {
                 ],
                 cta: 'Start with Enterprise',
                 popular: false,
-                priceId: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID,
               },
             ].map((plan) => (
               <div key={plan.name} className={`relative rounded-2xl p-8 ${plan.popular ? 'bg-gradient-to-b from-violet-600/20 to-cyan-600/10 border-2 border-violet-500/50' : 'bg-white/5 border border-white/10'}`}>
@@ -288,9 +324,7 @@ export default function HomePage() {
       <footer className="py-12 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
+            <Image src="/logo-icon-v2.png" alt="RankMind AI" width={28} height={28} className="rounded-lg" />
             <span className="font-semibold">RankMind AI</span>
           </div>
           <p className="text-white/40 text-sm">&copy; 2025 RankMind AI. All rights reserved.</p>

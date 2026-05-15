@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -6,9 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
       <nav className="p-6">
         <Link href="/" className="flex items-center gap-2 w-fit">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
+          <Image src="/logo-icon-v2.png" alt="RankMind AI" width={36} height={36} className="rounded-xl" />
           <span className="font-bold text-xl text-white">RankMind AI</span>
         </Link>
       </nav>
