@@ -97,7 +97,7 @@ export async function googleSearch(
   numResults = 10
 ): Promise<Array<{ title: string; url: string; snippet: string }>> {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_CX;
+  const cx = process.env.GOOGLE_SEARCH_ENGINE_ID || process.env.GOOGLE_SEARCH_CX;
 
   if (!apiKey || !cx) {
     throw new Error('Google Search API key or CX not configured');
