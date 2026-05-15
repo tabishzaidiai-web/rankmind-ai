@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runSEOAudit } from '@/lib/agents/seo-audit-agent';
+import { createClient } from '@/lib/supabase/server';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const body = await request.json();
     const { url } = body;
 
@@ -17,7 +21,8 @@ export async function POST(request: NextRequest) {
       targetUrl = 'https://' + targetUrl;
     }
 
-    const result = await runSEOAudit(targetUrl);
+    // Pass user email so the agent emails the full report on completion
+    const result = await runSEOAudit(targetUrl, user?.email);
     return NextResponse.json(result);
   } catch (error) {
     console.error('SEO Audit error:', error);

@@ -8,24 +8,19 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
     const body = await request.json();
     const { url } = body;
-
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
-
     let targetUrl = url;
     if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
       targetUrl = 'https://' + targetUrl;
     }
-
-    const result = await runGEOAnalysis(targetUrl);
+    const result = await runGEOAnalysis(targetUrl, user.email);
     return NextResponse.json(result);
   } catch (error) {
     console.error('GEO agent error:', error);

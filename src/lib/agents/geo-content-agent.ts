@@ -82,7 +82,7 @@ export interface GEOAction {
 /**
  * Run full GEO Analysis on a website
  */
-export async function runGEOAnalysis(url: string): Promise<GEOAnalysis> {
+export async function runGEOAnalysis(url: string, clientEmail?: string): Promise<GEOAnalysis> {
   const pageData = await fetchPageContent(url);
 
   // Check how the site appears in AI-related searches
@@ -204,7 +204,7 @@ export async function runGEOAnalysis(url: string): Promise<GEOAnalysis> {
 
   const currentScore = analysis.geo_score;
 
-  return {
+  const geoResult: GEOAnalysis = {
     url,
     analyzed_at: new Date().toISOString(),
     geo_score: currentScore,
@@ -252,6 +252,17 @@ export async function runGEOAnalysis(url: string): Promise<GEOAnalysis> {
       implementation: a.implementation,
     })),
   };
+
+  // Send email report if client email provided
+  if (clientEmail) {
+    await sendEmail({
+      to: clientEmail,
+      subject: `GEO Analysis Complete: Score ${geoResult.geo_score}/100 for ${url}`,
+      html: generateWeeklyReportHTML(url, geoResult, []),
+    });
+  }
+
+  return geoResult;
 }
 
 /**
