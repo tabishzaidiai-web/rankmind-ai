@@ -1,7 +1,9 @@
 'use client';
+
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, CheckCircle, Star, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle, Star, Zap, ChevronDown, MessageCircle } from 'lucide-react';
 
 const AGENTS = [
   {
@@ -16,6 +18,7 @@ const AGENTS = [
     badge: 'bg-violet-500/20 text-violet-300',
     tier: 'Starter',
     color: '#7c3aed',
+    planKey: 'starter',
   },
   {
     avatar: '/agent-linkbot-transparent.png',
@@ -29,6 +32,7 @@ const AGENTS = [
     badge: 'bg-teal-500/20 text-teal-300',
     tier: 'Growth',
     color: '#0d9488',
+    planKey: 'growth',
   },
   {
     avatar: '/agent-geog-transparent.png',
@@ -42,6 +46,7 @@ const AGENTS = [
     badge: 'bg-blue-500/20 text-blue-300',
     tier: 'Enterprise',
     color: '#2563eb',
+    planKey: 'enterprise',
   },
   {
     avatar: '/agent-contentai-transparent.png',
@@ -55,44 +60,105 @@ const AGENTS = [
     badge: 'bg-amber-500/20 text-amber-300',
     tier: 'Enterprise',
     color: '#d97706',
+    planKey: 'enterprise',
   },
 ];
 
+const FAQS = [
+  { q: 'Do the agents actually build real backlinks?', a: 'Yes. LinkBot uses Google Search API to find real websites in your niche that accept guest posts, qualifies them by domain authority, and generates personalized outreach emails. You receive the full prospect list with outreach templates via email.' },
+  { q: 'How does the GEO Optimizer work?', a: 'GEO-G queries AI models to simulate how ChatGPT, Claude, Perplexity, and Grok answer questions in your niche. It checks if your brand appears in those answers, scores your AI visibility (0–100), and gives you specific recommendations to appear in AI search results.' },
+  { q: 'Is there a free trial?', a: 'Yes — every account starts with a free SEO audit. No credit card required. You can run a full 20-factor audit on your website immediately after signing up.' },
+  { q: 'Can I use this for client websites?', a: 'Absolutely. The Growth and Enterprise plans support multiple websites. Many agencies use RankMind AI to automate SEO work across all their client accounts.' },
+  { q: 'How are reports delivered?', a: 'After each agent run, a full HTML report is emailed to your registered email address. Results are also shown live in your dashboard immediately.' },
+  { q: 'What happens if I cancel my subscription?', a: 'You keep access until the end of your billing period. Your data and reports remain accessible for 30 days after cancellation.' },
+];
+
+function useScrollFade() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold: 0.12 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+function FadeSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const { ref, visible } = useScrollFade();
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(28px)',
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-white/10 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-white/5 transition-colors"
+      >
+        <span className="font-medium text-white text-sm">{q}</span>
+        <ChevronDown className={`w-4 h-4 text-white/40 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-6 pb-4 text-white/60 text-sm leading-relaxed border-t border-white/5 pt-3">
+          {a}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-        }
-        @keyframes float2 {
-          0%, 100% { transform: translateY(-6px); }
-          50% { transform: translateY(6px); }
-        }
-        @keyframes float3 {
-          0%, 100% { transform: translateY(-3px); }
-          50% { transform: translateY(9px); }
-        }
-        @keyframes float4 {
-          0%, 100% { transform: translateY(4px); }
-          50% { transform: translateY(-8px); }
-        }
-        .agent-card:hover .agent-cta { opacity: 1; transform: translateY(0); }
-        .agent-card:hover { transform: translateY(-6px); }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        @keyframes float2 { 0%,100%{transform:translateY(-6px)} 50%{transform:translateY(6px)} }
+        @keyframes float3 { 0%,100%{transform:translateY(-3px)} 50%{transform:translateY(9px)} }
+        @keyframes float4 { 0%,100%{transform:translateY(4px)} 50%{transform:translateY(-8px)} }
+        .agent-card .agent-cta { opacity:0; transform:translateY(6px); transition:all 0.2s; }
+        .agent-card:hover .agent-cta { opacity:1; transform:translateY(0); }
+        .agent-card { transition:transform 0.25s ease, box-shadow 0.25s ease; }
+        .agent-card:hover { transform:translateY(-6px); }
+        html { scroll-behavior: smooth; }
       `}</style>
 
-      {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-white/10">
+      {/* Sticky Nav */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0a0a0f]/95 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/20' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Image src="/logo-icon-v2.png" alt="RankMind AI" width={36} height={36} className="rounded-xl" />
             <span className="font-bold text-xl">RankMind AI</span>
-          </div>
+          </Link>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
@@ -122,20 +188,14 @@ export default function HomePage() {
             write SEO content, and get your clients measurable results — 100% automated.
           </p>
 
-          {/* Floating Agent Avatars — above the fold */}
+          {/* Floating Agent Avatars */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-10">
             {AGENTS.map((agent, i) => {
               const anims = ['float', 'float2', 'float3', 'float4'];
               const delays = ['0s', '0.5s', '1s', '1.5s'];
               return (
                 <div key={agent.name} className="flex flex-col items-center gap-2">
-                  <div
-                    style={{
-                      animation: `${anims[i]} 3s ease-in-out infinite`,
-                      animationDelay: delays[i],
-                      filter: `drop-shadow(0 0 16px ${agent.glow})`,
-                    }}
-                  >
+                  <div style={{ animation: `${anims[i]} 3s ease-in-out infinite`, animationDelay: delays[i], filter: `drop-shadow(0 0 16px ${agent.glow})` }}>
                     <Image src={agent.avatar} alt={agent.name} width={100} height={100} className="w-20 h-20 md:w-24 md:h-24 object-contain" />
                   </div>
                   <span className="text-xs font-semibold text-white/60">{agent.name}</span>
@@ -171,187 +231,268 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+        <p className="text-center text-white/25 text-xs mt-4">* Based on aggregate results across all active accounts since launch.</p>
       </section>
 
-      {/* Agent Cards — clickable, glass-morphism */}
+      {/* Agent Cards */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Meet Your AI Agents</h2>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto">
-              Four powerful AI agents working 24/7 to dominate search rankings for your clients.
-            </p>
-          </div>
+          <FadeSection>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4">Meet Your AI Agents</h2>
+              <p className="text-white/60 text-lg max-w-2xl mx-auto">
+                Four powerful AI agents working 24/7 to dominate search rankings for your clients.
+              </p>
+            </div>
+          </FadeSection>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {AGENTS.map((agent, i) => {
               const anims = ['float', 'float2', 'float3', 'float4'];
               const delays = ['0s', '0.8s', '0.4s', '1.2s'];
               return (
-                <Link
-                  key={agent.name}
-                  href={agent.href}
-                  className={`agent-card group relative flex flex-col bg-white/5 backdrop-blur-sm border-t-2 ${agent.border} border-b border-l border-r border-white/10 rounded-2xl p-6 transition-all duration-300 cursor-pointer overflow-hidden`}
-                  style={{ borderTopColor: agent.color }}
-                >
-                  {/* Radial glow bg */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
-                    style={{ background: `radial-gradient(circle at 50% 0%, ${agent.glow} 0%, transparent 70%)` }}
-                  />
-                  {/* Avatar */}
-                  <div className="flex justify-center mb-4 relative z-10">
-                    <div style={{ animation: `${anims[i]} 3s ease-in-out infinite`, animationDelay: delays[i], filter: `drop-shadow(0 4px 12px ${agent.glow})` }}>
-                      <Image src={agent.avatar} alt={agent.name} width={96} height={96} className="w-20 h-20 md:w-24 md:h-24 object-contain" />
+                <FadeSection key={agent.name} delay={i * 80}>
+                  <Link
+                    href={agent.href}
+                    className={`agent-card group relative flex flex-col bg-white/5 backdrop-blur-sm border-t-2 ${agent.border} border-b border-l border-r border-white/10 rounded-2xl p-6 cursor-pointer overflow-hidden h-full`}
+                    style={{ borderTopColor: agent.color }}
+                  >
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" style={{ background: `radial-gradient(circle at 50% 0%, ${agent.glow} 0%, transparent 70%)` }} />
+                    <div className="flex justify-center mb-4 relative z-10">
+                      <div style={{ animation: `${anims[i]} 3s ease-in-out infinite`, animationDelay: delays[i], filter: `drop-shadow(0 4px 12px ${agent.glow})` }}>
+                        <Image src={agent.avatar} alt={agent.name} width={96} height={96} className="w-20 h-20 md:w-24 md:h-24 object-contain" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="relative z-10">
-                    <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full mb-2 ${agent.badge}`}>{agent.tier}</span>
-                    <h3 className="text-lg font-bold mb-1">{agent.name}</h3>
-                    <p className="text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">{agent.title}</p>
-                    <p className="text-white/60 text-sm leading-relaxed mb-4">{agent.description}</p>
-                    <div className="agent-cta opacity-0 translate-y-2 transition-all duration-200 text-sm font-semibold" style={{ color: agent.color }}>
-                      → Open Agent
+                    <div className="relative z-10">
+                      <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full mb-2 ${agent.badge}`}>{agent.tier}</span>
+                      <h3 className="text-lg font-bold mb-1">{agent.name}</h3>
+                      <p className="text-white/50 text-xs font-medium mb-2 uppercase tracking-wider">{agent.title}</p>
+                      <p className="text-white/60 text-sm leading-relaxed mb-4">{agent.description}</p>
+                      <div className="agent-cta text-sm font-semibold" style={{ color: agent.color }}>→ Open Agent</div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </FadeSection>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-6 bg-white/2">
+      {/* How It Works — with connector line */}
+      <section id="how-it-works" className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-white/60 text-lg">Set it up once. The agents work forever.</p>
+          <FadeSection>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+              <p className="text-white/60 text-lg">Set it up once. The agents work forever.</p>
+            </div>
+          </FadeSection>
+          <div className="relative">
+            {/* Vertical connector line */}
+            <div className="absolute left-6 top-6 bottom-6 w-px bg-gradient-to-b from-violet-500 via-cyan-500 to-transparent hidden md:block" />
+            <div className="space-y-8">
+              {[
+                { step: '01', title: 'Add Your Website', desc: "Enter your client's URL and target keywords. Our agents analyze the site and ask clarifying questions to understand your goals." },
+                { step: '02', title: 'Agents Get to Work', desc: 'The SEO Audit Agent scores your site, the Backlink Builder finds opportunities, the GEO Optimizer prepares AI-search content.' },
+                { step: '03', title: 'Real Actions Taken', desc: 'Agents write real outreach emails, submit guest posts, create content, and track everything in your dashboard.' },
+                { step: '04', title: 'You See Results', desc: 'Weekly reports show new backlinks earned, ranking improvements, and GEO visibility scores — all real, measurable results.' },
+              ].map((item, i) => (
+                <FadeSection key={item.step} delay={i * 100}>
+                  <div className="flex gap-6 items-start">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold z-10">
+                      {item.step}
+                    </div>
+                    <div className="pt-2">
+                      <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                      <p className="text-white/60">{item.desc}</p>
+                    </div>
+                  </div>
+                </FadeSection>
+              ))}
+            </div>
           </div>
-          <div className="space-y-8">
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <FadeSection>
+            <h2 className="text-4xl font-bold text-center mb-16">What Our Clients Say</h2>
+          </FadeSection>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { step: '01', title: 'Add Your Website', desc: 'Enter your client\'s URL and target keywords. Our agents analyze the site and ask clarifying questions to understand your goals.' },
-              { step: '02', title: 'Agents Get to Work', desc: 'The SEO Audit Agent scores your site, the Backlink Builder finds opportunities, the GEO Optimizer prepares AI-search content.' },
-              { step: '03', title: 'Real Actions Taken', desc: 'Agents write real outreach emails, submit guest posts, create content, and track everything in your dashboard.' },
-              { step: '04', title: 'You See Results', desc: 'Weekly reports show new backlinks earned, ranking improvements, and GEO visibility scores — all real, measurable results.' },
-            ].map((item) => (
-              <div key={item.step} className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold">
-                  {item.step}
+              { name: 'Sarah K.', role: 'SEO Agency Owner', initials: 'SK', color: 'from-violet-500 to-purple-600', text: "RankMind AI built 40 real backlinks for my client in the first month. Rankings jumped from page 4 to page 1. This is the real deal." },
+              { name: 'Ahmed M.', role: 'E-commerce Founder', initials: 'AM', color: 'from-teal-500 to-cyan-600', text: "The GEO optimizer got my product appearing in ChatGPT recommendations. I've never seen anything like it." },
+              { name: 'Lisa T.', role: 'Digital Marketing Manager', initials: 'LT', color: 'from-amber-500 to-orange-600', text: "We manage 15 client websites. RankMind AI handles all the SEO work automatically. It's like having 5 extra team members." },
+            ].map((t, i) => (
+              <FadeSection key={t.name} delay={i * 80}>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 h-full flex flex-col">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                  </div>
+                  <p className="text-white/70 text-sm mb-5 leading-relaxed flex-1">&ldquo;{t.text}&rdquo;</p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+                      {t.initials}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">{t.name}</div>
+                      <div className="text-white/40 text-xs">{t.role}</div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-white/60">{item.desc}</p>
-                </div>
-              </div>
+              </FadeSection>
             ))}
           </div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 px-6">
+      <section id="pricing" className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-white/60 text-lg">Start free. Scale as you grow.</p>
-          </div>
+          <FadeSection>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+              <p className="text-white/60 text-lg">Start free. Scale as you grow.</p>
+            </div>
+          </FadeSection>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: 'Starter', price: '$29', desc: 'Perfect for individual websites',
+                name: 'Starter', price: '$29', planKey: 'starter', desc: 'Perfect for individual websites',
                 features: ['Full SEO Audit (20+ factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
                 cta: 'Start with Starter', popular: false,
               },
               {
-                name: 'Growth', price: '$79', desc: 'For agencies and growing businesses',
+                name: 'Growth', price: '$79', planKey: 'growth', desc: 'For agencies and growing businesses',
                 features: ['Everything in Starter', 'Backlink Builder Agent', '10 backlinks/week guaranteed', 'Outreach email automation', 'Google Sheets tracking', '5 websites'],
                 cta: 'Start with Growth', popular: true,
               },
               {
-                name: 'Enterprise', price: '$149', desc: 'Full SEO machine for agencies',
+                name: 'Enterprise', price: '$149', planKey: 'enterprise', desc: 'Full SEO machine for agencies',
                 features: ['Everything in Growth', 'GEO Optimizer Agent', 'AI Content Writer Agent', 'ChatGPT/Perplexity visibility', 'Custom agent instructions', 'Unlimited websites', 'Priority support'],
                 cta: 'Start with Enterprise', popular: false,
               },
-            ].map((plan) => (
-              <div key={plan.name} className={`relative rounded-2xl p-8 ${plan.popular ? 'bg-gradient-to-b from-violet-600/20 to-cyan-600/10 border-2 border-violet-500/50' : 'bg-white/5 border border-white/10'}`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
-                )}
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                  <p className="text-white/50 text-sm mb-4">{plan.desc}</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-white/50">/month</span>
+            ].map((plan, i) => (
+              <FadeSection key={plan.name} delay={i * 80}>
+                <div className={`relative rounded-2xl p-8 h-full flex flex-col ${plan.popular ? 'bg-gradient-to-b from-violet-600/20 to-cyan-600/10 border-2 border-violet-500/50 shadow-lg shadow-violet-500/10' : 'bg-white/5 border border-white/10'}`}>
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">MOST POPULAR</div>
+                  )}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
+                    <p className="text-white/50 text-sm mb-4">{plan.desc}</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                      <span className="text-white/50">/month</span>
+                    </div>
                   </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-white/80">
+                        <CheckCircle className="w-4 h-4 text-violet-400 flex-shrink-0" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  {/* Plan pre-selection: pass plan query param to signup */}
+                  <Link
+                    href={`/signup?plan=${plan.planKey}`}
+                    className={`block text-center py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                  >
+                    {plan.cta}
+                  </Link>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-white/80">
-                      <CheckCircle className="w-4 h-4 text-violet-400 flex-shrink-0" />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/signup" className={`block text-center py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                  {plan.cta}
-                </Link>
-              </div>
+              </FadeSection>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 px-6 bg-white/2">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">What Our Clients Say</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: 'Sarah K.', role: 'SEO Agency Owner', text: 'RankMind AI built 40 real backlinks for my client in the first month. Rankings jumped from page 4 to page 1. This is the real deal.' },
-              { name: 'Ahmed M.', role: 'E-commerce Founder', text: 'The GEO optimizer got my product appearing in ChatGPT recommendations. I\'ve never seen anything like it.' },
-              { name: 'Lisa T.', role: 'Digital Marketing Manager', text: 'We manage 15 client websites. RankMind AI handles all the SEO work automatically. It\'s like having 5 extra team members.' },
-            ].map((t) => (
-              <div key={t.name} className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-                </div>
-                <p className="text-white/70 text-sm mb-4 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
-                <div>
-                  <div className="font-semibold text-sm">{t.name}</div>
-                  <div className="text-white/40 text-xs">{t.role}</div>
-                </div>
-              </div>
+      {/* FAQ */}
+      <section id="faq" className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <FadeSection>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+              <p className="text-white/60">Everything you need to know about RankMind AI.</p>
+            </div>
+          </FadeSection>
+          <div className="space-y-3">
+            {FAQS.map((faq, i) => (
+              <FadeSection key={faq.q} delay={i * 50}>
+                <FAQItem q={faq.q} a={faq.a} />
+              </FadeSection>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Dominate Search Rankings?</h2>
-          <p className="text-white/60 text-lg mb-8">Start with a free SEO audit. No credit card required.</p>
-          <Link href="/signup" className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-10 py-4 rounded-xl transition-all text-lg">
-            Get Your Free SEO Audit <ArrowRight className="w-5 h-5" />
-          </Link>
+          <FadeSection>
+            <h2 className="text-4xl font-bold mb-4">Ready to Dominate Search Rankings?</h2>
+            <p className="text-white/60 text-lg mb-8">Start with a free SEO audit. No credit card required.</p>
+            <Link href="/signup" className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-10 py-4 rounded-xl transition-all text-lg">
+              Get Your Free SEO Audit <ArrowRight className="w-5 h-5" />
+            </Link>
+          </FadeSection>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Image src="/logo-icon-v2.png" alt="RankMind AI" width={28} height={28} className="rounded-lg" />
-            <span className="font-semibold">RankMind AI</span>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Image src="/logo-icon-v2.png" alt="RankMind AI" width={28} height={28} className="rounded-lg" />
+                <span className="font-semibold">RankMind AI</span>
+              </div>
+              <p className="text-white/40 text-sm max-w-xs">Autonomous AI agents that build real backlinks, optimize for AI search, and rank your website — automatically.</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
+              <div>
+                <div className="text-white/60 font-medium mb-3">Product</div>
+                <div className="space-y-2">
+                  <a href="#features" className="block text-white/40 hover:text-white transition-colors">Features</a>
+                  <a href="#pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</a>
+                  <a href="#how-it-works" className="block text-white/40 hover:text-white transition-colors">How It Works</a>
+                  <a href="#faq" className="block text-white/40 hover:text-white transition-colors">FAQ</a>
+                </div>
+              </div>
+              <div>
+                <div className="text-white/60 font-medium mb-3">Legal</div>
+                <div className="space-y-2">
+                  <Link href="/privacy" className="block text-white/40 hover:text-white transition-colors">Privacy Policy</Link>
+                  <Link href="/terms" className="block text-white/40 hover:text-white transition-colors">Terms of Service</Link>
+                </div>
+              </div>
+              <div>
+                <div className="text-white/60 font-medium mb-3">Support</div>
+                <div className="space-y-2">
+                  <a href="mailto:support@rankmind.ai" className="block text-white/40 hover:text-white transition-colors">Email Support</a>
+                  <Link href="/login" className="block text-white/40 hover:text-white transition-colors">Sign In</Link>
+                  <Link href="/signup" className="block text-white/40 hover:text-white transition-colors">Get Started</Link>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-white/40 text-sm">&copy; 2025 RankMind AI. All rights reserved.</p>
-          <div className="flex gap-6 text-sm text-white/40">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="mailto:support@rankmind.ai" className="hover:text-white transition-colors">Support</a>
+          <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-2">
+            <p className="text-white/30 text-sm">&copy; 2025 RankMind AI. All rights reserved.</p>
+            <p className="text-white/20 text-xs">Built with Next.js · Hosted on Vercel · Powered by OpenAI</p>
           </div>
         </div>
       </footer>
+
+      {/* Live Chat Widget (Tawk.to placeholder — replace with your Tawk.to script) */}
+      <a
+        href="mailto:support@rankmind.ai"
+        className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30 hover:scale-110 transition-transform"
+        title="Contact Support"
+      >
+        <MessageCircle className="w-5 h-5 text-white" />
+      </a>
     </div>
   );
 }
