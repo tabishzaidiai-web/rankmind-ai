@@ -4,18 +4,16 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import {
-  BarChart3, Link2, Globe, FileText, Settings, LogOut, LayoutDashboard
-} from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
 const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/dashboard/seo-audit', label: 'SEO Audit', icon: BarChart3 },
-  { href: '/dashboard/backlinks', label: 'Backlinks', icon: Link2 },
-  { href: '/dashboard/geo-score', label: 'GEO Score', icon: Globe },
-  { href: '/dashboard/content', label: 'Content', icon: FileText },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, avatar: null },
+  { href: '/dashboard/seo-audit', label: 'SEO Audit', icon: null, avatar: '/agent-rankbot-transparent.png' },
+  { href: '/dashboard/backlinks', label: 'Backlinks', icon: null, avatar: '/agent-linkbot-transparent.png' },
+  { href: '/dashboard/geo-score', label: 'GEO Score', icon: null, avatar: '/agent-geog-transparent.png' },
+  { href: '/dashboard/content', label: 'Content', icon: null, avatar: '/agent-contentai-transparent.png' },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings, avatar: null },
 ];
 
 export default function Sidebar({ user }: { user: User }) {
@@ -52,7 +50,17 @@ export default function Sidebar({ user }: { user: User }) {
                   : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
             >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
+              {item.avatar ? (
+                <Image
+                  src={item.avatar}
+                  alt={item.label}
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain flex-shrink-0"
+                />
+              ) : item.icon ? (
+                <item.icon className="w-4 h-4 flex-shrink-0" />
+              ) : null}
               {item.label}
             </Link>
           );

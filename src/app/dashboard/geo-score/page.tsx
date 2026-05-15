@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Globe, Search, AlertCircle, Loader2, ChevronDown, ChevronUp, Zap, BookOpen, BarChart3, FileText } from 'lucide-react';
 
 interface GEOAnalysis {
@@ -96,20 +97,14 @@ export default function GEOScorePage() {
   const barColor = (s: number) => s >= 80 ? 'bg-emerald-500' : s >= 60 ? 'bg-amber-500' : 'bg-red-500';
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-          <Globe className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">GEO Optimizer</h1>
-          <p className="text-white/50 text-sm">Optimize for ChatGPT, Perplexity, Gemini, and AI search engines</p>
-        </div>
-      </div>
-
-      {/* Input Form */}
-      <form onSubmit={handleAnalyze} className="bg-white/5 border border-white/10 rounded-2xl p-6">
+    <div className="space-y-6 max-w-5xl relative">
+      <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle,#2563eb 0%,transparent 70%)',zIndex:0}} />
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
+        <div className="flex-1 w-full">
+          <h1 className="text-3xl font-bold text-white mb-1">GEO Optimizer</h1>
+          <p className="text-white/50 text-sm mb-6">Optimize for ChatGPT, Perplexity, Gemini, and all AI search engines</p>
+      <form onSubmit={handleAnalyze} className="bg-white/5 border border-blue-500/20 rounded-2xl p-6">
         <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Analyze</label>
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -137,6 +132,15 @@ export default function GEOScorePage() {
           </div>
         )}
       </form>
+        </div>{/* end left */}
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
+          <div style={{animation:'floatAgent 3s ease-in-out infinite',filter:'drop-shadow(0 0 30px rgba(37,99,235,0.5))'}}>
+            <Image src="/agent-geog-transparent.png" alt="GEO-G" width={220} height={220} className="w-48 h-48 object-contain" />
+          </div>
+          <span className="text-sm font-semibold text-blue-300 mt-2">GEO-G</span>
+          <span className="text-xs text-white/40">GEO Optimizer</span>
+        </div>
+      </div>{/* end header split */}
 
       {/* Error */}
       {error && (

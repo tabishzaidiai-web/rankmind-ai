@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { BarChart3, Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2 } from 'lucide-react';
+import Image from 'next/image';
+import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2 } from 'lucide-react';
 
 interface AuditResult {
   url: string;
@@ -100,20 +101,22 @@ export default function SEOAuditPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-          <BarChart3 className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">SEO Audit Agent</h1>
-          <p className="text-white/50 text-sm">Real-time website analysis powered by AI</p>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-5xl relative">
+      <style>{`
+        @keyframes floatAgent { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+      `}</style>
+      {/* Radial glow background */}
+      <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle, #7c3aed 0%, transparent 70%)', zIndex:0}} />
+
+      {/* Page Header — left/right split */}
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 relative z-10">
+        {/* Left: title + form */}
+        <div className="flex-1 w-full">
+          <h1 className="text-3xl font-bold text-white mb-1">SEO Audit Agent</h1>
+          <p className="text-white/50 text-sm mb-6">Real-time website analysis powered by RankBot AI</p>
 
       {/* Input Form */}
-      <form onSubmit={handleAudit} className="bg-white/5 border border-white/10 rounded-2xl p-6">
+      <form onSubmit={handleAudit} className="bg-white/5 border border-violet-500/20 rounded-2xl p-6">
         <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Audit</label>
         <div className="flex gap-3">
           <div className="relative flex-1">
@@ -142,6 +145,16 @@ export default function SEOAuditPage() {
           </div>
         )}
       </form>
+        </div>{/* end left */}
+        {/* Right: floating avatar */}
+        <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0">
+          <div style={{animation:'floatAgent 3s ease-in-out infinite', filter:'drop-shadow(0 0 30px rgba(124,58,237,0.5))'}}>
+            <Image src="/agent-rankbot-transparent.png" alt="RankBot" width={220} height={220} className="w-48 h-48 object-contain" />
+          </div>
+          <span className="text-sm font-semibold text-violet-300 mt-2">RankBot</span>
+          <span className="text-xs text-white/40">SEO Audit Agent</span>
+        </div>
+      </div>{/* end header split */}
 
       {/* Error */}
       {error && (
