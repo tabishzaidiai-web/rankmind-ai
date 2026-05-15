@@ -54,7 +54,7 @@ export async function agentReason<T>(
     { role: 'user', content: userPrompt },
   ];
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages,
     response_format: { type: 'json_object' },
@@ -76,7 +76,7 @@ export async function agentWrite(
   userPrompt: string,
   maxTokens = 2000
 ): Promise<string> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
