@@ -45,7 +45,9 @@ export async function updateSession(request: NextRequest) {
     (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    // New users (created within last 60 seconds) go to onboarding
+    const isNewUser = user.created_at && (Date.now() - new Date(user.created_at).getTime()) < 60_000;
+    url.pathname = isNewUser ? '/dashboard/onboarding' : '/dashboard';
     return NextResponse.redirect(url);
   }
 

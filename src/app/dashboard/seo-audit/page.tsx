@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3 } from 'lucide-react';
 
 interface AuditResult {
@@ -33,6 +34,14 @@ interface AuditResult {
   llm_recommendations: string[];
 }
 
+interface AuditHistoryItem {
+  id: string;
+  url: string;
+  score: number;
+  grade: string;
+  created_at: string;
+}
+
 function ScoreCircle({ score, size = 80 }: { score: number; size?: number }) {
   const r = (size - 10) / 2;
   const circ = 2 * Math.PI * r;
@@ -62,12 +71,74 @@ function CheckItem({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
+function ScoreTrendChart({ history }: { history: AuditHistoryItem[] }) {
+  if (history.length < 2) return null;
+  const maxScore = 100;
+  const w = 400;
+  const h = 90;
+  const padX = 24;
+  const padY = 16;
+  const pts = history.slice(-8).map((item, i, arr) => {
+    const x = padX + (i / (arr.length - 1)) * (w - padX * 2);
+    const y = h - padY - ((item.score / maxScore) * (h - padY * 2));
+    return { x, y, score: item.score, date: new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
+  });
+  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const areaD = `${pathD} L ${pts[pts.length - 1].x.toFixed(1)} ${(h - padY).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(h - padY).toFixed(1)} Z`;
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <BarChart3 className="w-4 h-4 text-violet-400" />
+        <h3 className="text-sm font-semibold text-white">Score Trend</h3>
+        <span className="text-xs text-white/40 ml-auto">Last {pts.length} audits</span>
+      </div>
+      <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ minWidth: '200px', maxWidth: '100%' }}>
+          <defs>
+            <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={areaD} fill="url(#trendGrad)" />
+          <path d={pathD} fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          {pts.map((p, i) => (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r={4} fill="#7c3aed" stroke="#0a0a0f" strokeWidth="1.5" />
+              <text x={p.x} y={h - 1} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="8">{p.date}</text>
+              <text x={p.x} y={p.y - 9} textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">{p.score}</text>
+            </g>
+          ))}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export default function SEOAuditPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [error, setError] = useState('');
   const [expandedSection, setExpandedSection] = useState<string | null>('on_page');
+  const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('audits')
+          .select('id, url, score, grade, created_at')
+          .order('created_at', { ascending: true })
+          .limit(20);
+        if (data) setAuditHistory(data);
+      } catch {
+        // silently fail — table may not exist yet
+      }
+    };
+    fetchHistory();
+  }, [result]); // re-fetch after each new audit
 
   const handleAudit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,10 +177,8 @@ export default function SEOAuditPage() {
       {/* Radial glow */}
       <div className="pointer-events-none fixed top-0 right-0 w-96 h-96 opacity-20" style={{background:'radial-gradient(circle,#7c3aed 0%,transparent 70%)',zIndex:0}} />
 
-      {/* ── Top section: form (left) + avatar (right) ── */}
+      {/* Top section: form (left) + avatar (right) */}
       <div className="flex items-start gap-8 relative z-10">
-
-        {/* LEFT: title + form — takes all remaining space */}
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-1">SEO Audit Agent</h1>
           <p className="text-white/50 text-sm mb-5">Real-time website analysis powered by RankBot AI</p>
@@ -117,7 +186,6 @@ export default function SEOAuditPage() {
           <form onSubmit={handleAudit} className="bg-white/5 border border-violet-500/20 rounded-2xl p-5">
             <label className="block text-sm font-medium text-white/70 mb-2">Website URL to Audit</label>
             <div className="flex flex-col sm:flex-row gap-3">
-              {/* URL input — full width */}
               <div className="relative flex-1">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                 <input
@@ -128,7 +196,6 @@ export default function SEOAuditPage() {
                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
                 />
               </div>
-              {/* Run Audit button */}
               <button
                 type="submit"
                 disabled={loading || !url.trim()}
@@ -146,7 +213,6 @@ export default function SEOAuditPage() {
             )}
           </form>
 
-          {/* Error */}
           {error && (
             <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -154,7 +220,6 @@ export default function SEOAuditPage() {
             </div>
           )}
 
-          {/* Results placeholder — shown when no result yet */}
           {!result && !loading && (
             <div className="mt-5 border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-violet-500/10 flex items-center justify-center">
@@ -166,7 +231,6 @@ export default function SEOAuditPage() {
           )}
         </div>
 
-        {/* RIGHT: floating RankBot avatar — fixed width, never shrinks */}
         <div className="hidden md:flex flex-col items-center justify-start pt-2 flex-shrink-0 w-52">
           <div style={{animation:'floatAgent 3s ease-in-out infinite',filter:'drop-shadow(0 0 30px rgba(124,58,237,0.5))'}}>
             <Image src="/agent-rankbot-transparent.png" alt="RankBot" width={200} height={200} className="w-44 h-44 object-contain" />
@@ -176,7 +240,14 @@ export default function SEOAuditPage() {
         </div>
       </div>
 
-      {/* ── Results (full width, below the top section) ── */}
+      {/* Score Trend Chart */}
+      {auditHistory.length >= 2 && (
+        <div className="relative z-10">
+          <ScoreTrendChart history={auditHistory} />
+        </div>
+      )}
+
+      {/* Results */}
       {result && (
         <div className="space-y-4 relative z-10">
           {/* Score Overview */}

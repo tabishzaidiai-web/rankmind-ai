@@ -73,6 +73,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rateLimited, setRateLimited] = useState(false);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [chatStep, setChatStep] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -102,7 +103,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
     if (!cleanUrl.startsWith('http')) cleanUrl = 'https://' + cleanUrl;
     try { new URL(cleanUrl); } catch { setError('Please enter a valid website URL (e.g. yoursite.com)'); return; }
     setUrl(cleanUrl); setStarted(true); setLoading(true); setError('');
-    setMessages([]); setChatStep(0); setDashboardStep(0); setAuditResult(null);
+    setMessages([]); setChatStep(0); setDashboardStep(0); setAuditResult(null); setRateLimited(false);
     setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     const domain = cleanUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
     addAgentMessage(`Hi! I'm analysing **${domain}** right now. While I run your audit, what's the main goal for your website?`,
@@ -110,7 +111,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
     try {
       const res = await fetch('/api/demo-audit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: cleanUrl }) });
       const data = await res.json();
-      if (res.status === 429) { setError(data.message); setLoading(false); return; }
+      if (data.rateLimited) { setRateLimited(true); setLoading(false); return; }
       if (res.status === 422) { setError(data.message || "We couldn't reach this website. Please check the URL."); setLoading(false); setStarted(false); return; }
       if (!res.ok) throw new Error(data.message || 'Audit failed');
       setAuditResult(data); setDashboardStep(1);
@@ -156,7 +157,26 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
         </div>
       )}
 
-      {error && (
+      {rateLimited && (
+        <div className="mt-6 max-w-2xl mx-auto bg-gradient-to-br from-violet-600/20 to-cyan-600/20 border border-violet-500/30 rounded-2xl p-8 text-center">
+          <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-7 h-7 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">You&apos;ve used your 3 free audits today</h3>
+          <p className="text-white/60 text-sm mb-6 max-w-sm mx-auto">Sign up free to run unlimited audits, track your score over time, and get weekly automated reports.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href={signupUrl} className="px-8 py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold rounded-xl transition-all text-sm">
+              Start Free — No Credit Card →
+            </a>
+            <button onClick={() => { setStarted(false); setRateLimited(false); setUrl(''); }} className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all text-sm">
+              Try a different URL
+            </button>
+          </div>
+          <p className="text-white/30 text-xs mt-4">Free plan includes 10 audits/month &bull; No credit card required</p>
+        </div>
+      )}
+
+      {!rateLimited && error && (
         <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mt-4 max-w-2xl mx-auto">
           <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-300">{error}</p>

@@ -238,9 +238,10 @@ export async function POST(request: NextRequest) {
 
   if (!allowed) {
     return NextResponse.json({
-      error: 'rate_limited',
-      message: 'You have used your 3 free audits for today. Sign up for unlimited audits.',
-    }, { status: 429 });
+      rateLimited: true,
+      signupUrl: '/signup',
+      message: "You've used all 3 free audits for today. Sign up free to run unlimited audits.",
+    }, { status: 200 });
   }
 
   let body: { url?: string };

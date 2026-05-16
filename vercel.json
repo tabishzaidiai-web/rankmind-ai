@@ -2,6 +2,16 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/cron/weekly-seo-audit",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron/weekly-backlinks",
+      "schedule": "0 9 * * 3"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
