@@ -49,7 +49,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. Subscription Plans and Billing</h2>
-            <p>RankMind AI offers the following subscription tiers: Free, Starter ($29/mo), Growth ($79/mo), and Enterprise ($199/mo). By subscribing to a paid plan, you agree that:</p>
+            <p>RankMind AI offers the following subscription tiers: Free, Starter ($29/mo), Growth ($79/mo), and Enterprise ($149/mo). By subscribing to a paid plan, you agree that:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Subscription fees are billed in advance on a monthly or annual basis.</li>
               <li>All payments are processed securely by Stripe.</li>

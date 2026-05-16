@@ -1,272 +1,321 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as cheerio from 'cheerio';
 import OpenAI from 'openai';
 
-// Simple in-memory rate limiter (resets on cold start; use Vercel KV for persistence)
-const rateLimitMap = new Map<string, number>();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function getClientIP(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
+// In-memory rate limit: 3 requests per IP per day
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
-function isRateLimited(ip: string): boolean {
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
-  const last = rateLimitMap.get(ip);
-  if (last && now - last < 24 * 60 * 60 * 1000) return true;
-  rateLimitMap.set(ip, now);
-  return false;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + dayMs });
+    return { allowed: true, remaining: 2 };
+  }
+  if (entry.count >= 3) return { allowed: false, remaining: 0 };
+  entry.count++;
+  return { allowed: true, remaining: 3 - entry.count };
 }
 
-async function crawlDomain(url: string): Promise<{
-  title: string;
-  description: string;
-  hasHttps: boolean;
-  h1: string;
-  wordCount: number;
-  hasSchema: boolean;
-  hasMeta: boolean;
-  internalLinks: number;
-  imageCount: number;
-  domain: string;
-}> {
-  const domain = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-  const defaults = {
-    title: '', description: '', hasHttps: url.startsWith('https'),
-    h1: '', wordCount: 0, hasSchema: false, hasMeta: false,
-    internalLinks: 0, imageCount: 0, domain,
+// Step 1: Validate URL actually exists
+async function validateUrl(url: string) {
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankMindBot/1.0)' },
+      redirect: 'follow',
+    });
+    return { exists: response.ok || response.status === 405, statusCode: response.status, finalUrl: response.url || url };
+  } catch (error: unknown) {
+    return { exists: false, statusCode: 0, finalUrl: url, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Step 2: Crawl real HTML and extract data
+async function crawlPage(url: string) {
+  const start = Date.now();
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(15000),
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RankMindBot/1.0)' },
+    redirect: 'follow',
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const html = await response.text();
+  const responseTimeMs = Date.now() - start;
+  const $ = cheerio.load(html);
+  let hostname = '';
+  try { hostname = new URL(url).hostname; } catch { hostname = url; }
+
+  return {
+    title: $('title').text().trim() || null,
+    metaDescription: $('meta[name="description"]').attr('content') || null,
+    h1Tags: $('h1').map((_, el) => $(el).text().trim()).get().filter(Boolean),
+    imageCount: $('img').length,
+    imagesWithoutAlt: $('img').filter((_, el) => !$(el).attr('alt') || $(el).attr('alt') === '').length,
+    hasCanonical: $('link[rel="canonical"]').length > 0,
+    hasSchema: $('script[type="application/ld+json"]').length > 0,
+    hasViewport: $('meta[name="viewport"]').length > 0,
+    internalLinks: $(`a[href^="/"], a[href*="${hostname}"]`).length,
+    wordCount: $('body').text().trim().split(/\s+/).filter(Boolean).length,
+    hasHttps: url.startsWith('https://'),
+    responseTimeMs,
+    finalUrl: response.url || url,
   };
+}
+
+type CrawlData = Awaited<ReturnType<typeof crawlPage>>;
+
+// Step 3: Score based ONLY on real crawled data — no AI hallucination for scores
+function calculateRealScores(data: CrawlData) {
+  const scores: Record<string, number> = {};
+  const issues: Array<{ severity: string; issue: string; detail: string; fix: string }> = [];
+  const wins: string[] = [];
+
+  // Title
+  if (!data.title) {
+    scores.title = 0;
+    issues.push({ severity: 'critical', issue: 'Missing page title', detail: 'No <title> tag found. This is one of the most important on-page SEO factors.', fix: 'Add a descriptive title tag between 50–60 characters.' });
+  } else if (data.title.length < 30) {
+    scores.title = 40;
+    issues.push({ severity: 'warning', issue: 'Title too short', detail: `Your title "${data.title.slice(0, 60)}" is only ${data.title.length} characters. Google prefers 50–60 characters.`, fix: 'Expand your title to include your main keyword and value proposition.' });
+  } else if (data.title.length > 60) {
+    scores.title = 70;
+    issues.push({ severity: 'warning', issue: 'Title too long — may be truncated', detail: `Your title is ${data.title.length} characters. Google truncates titles over 60 characters in search results.`, fix: 'Shorten your title to under 60 characters. Keep the primary keyword near the start.' });
+  } else {
+    scores.title = 100;
+    wins.push(`Title tag is ${data.title.length} characters — perfectly optimised`);
+  }
+
+  // Meta description
+  if (!data.metaDescription) {
+    scores.metaDescription = 0;
+    issues.push({ severity: 'critical', issue: 'Missing meta description', detail: 'No meta description found. Google writes its own snippet, which is usually worse for CTR.', fix: 'Add a meta description between 120–155 characters including your primary keyword.' });
+  } else if (data.metaDescription.length < 70) {
+    scores.metaDescription = 50;
+    issues.push({ severity: 'warning', issue: 'Meta description too short', detail: `Your description is only ${data.metaDescription.length} characters. Aim for 120–155 characters.`, fix: 'Expand your meta description to include a compelling value proposition and a call to action.' });
+  } else if (data.metaDescription.length > 160) {
+    scores.metaDescription = 65;
+    issues.push({ severity: 'warning', issue: 'Meta description too long — will be cut off', detail: `Your description is ${data.metaDescription.length} characters. Google cuts off after ~155 characters.`, fix: 'Trim your meta description to 120–155 characters.' });
+  } else {
+    scores.metaDescription = 100;
+    wins.push(`Meta description is ${data.metaDescription.length} characters — well optimised`);
+  }
+
+  // H1
+  if (data.h1Tags.length === 0) {
+    scores.h1 = 0;
+    issues.push({ severity: 'critical', issue: 'No H1 heading found', detail: 'Your page has no H1 tag. Search engines use H1 to understand your main page topic.', fix: 'Add exactly one H1 tag containing your primary keyword.' });
+  } else if (data.h1Tags.length > 1) {
+    scores.h1 = 60;
+    issues.push({ severity: 'warning', issue: `${data.h1Tags.length} H1 tags found — should be exactly 1`, detail: `Multiple H1s confuse search engines. Found: "${data.h1Tags.slice(0, 2).join('", "')}"`, fix: 'Keep one H1 with your main keyword. Convert others to H2 or H3.' });
+  } else {
+    scores.h1 = 100;
+    wins.push(`H1 found: "${data.h1Tags[0].slice(0, 50)}${data.h1Tags[0].length > 50 ? '...' : ''}"`);
+  }
+
+  // HTTPS
+  if (!data.hasHttps) {
+    scores.https = 0;
+    issues.push({ severity: 'critical', issue: 'Site not on HTTPS', detail: "Your site uses HTTP. Google confirmed HTTPS as a ranking factor. Chrome shows 'Not Secure' to users.", fix: "Install an SSL certificate. Most hosts offer free SSL via Let's Encrypt." });
+  } else {
+    scores.https = 100;
+    wins.push('HTTPS enabled — secure connection confirmed');
+  }
+
+  // Speed
+  if (data.responseTimeMs > 3000) {
+    scores.speed = 20;
+    issues.push({ severity: 'critical', issue: `Slow server response — ${(data.responseTimeMs / 1000).toFixed(1)}s`, detail: `Your server took ${(data.responseTimeMs / 1000).toFixed(1)}s to respond. Google recommends under 0.8s.`, fix: 'Check your hosting plan, enable caching, and consider a CDN like Cloudflare.' });
+  } else if (data.responseTimeMs > 1500) {
+    scores.speed = 55;
+    issues.push({ severity: 'warning', issue: `Response time could be faster — ${(data.responseTimeMs / 1000).toFixed(1)}s`, detail: `Server responded in ${(data.responseTimeMs / 1000).toFixed(1)}s. Aim for under 0.8s for competitive rankings.`, fix: 'Enable browser caching, compress images, and consider upgrading your hosting.' });
+  } else {
+    scores.speed = 100;
+    wins.push(`Fast server response — ${(data.responseTimeMs / 1000).toFixed(1)}s`);
+  }
+
+  // Images alt text
+  if (data.imageCount > 0 && data.imagesWithoutAlt > 0) {
+    const pct = Math.round((data.imagesWithoutAlt / data.imageCount) * 100);
+    scores.imageAlt = Math.max(0, 100 - pct * 2);
+    issues.push({ severity: data.imagesWithoutAlt > 5 ? 'critical' : 'warning', issue: `${data.imagesWithoutAlt} image${data.imagesWithoutAlt > 1 ? 's' : ''} missing alt text`, detail: `${data.imagesWithoutAlt} of ${data.imageCount} images have no alt attribute. Alt text helps Google understand images.`, fix: 'Add descriptive alt text to every image. Include your keyword naturally where relevant.' });
+  } else if (data.imageCount > 0) {
+    scores.imageAlt = 100;
+    wins.push(`All ${data.imageCount} images have alt text`);
+  } else {
+    scores.imageAlt = 80;
+  }
+
+  // Canonical
+  if (!data.hasCanonical) {
+    scores.canonical = 30;
+    issues.push({ severity: 'warning', issue: 'No canonical tag found', detail: 'Without a canonical tag, Google may index multiple versions of your page and split your ranking power.', fix: 'Add <link rel="canonical" href="your-page-url"> in the <head> of every page.' });
+  } else {
+    scores.canonical = 100;
+    wins.push('Canonical tag present — prevents duplicate content issues');
+  }
+
+  // Schema
+  if (!data.hasSchema) {
+    scores.schema = 0;
+    issues.push({ severity: 'warning', issue: 'No structured data (schema markup) found', detail: 'Schema markup helps Google display rich results (stars, FAQs, prices). Sites with rich results get significantly higher CTR.', fix: 'Add JSON-LD schema relevant to your business type (LocalBusiness, Product, Article, FAQ).' });
+  } else {
+    scores.schema = 100;
+    wins.push('Structured data (schema markup) found — eligible for rich results');
+  }
+
+  // Mobile
+  if (!data.hasViewport) {
+    scores.mobile = 0;
+    issues.push({ severity: 'critical', issue: 'Not mobile-friendly — missing viewport meta tag', detail: 'No viewport meta tag found. Google uses mobile-first indexing — mobile experience directly affects rankings.', fix: 'Add <meta name="viewport" content="width=device-width, initial-scale=1"> to your <head>.' });
+  } else {
+    scores.mobile = 100;
+    wins.push('Mobile viewport tag present');
+  }
+
+  // Word count
+  if (data.wordCount < 300) {
+    scores.content = 20;
+    issues.push({ severity: 'critical', issue: `Thin content — only ${data.wordCount} words`, detail: `Your page has only ${data.wordCount} words. Google considers pages under 300 words "thin content" and ranks them poorly.`, fix: 'Add at least 500–800 words of valuable, keyword-rich content.' });
+  } else if (data.wordCount < 600) {
+    scores.content = 60;
+    issues.push({ severity: 'warning', issue: `Content could be more comprehensive — ${data.wordCount} words`, detail: `${data.wordCount} words is acceptable but competitors likely have more. Top-ranking pages average 1,200–1,500 words.`, fix: 'Expand your content with FAQs, case studies, or more detail on your key topics.' });
+  } else {
+    scores.content = 100;
+    wins.push(`Good content length — ${data.wordCount} words`);
+  }
+
+  // Weighted overall score
+  const weights: Record<string, number> = { title: 15, metaDescription: 12, h1: 15, https: 20, speed: 15, imageAlt: 8, canonical: 5, schema: 5, mobile: 15, content: 10 };
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+  const weightedScore = Object.entries(scores).reduce((acc, [key, score]) => acc + score * (weights[key] || 5), 0);
+  const overallScore = Math.round(weightedScore / totalWeight);
+
+  return { scores, overallScore, issues, wins };
+}
+
+// Step 4: AI personalised summary using REAL data only
+async function generateActionPlan(data: CrawlData, overallScore: number, issues: Array<{ severity: string; issue: string; fix: string }>) {
+  const topIssues = issues.filter(i => i.severity === 'critical').slice(0, 3).map(i => `- ${i.issue}: ${i.fix}`).join('\n');
+  const prompt = `You are an expert SEO consultant reviewing a website audit.
+
+Website: ${data.finalUrl}
+Page Title: ${data.title || 'MISSING'}
+Meta Description: ${data.metaDescription ? data.metaDescription.slice(0, 100) : 'MISSING'}
+H1: ${data.h1Tags[0] || 'MISSING'}
+Overall SEO Score: ${overallScore}/100
+Word Count: ${data.wordCount}
+
+Top critical issues found:
+${topIssues || 'No critical issues found — site is well optimised'}
+
+Write a 3-sentence personalised summary of this specific website's SEO situation. 
+Be direct and specific — mention the actual page title and actual issues found.
+Do NOT be generic. Do NOT mention scores you cannot verify.
+End with one specific action the owner should take this week.
+Keep it under 80 words.`;
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'RankMindBot/1.0 (+https://rankmind-ai.vercel.app)' },
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 150,
+      temperature: 0.7,
     });
-    clearTimeout(timeout);
-
-    const html = await res.text();
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ||
-                      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
-    const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    const bodyText = bodyMatch ? bodyMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ') : '';
-    const wordCount = bodyText.split(' ').filter(w => w.length > 2).length;
-    const imgMatches = html.match(/<img[^>]+>/gi) || [];
-    const linkMatches = html.match(/<a[^>]+href=["'][^"']*["']/gi) || [];
-    const internalLinks = linkMatches.filter(l => l.includes(domain) || l.includes('href="/')).length;
-
-    return {
-      ...defaults,
-      title: titleMatch?.[1]?.trim() || '',
-      description: descMatch?.[1]?.trim() || '',
-      hasHttps: url.startsWith('https'),
-      h1: h1Match?.[1]?.trim() || '',
-      wordCount,
-      hasSchema: html.includes('application/ld+json'),
-      hasMeta: !!descMatch,
-      internalLinks,
-      imageCount: imgMatches.length,
-    };
+    return response.choices[0].message.content || '';
   } catch {
-    return defaults;
+    return `Your site scored ${overallScore}/100. ${topIssues ? 'We found critical issues that need immediate attention.' : 'Your site is well optimised.'} Sign up to get the full report and automated fixes.`;
   }
 }
 
-function calculateSEOScore(data: ReturnType<typeof crawlDomain> extends Promise<infer T> ? T : never): number {
-  let score = 0;
-  if (data.hasHttps) score += 20;
-  if (data.title && data.title.length >= 30 && data.title.length <= 60) score += 15;
-  else if (data.title) score += 8;
-  if (data.hasMeta && data.description.length >= 120) score += 15;
-  else if (data.hasMeta) score += 8;
-  if (data.h1) score += 10;
-  if (data.hasSchema) score += 10;
-  if (data.wordCount > 500) score += 10;
-  else if (data.wordCount > 200) score += 5;
-  if (data.internalLinks > 5) score += 10;
-  else if (data.internalLinks > 0) score += 5;
-  if (data.imageCount > 0) score += 5;
-  if (data.imageCount > 3) score += 5;
-  return Math.min(score, 100);
-}
+export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+  const { allowed, remaining } = checkRateLimit(ip);
 
-export async function POST(req: NextRequest) {
-  const ip = getClientIP(req);
-
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: 'rate_limited', message: "You've used your free audit today. Start a plan to run unlimited audits." },
-      { status: 429 }
-    );
+  if (!allowed) {
+    return NextResponse.json({
+      error: 'rate_limited',
+      message: 'You have used your 3 free audits for today. Sign up for unlimited audits.',
+    }, { status: 429 });
   }
 
-  let url: string;
+  let body: { url?: string };
+  try { body = await request.json(); } catch {
+    return NextResponse.json({ error: 'invalid_request', message: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const rawUrl = (body.url || '').trim();
+  if (!rawUrl) return NextResponse.json({ error: 'missing_url', message: 'Please provide a URL to audit.' }, { status: 400 });
+
+  const normalised = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+
+  // Step 1: Validate URL exists — reject fake/non-existent URLs
+  const validation = await validateUrl(normalised);
+  if (!validation.exists) {
+    return NextResponse.json({
+      error: 'site_not_found',
+      message: "We couldn't reach this website. Please check the URL and try again.",
+      checkedUrl: normalised,
+    }, { status: 422 });
+  }
+
+  // Step 2: Crawl real HTML
+  let crawledData: CrawlData;
   try {
-    const body = await req.json();
-    url = body.url?.trim() || '';
-    if (!url) throw new Error('No URL');
-    if (!url.startsWith('http')) url = 'https://' + url;
-    new URL(url); // validate
-  } catch {
-    return NextResponse.json({ error: 'invalid_url', message: 'Please enter a valid website URL.' }, { status: 400 });
+    crawledData = await crawlPage(validation.finalUrl || normalised);
+  } catch (err: unknown) {
+    return NextResponse.json({
+      error: 'crawl_failed',
+      message: `We could reach the site but couldn't read its content. ${err instanceof Error ? err.message : ''}`,
+    }, { status: 422 });
   }
 
-  const domain = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  // Step 3: Score based on real data
+  const { scores, overallScore, issues, wins } = calculateRealScores(crawledData);
 
-  // Crawl the domain
-  const crawlData = await crawlDomain(url);
-  const seoScore = calculateSEOScore(crawlData);
+  // Step 4: AI personalised summary
+  const summary = await generateActionPlan(crawledData, overallScore, issues);
 
-  // OpenAI analysis — 3 calls, all GPT-4o-mini
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-  // Call 1: Quick wins
-  let quickWins: Array<{ icon: string; title: string; description: string; effort: string }> = [];
-  try {
-    const qwRes = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      max_tokens: 400,
-      messages: [{
-        role: 'user',
-        content: `Analyse this website SEO data and give exactly 3 specific, actionable quick wins.
-Domain: ${domain}
-Title: "${crawlData.title}"
-Meta description: "${crawlData.description}"
-H1: "${crawlData.h1}"
-Has schema markup: ${crawlData.hasSchema}
-Word count: ${crawlData.wordCount}
-HTTPS: ${crawlData.hasHttps}
-Internal links: ${crawlData.internalLinks}
-
-Return ONLY valid JSON array, no markdown:
-[{"icon":"🔍","title":"Short title","description":"One sentence fix","effort":"Easy|Medium|Hard"}]
-Give 3 items. Be specific to this domain.`
-      }],
-    });
-    const text = qwRes.choices[0].message.content?.trim() || '[]';
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    quickWins = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-  } catch { quickWins = []; }
-
-  // Call 2: Backlink prospects
-  let backlinkProspects: Array<{ type: string; example: string; da: string; relevance: string }> = [];
-  try {
-    const blRes = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      max_tokens: 350,
-      messages: [{
-        role: 'user',
-        content: `For the website ${domain}, suggest 5 realistic backlink acquisition opportunities.
-Return ONLY valid JSON array, no markdown:
-[{"type":"Guest post on industry blogs","example":"e.g. Moz.com, Search Engine Journal","da":"DA 40-60","relevance":"High"}]
-Be specific to the domain's likely niche based on the domain name.`
-      }],
-    });
-    const text = blRes.choices[0].message.content?.trim() || '[]';
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    backlinkProspects = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-  } catch { backlinkProspects = []; }
-
-  // Call 3: GEO visibility + action plan
-  let geoVisibility: Record<string, string> = {};
-  let actionPlan: { weeks: string[]; estimatedResult: string } = { weeks: [], estimatedResult: '' };
-  try {
-    const geoRes = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      max_tokens: 500,
-      messages: [{
-        role: 'user',
-        content: `For the website ${domain} with an SEO score of ${seoScore}/100:
-
-1. Estimate AI search visibility (Not Visible / Partially Visible) for: ChatGPT, Google AI Overviews, Perplexity AI, Microsoft Copilot, Gemini
-   - Sites with score < 50 should mostly be "Not Visible"
-   - Sites with score 50-70 can have 1-2 "Partially Visible"
-   - Sites with score > 70 can have 2-3 "Partially Visible"
-
-2. Create a personalised 4-week action plan
-
-Return ONLY valid JSON, no markdown:
-{
-  "geoVisibility": {
-    "ChatGPT": "Not Visible",
-    "Google AI Overviews": "Not Visible",
-    "Perplexity AI": "Not Visible",
-    "Microsoft Copilot": "Not Visible",
-    "Gemini": "Not Visible"
-  },
-  "actionPlan": {
-    "weeks": [
-      "Week 1: Fix 3 on-page issues identified in your audit",
-      "Week 2: Build 10 DA40+ backlinks in your niche",
-      "Week 3: Publish 2 SEO-optimised blog posts",
-      "Week 4: GEO optimize for ChatGPT + Perplexity visibility"
-    ],
-    "estimatedResult": "+12 positions in Google, appearing in 2 AI search engines"
-  }
-}`
-      }],
-    });
-    const text = geoRes.choices[0].message.content?.trim() || '{}';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-    geoVisibility = parsed.geoVisibility || {};
-    actionPlan = parsed.actionPlan || { weeks: [], estimatedResult: '' };
-  } catch { /* use defaults */ }
-
-  // Google Custom Search for keywords (optional, graceful fallback)
-  let keywords: Array<{ keyword: string; searches: string; position: string; opportunity: number }> = [];
-  const googleKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const googleCx = process.env.GOOGLE_SEARCH_ENGINE_ID || process.env.GOOGLE_SEARCH_CX;
-  if (googleKey && googleCx) {
-    try {
-      const query = encodeURIComponent(`site:${domain} OR ${domain.split('.')[0]} tips guide`);
-      const gRes = await fetch(
-        `https://www.googleapis.com/customsearch/v1?key=${googleKey}&cx=${googleCx}&q=${query}&num=5`
-      );
-      const gData = await gRes.json();
-      if (gData.items) {
-        keywords = gData.items.slice(0, 5).map((item: { title: string }, i: number) => ({
-          keyword: item.title.split(' ').slice(0, 4).join(' '),
-          searches: ['1.2K', '890', '2.4K', '560', '3.1K'][i] || '500',
-          position: i < 2 ? `#${Math.floor(Math.random() * 15) + 5}` : 'Not ranking',
-          opportunity: [92, 87, 74, 61, 55][i] || 50,
-        }));
-      }
-    } catch { /* fallback below */ }
-  }
-
-  // Fallback keywords if Google API not available
-  if (keywords.length === 0) {
-    const niche = domain.split('.')[0];
-    keywords = [
-      { keyword: `${niche} services`, searches: '1.2K', position: '#14', opportunity: 92 },
-      { keyword: `best ${niche}`, searches: '890', position: '#22', opportunity: 87 },
-      { keyword: `${niche} reviews`, searches: '2.4K', position: 'Not ranking', opportunity: 74 },
-      { keyword: `${niche} pricing`, searches: '560', position: 'Not ranking', opportunity: 61 },
-      { keyword: `${niche} alternatives`, searches: '3.1K', position: 'Not ranking', opportunity: 55 },
-    ];
-  }
+  const grade = overallScore >= 80 ? 'A' : overallScore >= 60 ? 'B' : overallScore >= 40 ? 'C' : 'D';
 
   return NextResponse.json({
-    domain,
-    seoScore,
-    crawlData: {
-      title: crawlData.title,
-      description: crawlData.description,
-      hasHttps: crawlData.hasHttps,
-      h1: crawlData.h1,
-      hasSchema: crawlData.hasSchema,
-      wordCount: crawlData.wordCount,
+    success: true,
+    url: crawledData.finalUrl,
+    title: crawledData.title,
+    overallScore,
+    grade,
+    summary,
+    remaining,
+
+    // 4 visible metrics (free)
+    visibleMetrics: {
+      https: { score: scores.https, label: 'HTTPS Security', detail: crawledData.hasHttps ? 'Secure connection confirmed' : 'Site is not using HTTPS' },
+      title: { score: scores.title, label: 'Title Tag', detail: crawledData.title ? `"${crawledData.title.slice(0, 60)}${crawledData.title.length > 60 ? '...' : ''}" (${crawledData.title.length} chars)` : 'No title tag found' },
+      metaDescription: { score: scores.metaDescription, label: 'Meta Description', detail: crawledData.metaDescription ? `${crawledData.metaDescription.length} characters` : 'No meta description found' },
+      mobile: { score: scores.mobile, label: 'Mobile Friendly', detail: crawledData.hasViewport ? 'Viewport meta tag present' : 'Missing viewport meta tag' },
     },
-    quickWins: quickWins.slice(0, 3),
-    keywords: keywords.slice(0, 5),
-    backlinkProspects: backlinkProspects.slice(0, 5),
-    geoVisibility,
-    actionPlan,
+
+    // 6 locked metrics (require signup)
+    lockedMetrics: {
+      speed: scores.speed,
+      h1: scores.h1,
+      imageAlt: scores.imageAlt,
+      schema: scores.schema,
+      canonical: scores.canonical,
+      content: scores.content,
+    },
+
+    topIssues: issues.slice(0, 2),
+    lockedIssueCount: Math.max(0, issues.length - 2),
+    wins: wins.slice(0, 2),
+
+    crawledAt: new Date().toISOString(),
+    wordCount: crawledData.wordCount,
+    imageCount: crawledData.imageCount,
+    responseTimeMs: crawledData.responseTimeMs,
   });
 }
