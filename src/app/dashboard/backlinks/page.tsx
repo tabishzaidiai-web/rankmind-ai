@@ -38,6 +38,8 @@ export default function BacklinksPage() {
   const [error, setError] = useState('');
   const [selectedOpp, setSelectedOpp] = useState<BacklinkOpportunity | null>(null);
 
+  const isConfigError = error.includes('not configured') || error.includes('restricted to specific sites') || error.includes('programmablesearchengine');
+
   const handleRun = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
@@ -92,14 +94,15 @@ export default function BacklinksPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Your Niche (optional)</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Your Business Niche <span className="text-teal-400">*</span></label>
                 <input
                   type="text"
                   value={niche}
                   onChange={(e) => setNiche(e.target.value)}
-                  placeholder="e.g. SaaS, e-commerce, health..."
+                  placeholder='e.g. "digital marketing", "e-commerce fashion", "SaaS tools"'
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-teal-500 transition-colors text-sm"
                 />
+                <p className="text-xs text-white/30 mt-1">Be specific — this determines the quality of prospects found</p>
               </div>
             </div>
             <button
@@ -119,9 +122,24 @@ export default function BacklinksPage() {
 
           {/* Error */}
           {error && (
-            <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
+            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400 mt-0.5" />
+                <div>
+                  <p className="text-red-400 font-medium mb-1">Could not find backlink prospects</p>
+                  <p className="text-red-300/80">{error}</p>
+                  {isConfigError && (
+                    <p className="text-white/40 text-xs mt-2">
+                      Tip: Go to{' '}
+                      <a href="https://programmablesearchengine.google.com" target="_blank" rel="noopener noreferrer" className="text-teal-400 underline">programmablesearchengine.google.com</a>
+                      {' '}→ Edit your engine → Enable &quot;Search the entire web&quot;
+                    </p>
+                  )}
+                  {!isConfigError && (
+                    <p className="text-white/40 text-xs mt-2">Tip: Try a broader niche keyword (e.g. &quot;digital marketing&quot; instead of a very specific phrase)</p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

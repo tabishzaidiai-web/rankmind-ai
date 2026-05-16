@@ -25,12 +25,13 @@ export async function POST(request: NextRequest) {
       targetUrl = 'https://' + targetUrl;
     }
 
-    const result = await runBacklinkCampaign(targetUrl, targetCount, user.email);
+    const result = await runBacklinkCampaign(targetUrl, targetCount, user.email, niche);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Backlink agent error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to run backlink agent. Please try again.';
     return NextResponse.json(
-      { error: 'Failed to run backlink agent. Please try again.' },
+      { error: message },
       { status: 500 }
     );
   }

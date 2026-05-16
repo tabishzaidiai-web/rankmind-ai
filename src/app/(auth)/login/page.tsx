@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Mail, Lock, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Eye, EyeOff, Loader2, Info } from 'lucide-react';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectMessage = searchParams.get('message');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +81,14 @@ export default function LoginPage() {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
         <p className="text-white/50 text-sm mb-6">Sign in to your RankMind AI account</p>
+
+        {/* Redirect message banner */}
+        {redirectMessage && !error && (
+          <div className="flex items-start gap-2 p-3 rounded-xl text-sm mb-5 bg-blue-500/10 border border-blue-500/20 text-blue-300">
+            <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>{redirectMessage}</span>
+          </div>
+        )}
 
         {/* Rate limit / error banner */}
         {error && (
@@ -178,5 +188,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

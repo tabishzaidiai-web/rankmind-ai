@@ -13,10 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { url, topic, keyword, contentType = 'blog_post', wordCount = 1000 } = body;
+    const { url, topic, keyword, niche, contentType = 'blog_post', wordCount = 1000 } = body;
 
-    if (!url && !topic) {
-      return NextResponse.json({ error: 'URL or topic is required' }, { status: 400 });
+    if (!topic || topic.trim().length < 5) {
+      return NextResponse.json({ error: 'Please enter a specific article topic (at least 5 characters).' }, { status: 400 });
+    }
+    if (!keyword || keyword.trim().length < 2) {
+      return NextResponse.json({ error: 'Please enter a target keyword.' }, { status: 400 });
     }
 
     // Step 1: Gather context from the website if URL is provided
@@ -37,6 +40,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const effectiveNiche = niche?.trim() || '';
+
     // Step 2: Generate content outline + metadata
     const outline = await agentReason<{
       title: string;
@@ -46,42 +51,46 @@ export async function POST(request: NextRequest) {
       word_count: number;
       content_type: string;
     }>(
-      'You are an expert SEO content strategist. Create a detailed content outline. Return ONLY valid JSON.',
-      `${siteContext}
-Topic: ${topic || keyword || 'general SEO'}
-Keyword: ${keyword || topic || 'SEO'}
+      `You are an expert SEO content strategist. Create a detailed content outline. CRITICAL: The outline MUST be specifically about the provided topic and niche — do NOT deviate to other industries. Return ONLY valid JSON.`,
+      `${siteContext ? siteContext + '\n' : ''}Topic: ${topic}
+Keyword: ${keyword}
+Niche/Industry: ${effectiveNiche || 'infer from topic and keyword'}
 Content Type: ${contentType}
 Target Word Count: ${wordCount}
 
-Return JSON:
+Return JSON (all sections must be specifically about "${topic}" in the "${effectiveNiche || 'relevant'}" niche):
 {
-  "title": "compelling SEO-optimized title (60-70 chars)",
-  "meta_description": "meta description 150-160 chars with keyword",
-  "target_keyword": "primary keyword",
-  "sections": ["H2 section 1", "H2 section 2", "H2 section 3", "H2 section 4", "H2 section 5"],
+  "title": "H1 title that contains the exact keyword \"${keyword}\" (60-70 chars)",
+  "meta_description": "120-155 chars, includes \"${keyword}\", has a call to action",
+  "target_keyword": "${keyword}",
+  "sections": ["H2 section 1 about ${topic}", "H2 section 2 about ${topic}", "H2 section 3 about ${topic}", "FAQ About ${keyword}", "Conclusion"],
   "word_count": ${wordCount},
   "content_type": "${contentType}"
 }`
     );
 
-    // Step 3: Write the full article
+    // Step 3: Write the full article with niche-locked system prompt
     const content = await agentWrite(
-      `You are an expert SEO and GEO content writer. Write a high-quality article that:
-1. Answers questions directly and clearly (AI search engines prefer direct answers)
-2. Uses structured H2/H3 headings throughout
-3. Includes specific statistics, facts, and examples
-4. Has a clear FAQ section at the end (5 Q&As for AI search visibility)
-5. Is optimized for the target keyword naturally (not stuffed)
-6. Demonstrates E-E-A-T (Experience, Expertise, Authoritativeness, Trust)
-7. Ends with a clear conclusion and call-to-action
-8. Is formatted in clean Markdown`,
-      `Title: ${outline.title}
-Target Keyword: ${outline.target_keyword}
+      `You are an expert SEO content writer specialising in ${effectiveNiche || 'the topic provided'}.
+
+CRITICAL RULES — you MUST follow these without exception:
+1. Write ONLY about the topic and niche provided — NEVER deviate to digital marketing, SaaS, or any other unrelated industry
+2. The target keyword "${keyword}" MUST appear in: the H1 title, the first 100 words, at least 2 subheadings, and the conclusion
+3. Every piece of advice, example, and case study must be specific to "${effectiveNiche || topic}"
+4. Do NOT write generic content — be specific to the exact niche and topic
+5. Include a FAQ section with questions specific to "${keyword}" in "${effectiveNiche || 'this industry'}"
+6. Demonstrate E-E-A-T (Experience, Expertise, Authoritativeness, Trust)
+7. Format in clean Markdown`,
+      `ARTICLE SPECIFICATIONS:
+Topic: ${topic}
+Target Keyword: ${keyword}
+Niche/Industry: ${effectiveNiche || 'infer from topic'}
+Title: ${outline.title}
 Sections: ${outline.sections.join(', ')}
 Target Word Count: ${outline.word_count}
 ${siteContext ? `\nSite Context:\n${siteContext}` : ''}
 
-Write the complete article now in Markdown format.`,
+Write the complete article now in Markdown format. Remember: this is for a ${effectiveNiche || 'business'} audience — keep ALL content relevant to "${topic}" and "${keyword}".`,
       Math.min(wordCount * 2, 3000)
     );
 

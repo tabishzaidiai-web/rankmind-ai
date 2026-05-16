@@ -34,9 +34,9 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname.startsWith('/dashboard')
   ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('message', 'Sign in to access your agent dashboard');
+    return NextResponse.redirect(loginUrl);
   }
 
   // Redirect logged-in users away from auth pages

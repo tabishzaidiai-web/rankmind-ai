@@ -43,6 +43,7 @@ export default function ContentPage() {
   const [url, setUrl] = useState('');
   const [topic, setTopic] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [niche, setNiche] = useState('');
   const [contentType, setContentType] = useState('blog_post');
   const [wordCount, setWordCount] = useState(1000);
   const [loading, setLoading] = useState(false);
@@ -61,7 +62,7 @@ export default function ContentPage() {
       const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, topic, keyword, contentType, wordCount }),
+        body: JSON.stringify({ url, topic, keyword, niche, contentType, wordCount }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Content generation failed');
@@ -119,26 +120,50 @@ export default function ContentPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Content Topic</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Article Topic <span className="text-amber-400">*</span></label>
                 <input
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. How to improve SEO rankings"
+                  placeholder="e.g. How to fix a leaking pipe"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-amber-500 transition-colors text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Target Keyword</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Target Keyword <span className="text-amber-400">*</span></label>
                 <input
                   type="text"
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="e.g. SEO optimization tips"
+                  placeholder="e.g. emergency plumber Dubai"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-amber-500 transition-colors text-sm"
                 />
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Your Business Niche <span className="text-amber-400">*</span></label>
+              <input
+                type="text"
+                value={niche}
+                onChange={(e) => setNiche(e.target.value)}
+                placeholder={`e.g. "plumbing services", "women's fashion", "accounting software"`}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-amber-500 transition-colors text-sm"
+              />
+              <p className="text-xs text-white/30 mt-1">This ensures the article matches your industry — not a generic topic</p>
+            </div>
+
+            {topic && keyword && (
+              <div className="bg-white/5 border border-amber-500/20 rounded-xl p-3 text-sm">
+                <p className="font-medium text-white/70 mb-2">Article Preview</p>
+                <p className="text-white/50"><span className="text-white/30">Topic:</span> {topic}</p>
+                <p className="text-white/50"><span className="text-white/30">Keyword:</span> {keyword}</p>
+                <p className={niche ? 'text-white/50' : 'text-amber-400/70'}>
+                  <span className="text-white/30">Niche:</span> {niche || '⚠️ Not specified — article may be off-topic'}
+                </p>
+                <p className="text-white/30 text-xs mt-1">Estimated length: 900–1,200 words · Includes FAQ + Schema markup</p>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 items-end">
               <div className="flex-1">

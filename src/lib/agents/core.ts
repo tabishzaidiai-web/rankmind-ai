@@ -74,7 +74,8 @@ export async function agentReason<T>(
 export async function agentWrite(
   systemPrompt: string,
   userPrompt: string,
-  maxTokens = 2000
+  maxTokens = 2000,
+  temperature = 0.4
 ): Promise<string> {
   const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
@@ -82,7 +83,7 @@ export async function agentWrite(
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.7,
+    temperature,
     max_tokens: maxTokens,
   });
 

@@ -59,19 +59,39 @@ async function findAndQualifyOpportunities(
   niche: string,
   keyword: string
 ): Promise<BacklinkOpportunity[]> {
+  // Validate Google API env vars before making any calls
+  if (!process.env.GOOGLE_SEARCH_API_KEY) {
+    throw new Error('Google Search API key not configured. Please add GOOGLE_SEARCH_API_KEY to your environment variables.');
+  }
+  if (!process.env.GOOGLE_SEARCH_ENGINE_ID && !process.env.GOOGLE_SEARCH_CX) {
+    throw new Error('Google Search Engine ID not configured. Please add GOOGLE_SEARCH_ENGINE_ID to your environment variables.');
+  }
+
   const queries = [
-    `"write for us" ${niche}`,
-    `"guest post" ${keyword} submit`,
-    `${niche} "become a contributor"`,
+    `${niche} "write for us"`,
+    `${niche} "guest post" guidelines`,
+    `"${keyword}" "submit article"`,
+    `${niche} blog "become a contributor"`,
   ];
 
+  console.log('[LinkBot] Starting backlink search for niche:', niche, '| keyword:', keyword);
+  console.log('[LinkBot] Queries:', queries);
+
   const allResults: Array<{ url: string; title: string; snippet: string }> = [];
-  for (const query of queries) {
+  const searchPromises = queries.map(async (query) => {
     try {
-      const results = await googleSearch(query, 5);
-      allResults.push(...results);
-    } catch { /* continue */ }
-  }
+      const results = await googleSearch(query, 10);
+      console.log(`[LinkBot] Query "${query}" → ${results.length} results`);
+      return results;
+    } catch (err) {
+      console.error(`[LinkBot] Query failed: "${query}"`, err instanceof Error ? err.message : err);
+      return [];
+    }
+  });
+
+  const settled = await Promise.all(searchPromises);
+  settled.forEach(r => allResults.push(...r));
+  console.log('[LinkBot] Total raw results:', allResults.length);
 
   // Deduplicate by domain
   const seen = new Set<string>();
@@ -82,9 +102,17 @@ async function findAndQualifyOpportunities(
       seen.add(domain);
       return true;
     } catch { return false; }
-  }).slice(0, 10);
+  }).slice(0, 15);
 
-  if (unique.length === 0) return [];
+  console.log('[LinkBot] Unique prospects after dedup:', unique.length);
+
+  if (unique.length === 0) {
+    throw new Error(
+      `No backlink prospects found for "${niche}". This usually means your Google Custom Search Engine is restricted to specific sites. ` +
+      `Please go to programmablesearchengine.google.com, edit your engine, and enable "Search the entire web". ` +
+      `Also try a broader niche keyword (e.g. "digital marketing" instead of a very specific phrase).`
+    );
+  }
 
   // Qualify all at once with a single AI call
   const qualified = await agentReason<{
@@ -162,10 +190,14 @@ Return: { "emails": [{ "url": "...", "subject": "...", "body": "..." }] }`
 export async function runBacklinkCampaign(
   clientUrl: string,
   targetCount = 8,
-  clientEmail?: string
+  clientEmail?: string,
+  nicheOverride?: string
 ): Promise<BacklinkCampaign> {
   const analysis = await analyzeClientSite(clientUrl);
-  const opps = await findAndQualifyOpportunities(analysis.niche, analysis.primary_keyword);
+  // Use the niche from the form if provided — it's more accurate than AI inference
+  const effectiveNiche = (nicheOverride && nicheOverride.trim().length > 2) ? nicheOverride.trim() : analysis.niche;
+  console.log('[LinkBot] Effective niche:', effectiveNiche, '| primary keyword:', analysis.primary_keyword);
+  const opps = await findAndQualifyOpportunities(effectiveNiche, analysis.primary_keyword);
   const oppsWithEmails = await writeOutreachEmails(opps, clientUrl, analysis.niche, analysis.unique_value_prop);
 
   const campaign: BacklinkCampaign = {
