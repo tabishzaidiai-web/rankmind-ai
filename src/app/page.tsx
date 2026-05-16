@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import AgentDemo from '@/components/AgentDemo';
+import RankEverywhere from '@/components/RankEverywhere';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, Star, Zap, ChevronDown, MessageCircle } from 'lucide-react';
@@ -216,6 +218,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Interactive Agent Demo */}
+      <AgentDemo />
+
       {/* Stats */}
       <section className="py-12 px-6 border-y border-white/5">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -276,6 +281,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Rank Everywhere */}
+      <RankEverywhere />
 
       {/* How It Works — with connector line */}
       <section id="how-it-works" className="py-24 px-6 bg-white/[0.02]">
