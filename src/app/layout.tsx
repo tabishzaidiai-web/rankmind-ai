@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import CookieBanner from '@/components/CookieBanner';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://rankmind-ai.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mind.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     apple: '/logo-icon-v2.png',
   },
   alternates: {
-    canonical: BASE_URL,
+    canonical: '/',
   },
 };
 

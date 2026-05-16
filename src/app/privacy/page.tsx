@@ -27,7 +27,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Introduction</h2>
-            <p>RankMind AI (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at <a href="https://rankmind-ai.vercel.app" className="text-violet-400 hover:underline">rankmind-ai.vercel.app</a>.</p>
+            <p>RankMind AI (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at <a href="https://www.rank-mind.com" className="text-violet-400 hover:underline">www.rank-mind.com</a>.</p>
             <p className="mt-3">This policy is compliant with the EU General Data Protection Regulation (GDPR), the UAE Personal Data Protection Law (PDPL Federal Decree-Law No. 45 of 2021), and other applicable data protection laws.</p>
           </section>
 

@@ -137,7 +137,7 @@ export async function fetchPageContent(url: string): Promise<{
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; RankMindBot/1.0; +https://rankmind-ai.vercel.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; RankMindBot/1.0; +https://www.rank-mind.com)',
       },
       signal: AbortSignal.timeout(15000),
     });
@@ -256,7 +256,7 @@ export async function sendEmail(params: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: params.from || 'RankMind AI <noreply@rankmind-ai.vercel.app>',
+        from: params.from || 'RankMind AI <noreply@www.rank-mind.com>',
         to: params.to,
         subject: params.subject,
         html: params.html,

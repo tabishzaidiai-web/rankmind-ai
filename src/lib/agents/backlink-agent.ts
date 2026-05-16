@@ -230,7 +230,7 @@ h2{color:#0d9488}a{color:#0d9488}
 </div>
 <div style="text-align:center;padding:20px;color:#666">
   <p>Powered by <strong>RankMind AI</strong></p>
-  <a href="https://rankmind-ai.vercel.app/dashboard/backlinks">View Full Dashboard</a>
+  <a href="https://www.rank-mind.com/dashboard/backlinks">View Full Dashboard</a>
 </div>
 </body></html>`;
 }

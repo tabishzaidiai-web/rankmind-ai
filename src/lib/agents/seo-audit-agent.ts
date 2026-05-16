@@ -383,7 +383,7 @@ function generateAuditEmailHTML(result: SEOAuditResult): string {
       
       <div style="text-align:center; padding: 20px; color: #666;">
         <p>Powered by <strong>RankMind AI</strong> — Real SEO, Real Results</p>
-        <a href="https://rankmind-ai.vercel.app/dashboard" style="color:#8b5cf6">View Full Dashboard</a>
+        <a href="https://www.rank-mind.com/dashboard" style="color:#8b5cf6">View Full Dashboard</a>
       </div>
     </body>
     </html>

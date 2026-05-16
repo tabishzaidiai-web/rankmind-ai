@@ -171,7 +171,7 @@ h2{color:#d97706}a{color:#d97706}
 </div>
 <div style="text-align:center;padding:20px;color:#666">
   <p>Powered by <strong>RankMind AI</strong></p>
-  <a href="https://rankmind-ai.vercel.app/dashboard/content">View Dashboard</a>
+  <a href="https://www.rank-mind.com/dashboard/content">View Dashboard</a>
 </div>
 </body></html>`;
 }

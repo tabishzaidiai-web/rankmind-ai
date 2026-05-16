@@ -307,7 +307,7 @@ export async function sendSubscriptionWarning(
           <li>Your data and reports will be preserved</li>
         </ul>
         <p>Renew now to keep your SEO campaigns running without interruption.</p>
-        <a href="https://rankmind-ai.vercel.app/dashboard/billing" 
+        <a href="https://www.rank-mind.com/dashboard/billing" 
            style="background: #6366f1; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 16px;">
           Renew Subscription →
         </a>
