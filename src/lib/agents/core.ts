@@ -91,32 +91,44 @@ export async function agentWrite(
 }
 
 /**
- * Google Custom Search — finds real websites for backlink opportunities
+ * Serper.dev search — returns real Google results via a clean JSON API.
+ * Replaces Google PSE which in 2026 no longer supports full-web search for new engines.
  */
 export async function googleSearch(
   query: string,
   numResults = 10
 ): Promise<Array<{ title: string; url: string; snippet: string }>> {
-  const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_ENGINE_ID || process.env.GOOGLE_SEARCH_CX;
+  const apiKey = process.env.SERPER_API_KEY;
 
-  if (!apiKey || !cx) {
-    throw new Error('Google Search API key or CX not configured');
+  if (!apiKey) {
+    throw new Error(
+      'SERPER_API_KEY is not configured. Add it to your Vercel environment variables. ' +
+      'Get a free key at https://serper.dev (2,500 free queries included).'
+    );
   }
 
-  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=${Math.min(numResults, 10)}`;
+  const response = await fetch('https://google.serper.dev/search', {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ q: query, num: Math.min(numResults, 10) }),
+  });
 
-  const response = await fetch(url);
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(`Google Search API error: ${data.error?.message || 'Unknown error'}`);
+    throw new Error(
+      `Serper API error ${response.status}: ${data.message || JSON.stringify(data).slice(0, 200)}`
+    );
   }
 
-  return (data.items || []).map((item: { title: string; link: string; snippet: string }) => ({
-    title: item.title,
-    url: item.link,
-    snippet: item.snippet,
+  // Serper returns results under data.organic
+  return (data.organic || []).map((item: { title: string; link: string; snippet: string }) => ({
+    title: item.title || '',
+    url: item.link || '',
+    snippet: item.snippet || '',
   }));
 }
 

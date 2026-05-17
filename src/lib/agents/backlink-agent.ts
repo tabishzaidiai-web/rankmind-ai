@@ -55,27 +55,42 @@ Return: { "niche": "...", "primary_keyword": "...", "secondary_keywords": ["k1",
   );
 }
 
+// Domains that are never useful as backlink prospects
+const BLOCKED_DOMAINS = new Set([
+  'youtube.com', 'facebook.com', 'twitter.com', 'x.com', 'instagram.com',
+  'linkedin.com', 'pinterest.com', 'reddit.com', 'tiktok.com', 'snapchat.com',
+  'wikipedia.org', 'amazon.com', 'ebay.com', 'google.com', 'bing.com',
+  'yahoo.com', 'quora.com', 'medium.com', 'substack.com',
+]);
+
 async function findAndQualifyOpportunities(
   niche: string,
-  keyword: string
+  keyword: string,
+  clientDomain?: string
 ): Promise<BacklinkOpportunity[]> {
-  // Validate Google API env vars before making any calls
-  if (!process.env.GOOGLE_SEARCH_API_KEY) {
-    throw new Error('Google Search API key not configured. Please add GOOGLE_SEARCH_API_KEY to your environment variables.');
-  }
-  if (!process.env.GOOGLE_SEARCH_ENGINE_ID && !process.env.GOOGLE_SEARCH_CX) {
-    throw new Error('Google Search Engine ID not configured. Please add GOOGLE_SEARCH_ENGINE_ID to your environment variables.');
+  // Validate Serper API key before making any calls
+  if (!process.env.SERPER_API_KEY) {
+    throw new Error(
+      'SERPER_API_KEY is not configured. Add it to your Vercel environment variables. ' +
+      'Get a free key at https://serper.dev (2,500 free queries included).'
+    );
   }
 
+  // 6 query types as specified: guest posts, resource pages, competitor backlinks, directories
   const queries = [
+    // Guest post opportunities
     `${niche} "write for us"`,
-    `${niche} "guest post" guidelines`,
-    `"${keyword}" "submit article"`,
-    `${niche} blog "become a contributor"`,
+    `${niche} "guest post"`,
+    `${niche} "submit a post"`,
+    // Resource pages
+    `${niche} "useful links"`,
+    `${niche} "resources"`,
+    // Niche directories
+    `${niche} directory site:*.com`,
   ];
 
-  console.log('[LinkBot] Starting backlink search for niche:', niche, '| keyword:', keyword);
-  console.log('[LinkBot] Queries:', queries);
+  console.log('[LinkBot] Starting Serper search for niche:', niche, '| keyword:', keyword);
+  console.log('[LinkBot] Running', queries.length, 'queries via Serper API');
 
   const allResults: Array<{ url: string; title: string; snippet: string }> = [];
   const searchPromises = queries.map(async (query) => {
@@ -93,24 +108,30 @@ async function findAndQualifyOpportunities(
   settled.forEach(r => allResults.push(...r));
   console.log('[LinkBot] Total raw results:', allResults.length);
 
-  // Deduplicate by domain
+  // Filter: remove blocked domains, social media, and the client's own domain
   const seen = new Set<string>();
   const unique = allResults.filter((r) => {
+    if (!r.url) return false;
     try {
-      const domain = new URL(r.url).hostname;
-      if (seen.has(domain)) return false;
-      seen.add(domain);
+      const hostname = new URL(r.url).hostname.replace(/^www\./, '');
+      // Skip blocked domains
+      if (BLOCKED_DOMAINS.has(hostname)) return false;
+      // Skip client's own domain
+      if (clientDomain && hostname.includes(clientDomain.replace(/^www\./, ''))) return false;
+      // Deduplicate by domain
+      if (seen.has(hostname)) return false;
+      seen.add(hostname);
       return true;
     } catch { return false; }
-  }).slice(0, 15);
+  }).slice(0, 20);
 
-  console.log('[LinkBot] Unique prospects after dedup:', unique.length);
+  console.log('[LinkBot] Unique filtered prospects:', unique.length);
 
   if (unique.length === 0) {
     throw new Error(
-      `No backlink prospects found for "${niche}". This usually means your Google Custom Search Engine is restricted to specific sites. ` +
-      `Please go to programmablesearchengine.google.com, edit your engine, and enable "Search the entire web". ` +
-      `Also try a broader niche keyword (e.g. "digital marketing" instead of a very specific phrase).`
+      `No backlink prospects found for "${niche}". ` +
+      `Try a broader niche keyword (e.g. "digital marketing" instead of a very specific phrase). ` +
+      `If the problem persists, verify your SERPER_API_KEY is set correctly in Vercel environment variables.`
     );
   }
 
@@ -196,8 +217,11 @@ export async function runBacklinkCampaign(
   const analysis = await analyzeClientSite(clientUrl);
   // Use the niche from the form if provided — it's more accurate than AI inference
   const effectiveNiche = (nicheOverride && nicheOverride.trim().length > 2) ? nicheOverride.trim() : analysis.niche;
-  console.log('[LinkBot] Effective niche:', effectiveNiche, '| primary keyword:', analysis.primary_keyword);
-  const opps = await findAndQualifyOpportunities(effectiveNiche, analysis.primary_keyword);
+  // Extract client domain for filtering (don't return the client's own site as a prospect)
+  let clientDomain: string | undefined;
+  try { clientDomain = new URL(clientUrl).hostname; } catch { clientDomain = undefined; }
+  console.log('[LinkBot] Effective niche:', effectiveNiche, '| primary keyword:', analysis.primary_keyword, '| client domain:', clientDomain);
+  const opps = await findAndQualifyOpportunities(effectiveNiche, analysis.primary_keyword, clientDomain);
   const oppsWithEmails = await writeOutreachEmails(opps, clientUrl, analysis.niche, analysis.unique_value_prop);
 
   const campaign: BacklinkCampaign = {
