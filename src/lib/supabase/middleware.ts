@@ -29,25 +29,41 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/dashboard')
-  ) {
+  const pathname = request.nextUrl.pathname;
+
+  // Protected routes — redirect unauthenticated users to login
+  if (!user && pathname.startsWith('/dashboard')) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('message', 'Sign in to access your agent dashboard');
     return NextResponse.redirect(loginUrl);
   }
 
+  // For authenticated users on dashboard routes (except onboarding itself)
+  if (user && pathname.startsWith('/dashboard') && pathname !== '/dashboard/onboarding') {
+    // Check if user has completed onboarding
+    const { data: profile } = await supabase
+      .from('users')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single();
+
+    // If no profile row or onboarding not completed, redirect to onboarding
+    if (!profile || profile.onboarding_completed === false) {
+      const onboardingUrl = new URL('/dashboard/onboarding', request.url);
+      return NextResponse.redirect(onboardingUrl);
+    }
+  }
+
   // Redirect logged-in users away from auth pages
-  if (
-    user &&
-    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
-  ) {
+  if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone();
-    // New users (created within last 60 seconds) go to onboarding
-    const isNewUser = user.created_at && (Date.now() - new Date(user.created_at).getTime()) < 60_000;
-    url.pathname = isNewUser ? '/dashboard/onboarding' : '/dashboard';
+    // Check onboarding status to decide where to send them
+    const { data: profile } = await supabase
+      .from('users')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single();
+    url.pathname = (!profile || !profile.onboarding_completed) ? '/dashboard/onboarding' : '/dashboard';
     return NextResponse.redirect(url);
   }
 

@@ -66,9 +66,16 @@ export default function OnboardingPage() {
         if (kwRows.length > 0) await supabase.from('keywords').insert(kwRows);
         fetch('/api/seo-audit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: websiteUrl, websiteId: website.id, background: true }) }).catch(() => {});
       }
-      await supabase.from('users').update({ onboarding_completed: true, plan_tier: selectedPlan }).eq('id', user.id);
+      const { error: updateErr } = await supabase
+        .from('users')
+        .update({ onboarding_completed: true, plan: selectedPlan })
+        .eq('id', user.id);
+      if (updateErr) {
+        console.error('Failed to update user profile:', updateErr);
+        // Still redirect — website was saved successfully
+      }
       router.push('/dashboard?onboarded=1');
-    } catch (err) { console.error(err); setSaving(false); }
+    } catch (err) { console.error('Onboarding error:', err); setSaving(false); }
   };
 
   const filteredCountries = COUNTRIES.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase()));

@@ -83,6 +83,28 @@ export default function BacklinksPage() {
 
   const isConfigError = error.includes('not configured') || error.includes('SERPER_API_KEY');
 
+  // Pre-fill URL and niche from saved website
+  useEffect(() => {
+    const prefill = async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: website } = await supabase
+          .from('websites')
+          .select('url, niche')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .single();
+        if (website?.url) setUrl(website.url);
+        if (website?.niche) setNiche(website.niche);
+      } catch { /* no website saved yet */ }
+    };
+    prefill();
+  }, []);
+
   const handleRun = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;

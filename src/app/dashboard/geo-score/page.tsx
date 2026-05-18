@@ -106,6 +106,27 @@ export default function GEOScorePage() {
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState<string | null>('visibility');
 
+  // Pre-fill URL from saved website
+  useEffect(() => {
+    const prefillUrl = async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: website } = await supabase
+          .from('websites')
+          .select('url')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .single();
+        if (website?.url) setUrl(website.url);
+      } catch { /* no website saved yet */ }
+    };
+    prefillUrl();
+  }, []);
+
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
