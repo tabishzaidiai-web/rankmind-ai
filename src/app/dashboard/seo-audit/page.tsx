@@ -1,8 +1,30 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3 } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3, ArrowRight } from 'lucide-react';
+
+const WHATS_NEXT_SEO = [
+  {
+    href: '/dashboard/backlinks',
+    avatar: '/agent-linkbot-transparent.png',
+    name: 'LinkBot',
+    desc: 'Now build backlinks to boost the rankings you just audited',
+    glow: 'rgba(13,148,136,0.35)',
+    color: '#0d9488',
+    border: 'border-teal-500/30',
+  },
+  {
+    href: '/dashboard/content',
+    avatar: '/agent-contentai-transparent.png',
+    name: 'ContentAI',
+    desc: 'Write optimised content targeting the keywords found in this audit',
+    glow: 'rgba(245,158,11,0.35)',
+    color: '#d97706',
+    border: 'border-amber-500/30',
+  },
+];
 
 interface AuditResult {
   url: string;
@@ -115,6 +137,21 @@ function ScoreTrendChart({ history }: { history: AuditHistoryItem[] }) {
   );
 }
 
+function ProgressStep({ label, delay }: { label: string; delay: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  if (!visible) return null;
+  return (
+    <div className="flex items-center gap-2 text-sm text-white/60 animate-in fade-in slide-in-from-left-2 duration-300">
+      <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400 flex-shrink-0" />
+      {label}
+    </div>
+  );
+}
+
 export default function SEOAuditPage() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -206,9 +243,15 @@ export default function SEOAuditPage() {
               </button>
             </div>
             {loading && (
-              <div className="mt-4 flex items-center gap-2 text-sm text-white/50">
-                <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-                AI is crawling your website, analyzing SEO factors, and generating recommendations...
+              <div className="mt-5 space-y-2">
+                {[
+                  { label: 'Crawling website & extracting metadata', delay: 0 },
+                  { label: 'Analysing on-page SEO factors', delay: 600 },
+                  { label: 'Running technical SEO checks', delay: 1400 },
+                  { label: 'Generating AI recommendations', delay: 2400 },
+                ].map((step, i) => (
+                  <ProgressStep key={i} label={step.label} delay={step.delay} />
+                ))}
               </div>
             )}
           </form>
@@ -425,6 +468,28 @@ export default function SEOAuditPage() {
               </ul>
             </div>
           )}
+
+          {/* What's Next? */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+            <h3 className="font-semibold text-white mb-1">What&apos;s Next?</h3>
+            <p className="text-sm text-white/40 mb-4">Keep the momentum going — run another agent</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {WHATS_NEXT_SEO.map((agent) => (
+                <Link
+                  key={agent.name}
+                  href={agent.href}
+                  className={`group flex items-center gap-4 p-4 bg-white/5 border ${agent.border} rounded-xl hover:bg-white/10 transition-all cursor-pointer`}
+                >
+                  <Image src={agent.avatar} alt={agent.name} width={44} height={44} className="w-11 h-11 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${agent.glow})` }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white text-sm">{agent.name}</div>
+                    <div className="text-xs text-white/40 mt-0.5 leading-snug">{agent.desc}</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0 text-white/30 group-hover:text-white transition-colors" style={{ color: agent.color }} />
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

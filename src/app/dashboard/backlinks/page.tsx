@@ -1,9 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star, Link2 } from 'lucide-react';
+import Link from 'next/link';
+import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star, Link2, Copy, Check, X, ArrowRight } from 'lucide-react';
+
+function ProgressStep({ label, delay }: { label: string; delay: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  if (!visible) return null;
+  return (
+    <div className="flex items-center gap-2 text-sm text-white/60 animate-in fade-in slide-in-from-left-2 duration-300">
+      <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-400 flex-shrink-0" />
+      {label}
+    </div>
+  );
+}
 
 interface BacklinkOpportunity {
+  id?: string;
   domain: string;
   url: string;
   title: string;
@@ -30,6 +47,30 @@ interface BacklinkCampaign {
   next_steps: string[];
 }
 
+// What's Next cards after backlinks completes
+const WHATS_NEXT = [
+  {
+    href: '/dashboard/geo-score',
+    avatar: '/agent-geog-transparent.png',
+    name: 'GEO-G',
+    title: 'GEO Optimizer',
+    desc: 'Optimise for AI search: ChatGPT, Perplexity, Google AI Overviews',
+    glow: 'rgba(59,130,246,0.35)',
+    color: '#2563eb',
+    border: 'border-blue-500/30',
+  },
+  {
+    href: '/dashboard/content',
+    avatar: '/agent-contentai-transparent.png',
+    name: 'ContentAI',
+    title: 'Content Writer',
+    desc: 'Write a guest post article to submit to your new backlink prospects',
+    glow: 'rgba(245,158,11,0.35)',
+    color: '#d97706',
+    border: 'border-amber-500/30',
+  },
+];
+
 export default function BacklinksPage() {
   const [url, setUrl] = useState('');
   const [niche, setNiche] = useState('');
@@ -37,8 +78,10 @@ export default function BacklinksPage() {
   const [result, setResult] = useState<BacklinkCampaign | null>(null);
   const [error, setError] = useState('');
   const [selectedOpp, setSelectedOpp] = useState<BacklinkOpportunity | null>(null);
+  const [contacted, setContacted] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
 
-  const isConfigError = error.includes('not configured') || error.includes('restricted to specific sites') || error.includes('programmablesearchengine');
+  const isConfigError = error.includes('not configured') || error.includes('SERPER_API_KEY');
 
   const handleRun = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +89,8 @@ export default function BacklinksPage() {
     setLoading(true);
     setError('');
     setResult(null);
+    setSelectedOpp(null);
+    setContacted(new Set());
     try {
       const res = await fetch('/api/backlinks', {
         method: 'POST',
@@ -60,6 +105,21 @@ export default function BacklinksPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyEmail = () => {
+    if (!selectedOpp?.outreach_email) return;
+    navigator.clipboard.writeText(`Subject: ${selectedOpp.outreach_email.subject}\n\n${selectedOpp.outreach_email.body}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleMarkContacted = (domain: string) => {
+    setContacted(prev => {
+      const next = new Set(prev);
+      if (next.has(domain)) next.delete(domain); else next.add(domain);
+      return next;
+    });
   };
 
   const daColor = (da: number) => da >= 60 ? 'text-emerald-400' : da >= 40 ? 'text-amber-400' : 'text-white/60';
@@ -114,8 +174,15 @@ export default function BacklinksPage() {
               {loading ? 'Finding Opportunities...' : 'Find Backlink Opportunities'}
             </button>
             {loading && (
-              <div className="mt-3 text-sm text-white/40">
-                AI is analyzing your site, searching for opportunities, and drafting outreach emails...
+              <div className="mt-5 space-y-2">
+                {[
+                  { label: 'Running 6 Google search queries for your niche', delay: 0 },
+                  { label: 'Filtering & deduplicating prospects', delay: 800 },
+                  { label: 'Scoring domain authority & relevance', delay: 1800 },
+                  { label: 'Writing personalised outreach emails', delay: 3000 },
+                ].map((step, i) => (
+                  <ProgressStep key={i} label={step.label} delay={step.delay} />
+                ))}
               </div>
             )}
           </form>
@@ -130,9 +197,8 @@ export default function BacklinksPage() {
                   <p className="text-red-300/80">{error}</p>
                   {isConfigError && (
                     <p className="text-white/40 text-xs mt-2">
-                      Tip: Go to{' '}
-                      <a href="https://programmablesearchengine.google.com" target="_blank" rel="noopener noreferrer" className="text-teal-400 underline">programmablesearchengine.google.com</a>
-                      {' '}→ Edit your engine → Enable &quot;Search the entire web&quot;
+                      Tip: Add <code className="text-teal-400">SERPER_API_KEY</code> to your Vercel environment variables. Get a free key at{' '}
+                      <a href="https://serper.dev" target="_blank" rel="noopener noreferrer" className="text-teal-400 underline">serper.dev</a>
                     </p>
                   )}
                   {!isConfigError && (
@@ -143,7 +209,7 @@ export default function BacklinksPage() {
             </div>
           )}
 
-          {/* Results placeholder */}
+          {/* Empty state */}
           {!result && !loading && (
             <div className="mt-5 border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center">
@@ -172,8 +238,8 @@ export default function BacklinksPage() {
           <div className="grid grid-cols-3 gap-4">
             {[
               { label: 'Opportunities Found', value: result.opportunities?.length || 0, color: 'text-teal-400' },
-              { label: 'Articles Written', value: result.articles_written || 0, color: 'text-violet-400' },
               { label: 'Outreach Emails', value: result.outreach_sent || 0, color: 'text-emerald-400' },
+              { label: 'Contacted', value: contacted.size, color: 'text-violet-400' },
             ].map((s) => (
               <div key={s.label} className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
                 <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
@@ -187,7 +253,7 @@ export default function BacklinksPage() {
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
               <div className="p-5 border-b border-white/10">
                 <h2 className="font-semibold text-white">Backlink Opportunities</h2>
-                <p className="text-sm text-white/40 mt-0.5">Click any row to view the outreach email draft</p>
+                <p className="text-sm text-white/40 mt-0.5">Click any row to view and edit the outreach email draft</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -197,88 +263,143 @@ export default function BacklinksPage() {
                       <th className="text-left px-5 py-3 text-white/40 font-medium">Type</th>
                       <th className="text-center px-5 py-3 text-white/40 font-medium">DA</th>
                       <th className="text-center px-5 py-3 text-white/40 font-medium">Relevance</th>
-                      <th className="text-center px-5 py-3 text-white/40 font-medium">Contact</th>
                       <th className="text-center px-5 py-3 text-white/40 font-medium">Email</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {result.opportunities.map((opp, i) => (
-                      <tr
-                        key={i}
-                        onClick={() => setSelectedOpp(selectedOpp?.domain === opp.domain ? null : opp)}
-                        className={`border-b border-white/5 last:border-0 cursor-pointer transition-colors ${selectedOpp?.domain === opp.domain ? 'bg-teal-500/10' : 'hover:bg-white/5'}`}
-                      >
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="font-medium text-white">{opp.domain}</div>
-                            <a href={opp.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                              <ExternalLink className="w-3 h-3 text-white/30 hover:text-white" />
-                            </a>
-                          </div>
-                          <div className="text-xs text-white/40 truncate max-w-[200px]">{opp.title}</div>
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full">{opp.type}</span>
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          <span className={`font-bold ${daColor(opp.estimated_da)}`}>{opp.estimated_da}</span>
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Star className="w-3 h-3 text-amber-400" />
-                            <span className={relevanceColor(opp.niche_relevance)}>{opp.niche_relevance}/10</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          {opp.contact_email ? (
-                            <span className="text-xs text-white/60">{opp.contact_email}</span>
-                          ) : (
-                            <span className="text-xs text-white/20">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          {opp.outreach_email ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <span className="text-white/20">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {result.opportunities.map((opp, i) => {
+                      const isSelected = selectedOpp?.domain === opp.domain;
+                      const isContacted = contacted.has(opp.domain);
+                      return (
+                        <tr
+                          key={i}
+                          onClick={() => setSelectedOpp(isSelected ? null : opp)}
+                          className={`border-b border-white/5 last:border-0 cursor-pointer transition-colors ${
+                            isContacted ? 'opacity-40' :
+                            isSelected ? 'bg-teal-500/10 border-l-2 border-l-teal-500' :
+                            'hover:bg-white/5'
+                          }`}
+                        >
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-white">{opp.domain}</span>
+                              <a href={opp.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+                                <ExternalLink className="w-3 h-3 text-white/30 hover:text-teal-400 transition-colors" />
+                              </a>
+                              {isContacted && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full ml-1">Contacted</span>}
+                            </div>
+                            <div className="text-xs text-white/40 truncate max-w-[220px] mt-0.5">{opp.title}</div>
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full capitalize">{opp.type?.replace(/_/g, ' ')}</span>
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            <span className={`font-bold ${daColor(opp.estimated_da)}`}>{opp.estimated_da}</span>
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Star className="w-3 h-3 text-amber-400" />
+                              <span className={relevanceColor(opp.niche_relevance)}>{opp.niche_relevance}/10</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            {opp.outreach_email ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
+                            ) : (
+                              <span className="text-white/20 text-xs">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
           )}
 
-          {/* Outreach Email Preview */}
-          {selectedOpp?.outreach_email && (
-            <div className="bg-gradient-to-br from-teal-500/10 to-blue-500/10 border border-teal-500/20 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Mail className="w-4 h-4 text-teal-400" />
-                <span className="font-semibold text-white text-sm">Outreach Email — {selectedOpp.domain}</span>
-              </div>
-              <div className="bg-black/20 rounded-xl p-4 space-y-3">
-                <div>
-                  <span className="text-xs text-white/40">Subject: </span>
-                  <span className="text-sm text-white font-medium">{selectedOpp.outreach_email.subject}</span>
+          {/* ── Slide-in Email Panel ── */}
+          {selectedOpp && (
+            <div className="bg-gradient-to-br from-teal-500/10 to-blue-500/10 border border-teal-500/30 rounded-2xl p-5 animate-in slide-in-from-bottom-4 duration-200">
+              {/* Panel header */}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-4 h-4 text-teal-400" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white text-sm">{selectedOpp.domain}</div>
+                    <div className="flex items-center gap-2 text-xs text-white/40 mt-0.5">
+                      <a href={selectedOpp.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-teal-400 transition-colors">
+                        {selectedOpp.url.slice(0, 50)}{selectedOpp.url.length > 50 ? '…' : ''}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <div className="border-t border-white/10 pt-3">
-                  <pre className="text-sm text-white/70 whitespace-pre-wrap font-sans leading-relaxed">
-                    {selectedOpp.outreach_email.body}
-                  </pre>
-                </div>
+                <button onClick={() => setSelectedOpp(null)} className="text-white/30 hover:text-white transition-colors flex-shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => navigator.clipboard.writeText(`Subject: ${selectedOpp.outreach_email!.subject}\n\n${selectedOpp.outreach_email!.body}`)}
-                className="mt-3 flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 transition-colors"
-              >
-                Copy to Clipboard
-              </button>
+
+              {/* Metadata row */}
+              <div className="flex flex-wrap gap-3 mb-4 text-xs">
+                <span className="bg-white/10 text-white/60 px-2.5 py-1 rounded-lg">DA <span className={`font-bold ${daColor(selectedOpp.estimated_da)}`}>{selectedOpp.estimated_da}</span></span>
+                <span className="bg-white/10 text-white/60 px-2.5 py-1 rounded-lg">Relevance <span className={`font-bold ${relevanceColor(selectedOpp.niche_relevance)}`}>{selectedOpp.niche_relevance}/10</span></span>
+                <span className="bg-teal-500/20 text-teal-400 px-2.5 py-1 rounded-lg capitalize">{selectedOpp.type?.replace(/_/g, ' ')}</span>
+                {selectedOpp.has_write_for_us && <span className="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg">Write For Us page found</span>}
+              </div>
+
+              {/* Notes */}
+              {selectedOpp.notes && (
+                <p className="text-xs text-white/50 mb-4 bg-white/5 rounded-lg px-3 py-2">{selectedOpp.notes}</p>
+              )}
+
+              {/* Email draft */}
+              {selectedOpp.outreach_email ? (
+                <>
+                  <div className="bg-black/30 rounded-xl p-4 space-y-3 mb-4">
+                    <div>
+                      <span className="text-xs text-white/40 uppercase tracking-wider">Subject</span>
+                      <div className="text-sm text-white font-medium mt-1">{selectedOpp.outreach_email.subject}</div>
+                    </div>
+                    <div className="border-t border-white/10 pt-3">
+                      <span className="text-xs text-white/40 uppercase tracking-wider">Body</span>
+                      <textarea
+                        defaultValue={selectedOpp.outreach_email.body}
+                        rows={8}
+                        className="w-full mt-1 bg-transparent text-sm text-white/80 leading-relaxed resize-none focus:outline-none font-sans"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleCopyEmail}
+                      className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium rounded-xl transition-all"
+                    >
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? 'Copied!' : 'Copy Email'}
+                    </button>
+                    <button
+                      onClick={() => handleMarkContacted(selectedOpp.domain)}
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                        contacted.has(selectedOpp.domain)
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-white/10 hover:bg-white/15 text-white/70'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      {contacted.has(selectedOpp.domain) ? 'Marked as Contacted' : 'Mark as Contacted'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-white/40 italic">No outreach email was generated for this site.</p>
+              )}
             </div>
           )}
 
-          {/* Next Steps */}
+          {/* Next Steps (agent) */}
           {result.next_steps && result.next_steps.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <h3 className="font-semibold text-white mb-3">Next Steps</h3>
@@ -292,6 +413,29 @@ export default function BacklinksPage() {
               </ul>
             </div>
           )}
+
+          {/* ── What's Next? ── */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+            <h3 className="font-semibold text-white mb-1">What&apos;s Next?</h3>
+            <p className="text-sm text-white/40 mb-4">Keep the momentum going — run another agent</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {WHATS_NEXT.map((agent) => (
+                <Link
+                  key={agent.name}
+                  href={agent.href}
+                  className={`group flex items-center gap-4 p-4 bg-white/5 border ${agent.border} rounded-xl hover:bg-white/10 transition-all cursor-pointer`}
+                  style={{ boxShadow: `0 0 0 0 ${agent.glow}` }}
+                >
+                  <Image src={agent.avatar} alt={agent.name} width={44} height={44} className="w-11 h-11 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${agent.glow})` }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white text-sm">{agent.name}</div>
+                    <div className="text-xs text-white/40 mt-0.5 leading-snug">{agent.desc}</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0 text-white/30 group-hover:text-white transition-colors" style={{ color: agent.color }} />
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

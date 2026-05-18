@@ -11,8 +11,8 @@ const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, avatar: null },
   { href: '/dashboard/seo-audit', label: 'SEO Audit', icon: null, avatar: '/agent-rankbot-transparent.png' },
   { href: '/dashboard/backlinks', label: 'Backlinks', icon: null, avatar: '/agent-linkbot-transparent.png' },
-  { href: '/dashboard/geo-score', label: 'GEO Score', icon: null, avatar: '/agent-geog-transparent.png' },
   { href: '/dashboard/content', label: 'Content', icon: null, avatar: '/agent-contentai-transparent.png' },
+  { href: '/dashboard/geo-score', label: 'GEO Score', icon: null, avatar: '/agent-geog-transparent.png' },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, avatar: null },
 ];
 
@@ -44,10 +44,10 @@ export default function Sidebar({ user }: { user: User }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 isActive
                   ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-white/60 hover:text-white hover:bg-white/5 hover:translate-x-0.5'
               }`}
             >
               {item.avatar ? (

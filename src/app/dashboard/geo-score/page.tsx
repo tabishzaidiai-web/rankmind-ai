@@ -1,7 +1,29 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Globe, Search, AlertCircle, Loader2, ChevronDown, ChevronUp, Zap, BookOpen, BarChart3, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { Globe, Search, AlertCircle, Loader2, ChevronDown, ChevronUp, Zap, BookOpen, BarChart3, FileText, ArrowRight } from 'lucide-react';
+
+const WHATS_NEXT_GEO = [
+  {
+    href: '/dashboard/content',
+    avatar: '/agent-contentai-transparent.png',
+    name: 'ContentAI',
+    desc: 'Create AI-optimised content to close the gaps found in this analysis',
+    glow: 'rgba(245,158,11,0.35)',
+    color: '#d97706',
+    border: 'border-amber-500/30',
+  },
+  {
+    href: '/dashboard/backlinks',
+    avatar: '/agent-linkbot-transparent.png',
+    name: 'LinkBot',
+    desc: 'Find more backlinks to strengthen your topical authority score',
+    glow: 'rgba(13,148,136,0.35)',
+    color: '#0d9488',
+    border: 'border-teal-500/30',
+  },
+];
 
 interface GEOAnalysis {
   url: string;
@@ -58,6 +80,21 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
       <div className="h-2 bg-white/10 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${score}%` }} />
       </div>
+    </div>
+  );
+}
+
+function ProgressStep({ label, delay, color = 'text-blue-400' }: { label: string; delay: number; color?: string }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  if (!visible) return null;
+  return (
+    <div className="flex items-center gap-2 text-sm text-white/60 animate-in fade-in slide-in-from-left-2 duration-300">
+      <Loader2 className={`w-3.5 h-3.5 animate-spin ${color} flex-shrink-0`} />
+      {label}
     </div>
   );
 }
@@ -131,8 +168,15 @@ export default function GEOScorePage() {
               </button>
             </div>
             {loading && (
-              <div className="mt-3 text-sm text-white/40">
-                Checking AI visibility across ChatGPT, Perplexity, and Gemini...
+              <div className="mt-5 space-y-2">
+                {[
+                  { label: 'Crawling website & extracting content signals', delay: 0 },
+                  { label: 'Scoring ChatGPT & Perplexity visibility', delay: 700 },
+                  { label: 'Identifying content gaps & topical authority', delay: 1600 },
+                  { label: 'Building 4-week content plan', delay: 2600 },
+                ].map((step, i) => (
+                  <ProgressStep key={i} label={step.label} delay={step.delay} color="text-blue-400" />
+                ))}
               </div>
             )}
           </form>
@@ -322,6 +366,27 @@ export default function GEOScorePage() {
               )}
             </div>
           )}
+          {/* What's Next? */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+            <h3 className="font-semibold text-white mb-1">What&apos;s Next?</h3>
+            <p className="text-sm text-white/40 mb-4">Keep the momentum going — run another agent</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {WHATS_NEXT_GEO.map((agent) => (
+                <Link
+                  key={agent.name}
+                  href={agent.href}
+                  className={`group flex items-center gap-4 p-4 bg-white/5 border ${agent.border} rounded-xl hover:bg-white/10 transition-all cursor-pointer`}
+                >
+                  <Image src={agent.avatar} alt={agent.name} width={44} height={44} className="w-11 h-11 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${agent.glow})` }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white text-sm">{agent.name}</div>
+                    <div className="text-xs text-white/40 mt-0.5 leading-snug">{agent.desc}</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 flex-shrink-0 text-white/30 group-hover:text-white transition-colors" style={{ color: agent.color }} />
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

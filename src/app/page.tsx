@@ -190,18 +190,35 @@ export default function HomePage() {
             write SEO content, and get your clients measurable results — 100% automated.
           </p>
 
-          {/* Floating Agent Avatars */}
+          {/* Floating Agent Avatars — each is a clickable link */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-10">
             {AGENTS.map((agent, i) => {
               const anims = ['float', 'float2', 'float3', 'float4'];
               const delays = ['0s', '0.5s', '1s', '1.5s'];
               return (
-                <div key={agent.name} className="flex flex-col items-center gap-2">
-                  <div style={{ animation: `${anims[i]} 3s ease-in-out infinite`, animationDelay: delays[i], filter: `drop-shadow(0 0 16px ${agent.glow})` }}>
+                <Link
+                  key={agent.name}
+                  href={agent.href}
+                  className="group flex flex-col items-center gap-2 cursor-pointer"
+                >
+                  <div
+                    className="relative rounded-2xl p-1 transition-all duration-300 group-hover:scale-105"
+                    style={{
+                      animation: `${anims[i]} 3s ease-in-out infinite`,
+                      animationDelay: delays[i],
+                      filter: `drop-shadow(0 0 16px ${agent.glow})`,
+                    }}
+                  >
                     <Image src={agent.avatar} alt={agent.name} width={100} height={100} className="w-20 h-20 md:w-24 md:h-24 object-contain" />
+                    {/* Hover glow ring */}
+                    <div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{ boxShadow: `0 0 0 2px ${agent.color}, 0 0 20px ${agent.glow}` }}
+                    />
                   </div>
-                  <span className="text-xs font-semibold text-white/60">{agent.name}</span>
-                </div>
+                  <span className="text-xs font-semibold text-white/60 group-hover:text-white transition-colors">{agent.name}</span>
+                  <span className="text-xs text-white/0 group-hover:text-white/50 transition-colors -mt-1">Open Agent →</span>
+                </Link>
               );
             })}
           </div>
@@ -487,7 +504,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-2">
-            <p className="text-white/30 text-sm">&copy; 2025 RankMind AI. All rights reserved.</p>
+            <p className="text-white/30 text-sm">&copy; 2026 RankMind AI. All rights reserved.</p>
             <p className="text-white/20 text-xs">Built with Next.js · Hosted on Vercel · Powered by OpenAI</p>
           </div>
         </div>

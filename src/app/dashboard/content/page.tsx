@@ -1,8 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Sparkles, FileText, Globe, AlertCircle, CheckCircle2, Copy, Download, Loader2, Code2 } from 'lucide-react';
+import Link from 'next/link';
+import { Sparkles, FileText, Globe, AlertCircle, CheckCircle2, Copy, Download, Loader2, Code2, ArrowRight } from 'lucide-react';
+
+function ProgressStep({ label, delay }: { label: string; delay: number }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  if (!visible) return null;
+  return (
+    <div className="flex items-center gap-2 text-sm text-white/60 animate-in fade-in slide-in-from-left-2 duration-300">
+      <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400 flex-shrink-0" />
+      {label}
+    </div>
+  );
+}
+
+const WHATS_NEXT_CONTENT = [
+  {
+    href: '/dashboard/seo-audit',
+    avatar: '/agent-rankbot-transparent.png',
+    name: 'RankBot',
+    desc: 'Check your SEO score now that you have new content to publish',
+    glow: 'rgba(139,92,246,0.35)',
+    color: '#7c3aed',
+    border: 'border-violet-500/30',
+  },
+  {
+    href: '/dashboard/backlinks',
+    avatar: '/agent-linkbot-transparent.png',
+    name: 'LinkBot',
+    desc: 'Build backlinks to the content you just created to rank faster',
+    glow: 'rgba(13,148,136,0.35)',
+    color: '#0d9488',
+    border: 'border-teal-500/30',
+  },
+];
 
 const CONTENT_TYPES = [
   { value: 'blog_post', label: 'Blog Post' },
@@ -203,9 +240,15 @@ export default function ContentPage() {
             </div>
 
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-white/50">
-                <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                AI is writing your content, generating schema markup, and preparing your email report...
+              <div className="mt-5 space-y-2">
+                {[
+                  { label: 'Researching topic and analysing competitors', delay: 0 },
+                  { label: 'Building SEO-optimised outline', delay: 900 },
+                  { label: 'Writing full article with keyword placement', delay: 2000 },
+                  { label: 'Generating JSON-LD schema markup', delay: 4000 },
+                ].map((step, i) => (
+                  <ProgressStep key={i} label={step.label} delay={step.delay} />
+                ))}
               </div>
             )}
           </form>
@@ -307,6 +350,27 @@ export default function ContentPage() {
               </pre>
             </div>
           )}
+        {/* What's Next? */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <h3 className="font-semibold text-white mb-1">What&apos;s Next?</h3>
+          <p className="text-sm text-white/40 mb-4">Keep the momentum going — run another agent</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {WHATS_NEXT_CONTENT.map((agent) => (
+              <Link
+                key={agent.name}
+                href={agent.href}
+                className={`group flex items-center gap-4 p-4 bg-white/5 border ${agent.border} rounded-xl hover:bg-white/10 transition-all cursor-pointer`}
+              >
+                <Image src={agent.avatar} alt={agent.name} width={44} height={44} className="w-11 h-11 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${agent.glow})` }} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white text-sm">{agent.name}</div>
+                  <div className="text-xs text-white/40 mt-0.5 leading-snug">{agent.desc}</div>
+                </div>
+                <ArrowRight className="w-4 h-4 flex-shrink-0 text-white/30 group-hover:text-white transition-colors" style={{ color: agent.color }} />
+              </Link>
+            ))}
+          </div>
+        </div>
         </div>
       )}
     </div>
