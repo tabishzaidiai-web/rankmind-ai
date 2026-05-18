@@ -4,6 +4,43 @@ import { agentWrite, agentReason, fetchPageContent, sendEmail } from '@/lib/agen
 
 export const maxDuration = 60;
 
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { searchParams } = new URL(req.url);
+    const websiteId = searchParams.get('websiteId');
+    const status = searchParams.get('status');
+    let query = supabase.from('content_queue').select('*').order('created_at', { ascending: false });
+    if (websiteId) query = query.eq('website_id', websiteId);
+    if (status) query = query.eq('status', status);
+    const { data, error } = await query;
+    if (error) throw error;
+    return NextResponse.json({ items: data || [] });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { id, status, title, content } = await req.json();
+    const updates: Record<string, unknown> = { status };
+    if (title) updates.title = title;
+    if (content) updates.content = content;
+    if (status === 'published') updates.published_at = new Date().toISOString();
+    const { data, error } = await supabase.from('content_queue').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    return NextResponse.json({ item: data });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -13,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { url, topic, keyword, niche, contentType = 'blog_post', wordCount = 1000 } = body;
+    const { url, topic, keyword, niche, contentType = 'blog_post', wordCount = 1000, websiteId, saveToQueue = true } = body;
 
     if (!topic || topic.trim().length < 5) {
       return NextResponse.json({ error: 'Please enter a specific article topic (at least 5 characters).' }, { status: 400 });
@@ -106,7 +143,7 @@ Write the complete article now in Markdown format. Remember: this is for a ${eff
       datePublished: new Date().toISOString(),
     };
 
-    const result = {
+    let result: Record<string, unknown> = {
       title: outline.title,
       meta_description: outline.meta_description,
       target_keyword: outline.target_keyword,
@@ -116,15 +153,39 @@ Write the complete article now in Markdown format. Remember: this is for a ${eff
       schema_markup: JSON.stringify(schema, null, 2),
       generated_at: new Date().toISOString(),
       site_url: url || '',
-    };
+    } as Record<string, unknown>;
 
     // Step 5: Email the content to the user
     if (user.email) {
       await sendEmail({
         to: user.email,
         subject: `Content Ready: "${outline.title}" — ${result.word_count} words`,
-        html: generateContentEmailHTML(result),
+        html: generateContentEmailHTML(result as Parameters<typeof generateContentEmailHTML>[0]),
       });
+    }
+
+    // Save to content queue
+    if (saveToQueue && websiteId) {
+      const { data: queueItem } = await supabase.from('content_queue').insert({
+        website_id: websiteId,
+        title: result.title,
+        content: result.content,
+        target_keyword: keyword,
+        meta_description: result.meta_description,
+        content_type: contentType,
+        word_count: result.word_count,
+        status: 'pending_approval',
+        niche: effectiveNiche,
+      }).select().single();
+      if (queueItem) {
+        result = { ...result, queue_id: queueItem.id };
+        await supabase.from('agent_activity').insert({
+          user_id: user.id,
+          agent: 'contentai',
+          action: `ContentAI wrote "${result.title}"`,
+          details: `${result.word_count} words · keyword: ${keyword}`,
+        });
+      }
     }
 
     return NextResponse.json(result);

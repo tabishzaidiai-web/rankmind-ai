@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sparkles, FileText, Globe, AlertCircle, CheckCircle2, Copy, Download, Loader2, Code2, ArrowRight } from 'lucide-react';
+import { Sparkles, FileText, Globe, AlertCircle, CheckCircle2, Copy, Download, Loader2, Code2, ArrowRight, Clock, Check, X, Eye } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 function ProgressStep({ label, delay }: { label: string; delay: number }) {
   const [visible, setVisible] = useState(false);
@@ -78,6 +79,23 @@ function MarkdownPreview({ content }: { content: string }) {
 
 export default function ContentPage() {
   const [url, setUrl] = useState('');
+  const [website, setWebsite] = useState<{ id: string; domain: string } | null>(null);
+  const [queueItems, setQueueItems] = useState<Array<{ id: string; title: string; target_keyword: string; word_count: number; status: string; created_at: string; content?: string }>>([]);
+  const [activeMainTab, setActiveMainTab] = useState<'generate' | 'queue'>('generate');
+  const [previewItem, setPreviewItem] = useState<{ id: string; title: string; target_keyword: string; word_count: number; status: string; created_at: string; content?: string } | null>(null);
+
+  const loadWebsiteAndQueue = useCallback(async () => {
+    const supabase = createClient();
+    const { data: ws } = await supabase.from('websites').select('id, domain').order('created_at', { ascending: true }).limit(1).single();
+    if (ws) {
+      setWebsite(ws);
+      const res = await fetch(`/api/content?websiteId=${ws.id}`);
+      const data = await res.json();
+      setQueueItems(data.items || []);
+    }
+  }, []);
+
+  useEffect(() => { loadWebsiteAndQueue(); }, [loadWebsiteAndQueue]);
   const [topic, setTopic] = useState('');
   const [keyword, setKeyword] = useState('');
   const [niche, setNiche] = useState('');
@@ -99,16 +117,23 @@ export default function ContentPage() {
       const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, topic, keyword, niche, contentType, wordCount }),
+        body: JSON.stringify({ url, topic, keyword, niche, contentType, wordCount, websiteId: website?.id, saveToQueue: !!website?.id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Content generation failed');
       setResult(data);
+      if (website?.id) await loadWebsiteAndQueue();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateQueueStatus = async (id: string, status: string) => {
+    await fetch('/api/content', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
+    await loadWebsiteAndQueue();
+    if (previewItem?.id === id) setPreviewItem(null);
   };
 
   const copyContent = () => {
@@ -127,6 +152,8 @@ export default function ContentPage() {
     a.click();
   };
 
+  const pendingCount = queueItems.filter(i => i.status === 'pending_approval').length;
+
   return (
     <div className="w-full space-y-6 relative">
       <style>{`@keyframes floatAgent{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}`}</style>
@@ -135,12 +162,67 @@ export default function ContentPage() {
       {/* Header — left content + right avatar */}
       <div className="flex items-start gap-6 relative z-10">
         <div className="flex-1 min-w-0 space-y-4">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Content Writer Agent</h1>
-            <p className="text-white/50 text-sm mt-1">Generate full SEO + GEO optimized articles. Results are emailed to you automatically.</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Content Writer Agent</h1>
+              <p className="text-white/50 text-sm mt-1">Generate full SEO + GEO optimized articles. Saved to your approval queue automatically.</p>
+            </div>
+            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 flex-shrink-0">
+              <button type="button" onClick={() => setActiveMainTab('generate')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeMainTab === 'generate' ? 'bg-amber-500/20 text-amber-300' : 'text-white/40 hover:text-white/60'}`}>Generate</button>
+              <button type="button" onClick={() => setActiveMainTab('queue')} className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeMainTab === 'queue' ? 'bg-amber-500/20 text-amber-300' : 'text-white/40 hover:text-white/60'}`}>
+                Queue
+                {pendingCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{pendingCount}</span>}
+              </button>
+            </div>
           </div>
 
-          <form onSubmit={handleGenerate} className="bg-white/5 border border-amber-500/20 rounded-2xl p-5 space-y-4">
+          {activeMainTab === 'queue' && (
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <span className="text-white font-medium text-sm">Content Approval Queue</span>
+                <span className="text-xs text-white/30">{queueItems.length} total</span>
+              </div>
+              {queueItems.length === 0 ? (
+                <div className="p-8 text-center text-white/30 text-sm">No content yet — generate your first article above</div>
+              ) : (
+                <div className="divide-y divide-white/[0.05]">
+                  {queueItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{item.title}</p>
+                        <p className="text-white/40 text-xs mt-0.5">{item.target_keyword} · {item.word_count?.toLocaleString()} words · {new Date(item.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                          item.status === 'published' ? 'text-green-400 bg-green-500/10 border-green-500/20'
+                          : item.status === 'pending_approval' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                          : 'text-white/40 bg-white/5 border-white/10'
+                        }`}>{item.status === 'pending_approval' ? 'Pending' : item.status}</span>
+                        <button onClick={() => setPreviewItem(previewItem?.id === item.id ? null : item)} className="p-1.5 text-white/30 hover:text-white/60 transition-colors"><Eye className="w-3.5 h-3.5" /></button>
+                        {item.status === 'pending_approval' && (
+                          <>
+                            <button onClick={() => updateQueueStatus(item.id, 'published')} className="p-1.5 text-green-400/60 hover:text-green-400 transition-colors"><Check className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => updateQueueStatus(item.id, 'rejected')} className="p-1.5 text-red-400/60 hover:text-red-400 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {previewItem && (
+                <div className="border-t border-white/10 p-4 max-h-96 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/70 text-sm font-medium">Preview: {previewItem.title}</span>
+                    <button onClick={() => setPreviewItem(null)} className="text-white/30 hover:text-white/60"><X className="w-4 h-4" /></button>
+                  </div>
+                  <MarkdownPreview content={previewItem.content || ''} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeMainTab === 'generate' && <form onSubmit={handleGenerate} className="bg-white/5 border border-amber-500/20 rounded-2xl p-5 space-y-4">
             <div>
               <label className="block text-sm font-medium text-white/70 mb-2">Website URL (for context)</label>
               <div className="relative">
@@ -251,9 +333,9 @@ export default function ContentPage() {
                 ))}
               </div>
             )}
-          </form>
+          </form>}
 
-          {error && (
+          {activeMainTab === 'generate' && error && (
             <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
