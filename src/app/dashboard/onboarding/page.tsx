@@ -68,7 +68,7 @@ export default function OnboardingPage() {
       }
       const { error: updateErr } = await supabase
         .from('users')
-        .update({ onboarding_completed: true, plan: selectedPlan })
+        .update({ onboarding_completed: true, plan: selectedPlan, website_url: websiteUrl })
         .eq('id', user.id);
       if (updateErr) {
         console.error('Failed to update user profile:', updateErr);

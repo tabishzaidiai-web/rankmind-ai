@@ -19,6 +19,15 @@ export default async function DashboardPage() {
     .limit(1)
     .single();
 
+  // Fallback: fetch website_url from users table (for accounts that completed onboarding before websites table was fixed)
+  const { data: userProfile } = !website
+    ? await supabase.from('users').select('website_url, onboarding_completed').eq('id', user?.id ?? '').single()
+    : { data: null };
+  const fallbackWebsite = !website && userProfile?.website_url
+    ? { id: null as string | null, url: userProfile.website_url as string, domain: (userProfile.website_url as string).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0], niche: null as string | null }
+    : null;
+  const effectiveWebsite = website ?? fallbackWebsite;
+
   // Fetch latest audit
   const { data: latestAudit } = website
     ? await supabase
@@ -137,13 +146,13 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          {website ? (
-            <p className="text-white/50 text-sm mt-0.5">{website.domain}</p>
+          {effectiveWebsite ? (
+            <p className="text-white/50 text-sm mt-0.5">{effectiveWebsite.domain}</p>
           ) : (
             <p className="text-white/50 text-sm mt-0.5">No website connected yet</p>
           )}
         </div>
-        {!website && (
+        {!effectiveWebsite && (
           <Link
             href="/dashboard/onboarding"
             className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-all"
@@ -155,7 +164,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* No website state */}
-      {!website && (
+      {!effectiveWebsite && (
         <div className="border border-dashed border-white/15 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-4">
           <div className="flex gap-3">
             {['/agent-rankbot-transparent.png','/agent-linkbot-transparent.png','/agent-geog-transparent.png','/agent-contentai-transparent.png'].map((src, i) => (
@@ -174,7 +183,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Stats grid */}
-      {website && (
+      {effectiveWebsite && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <Link href="/dashboard/seo-audit" className="col-span-1 bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-violet-500/30 transition-all">
