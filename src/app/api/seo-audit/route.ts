@@ -23,6 +23,20 @@ export async function POST(request: NextRequest) {
 
     // Pass user email so the agent emails the full report on completion
     const result = await runSEOAudit(targetUrl, user?.email);
+
+    // Log to timeline_events (best-effort)
+    if (user) {
+      try {
+        const issueCount = result.action_plan?.length ?? 0;
+        await supabase.from('timeline_events').insert({
+          user_id: user.id,
+          agent: 'RankBot',
+          action: 'Completed SEO Audit',
+          outcome: `SEO Score: ${result.overall_score}/100 — ${issueCount} action items found`,
+        });
+      } catch { /* non-critical */ }
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('SEO Audit error:', error);

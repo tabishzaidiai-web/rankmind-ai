@@ -27,13 +27,51 @@ export default async function SettingsPage() {
     : null;
 
   const planDetails: Record<string, { name: string; price: string; color: string; bg: string; features: string[] }> = {
-    free: { name: 'Free', price: '$0/mo', color: 'text-white/60', bg: 'bg-white/5', features: ['3 demo audits/day', 'No saved history', 'No keyword tracking'] },
-    starter: { name: 'Starter', price: '$5/mo', color: 'text-violet-400', bg: 'bg-violet-500/10', features: ['5 SEO audits/month', '50 keywords tracked', '4 articles/month', '5 backlink campaigns'] },
-    pro: { name: 'Pro', price: '$15/mo', color: 'text-cyan-400', bg: 'bg-cyan-500/10', features: ['Unlimited audits', '500 keywords', 'Unlimited content', 'Priority support'] },
-    enterprise: { name: 'Enterprise', price: '$49/mo', color: 'text-amber-400', bg: 'bg-amber-500/10', features: ['Everything in Pro', 'White-label reports', 'Multi-client management', 'Dedicated support'] },
+    free: {
+      name: 'Free Plan',
+      price: '$0/mo',
+      color: 'text-white/60',
+      bg: 'bg-white/5',
+      features: [
+        '3 demo audits/day',
+        'No saved history',
+        'No keyword tracking',
+        'Upgrade to unlock full history, unlimited audits, keyword tracking, and multi-site support',
+      ],
+    },
+    starter: {
+      name: 'Starter',
+      price: '$29/mo',
+      color: 'text-violet-400',
+      bg: 'bg-violet-500/10',
+      features: ['5 SEO audits/month', '50 keywords tracked', '4 articles/month', '5 backlink campaigns'],
+    },
+    growth: {
+      name: 'Growth',
+      price: '$79/mo',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-500/10',
+      features: ['Unlimited audits', '500 keywords', 'Unlimited content', 'Priority support'],
+    },
+    // Legacy key mapping
+    pro: {
+      name: 'Growth',
+      price: '$79/mo',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-500/10',
+      features: ['Unlimited audits', '500 keywords', 'Unlimited content', 'Priority support'],
+    },
+    enterprise: {
+      name: 'Enterprise',
+      price: '$149/mo',
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      features: ['Everything in Growth', 'White-label reports', 'Multi-client management', 'Dedicated support'],
+    },
   };
 
   const currentPlan = planDetails[plan] || planDetails.free;
+  const isFree = plan === 'free';
 
   return (
     <div className="space-y-6 max-w-3xl p-6">
@@ -106,21 +144,24 @@ export default async function SettingsPage() {
               <span className="text-white/40 text-sm ml-2">{currentPlan.price}</span>
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full border ${status === 'active' ? 'text-green-400 bg-green-500/10 border-green-500/20' : 'text-white/40 bg-white/5 border-white/10'}`}>
-              {status === 'active' ? 'Active' : plan === 'free' ? 'Free' : 'Inactive'}
+              {status === 'active' ? 'Active' : isFree ? 'Free' : 'Inactive'}
             </span>
           </div>
           <ul className="space-y-1.5">
             {currentPlan.features.map(f => (
-              <li key={f} className="flex items-center gap-2 text-sm text-white/60">
-                <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />{f}
+              <li key={f} className={`flex items-start gap-2 text-sm ${f.startsWith('Upgrade') ? 'text-violet-400/80 italic' : 'text-white/60'}`}>
+                <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />{f}
               </li>
             ))}
           </ul>
           {periodEnd && <p className="text-xs text-white/30 mt-3">Renews {periodEnd}</p>}
         </div>
-        {plan === 'free' ? (
-          <Link href="/pricing" className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold rounded-xl text-sm transition-all">
-            Upgrade to Pro <ExternalLink className="w-4 h-4" />
+        {isFree ? (
+          <Link
+            href="/#pricing"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold rounded-xl text-sm transition-all"
+          >
+            View Starter, Growth &amp; Enterprise Plans <ExternalLink className="w-4 h-4" />
           </Link>
         ) : (
           <a href="/api/stripe/portal" className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl text-sm transition-all">
@@ -170,7 +211,7 @@ export default async function SettingsPage() {
               <div className="text-sm font-medium text-red-400">Delete Account</div>
               <div className="text-xs text-white/40">Permanently delete your account and all data</div>
             </div>
-            <Link href="mailto:support@rank-mind.com?subject=Delete Account Request" className="text-xs text-red-400/60 hover:text-red-400 transition-colors">Request →</Link>
+            <Link href="mailto:support@rank-mind.com?subject=Delete Account Request" className="text-xs text-red-400/60 hover:text-red-400 transition-colors">Request &rarr;</Link>
           </div>
         </div>
       </div>

@@ -26,6 +26,18 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await runBacklinkCampaign(targetUrl, targetCount, user.email, niche);
+
+    // Log to timeline_events (best-effort)
+    try {
+      const prospectCount = result.opportunities?.length ?? 0;
+      await supabase.from('timeline_events').insert({
+        user_id: user.id,
+        agent: 'LinkBot',
+        action: 'Found backlink opportunities',
+        outcome: `${prospectCount} prospects found for ${niche || 'your niche'}`,
+      });
+    } catch { /* non-critical */ }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('Backlink agent error:', error);

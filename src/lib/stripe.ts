@@ -8,7 +8,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const PLANS = {
   starter: {
     name: 'Starter',
-    price: 5,
+    price: 29,
     priceId: process.env.STRIPE_STARTER_PRICE_ID!,
     features: [
       '1 website',
@@ -27,9 +27,9 @@ export const PLANS = {
       backlinksPerMonth: 5,
     },
   },
-  pro: {
-    name: 'Pro',
-    price: 15,
+  growth: {
+    name: 'Growth',
+    price: 79,
     priceId: process.env.STRIPE_PRO_PRICE_ID!,
     features: [
       '3 websites',
@@ -50,11 +50,11 @@ export const PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 49,
+    price: 149,
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID!,
     features: [
       'Unlimited websites',
-      'Everything in Pro',
+      'Everything in Growth',
       'Unlimited keywords',
       'White-label PDF reports',
       'Multi-client management',

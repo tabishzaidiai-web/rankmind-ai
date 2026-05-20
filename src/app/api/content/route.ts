@@ -188,6 +188,16 @@ Write the complete article now in Markdown format. Remember: this is for a ${eff
       }
     }
 
+    // Log to timeline_events (best-effort)
+    try {
+      await supabase.from('timeline_events').insert({
+        user_id: user.id,
+        agent: 'ContentAI',
+        action: 'Generated content',
+        outcome: `${result.word_count} word ${contentType?.replace(/_/g, ' ') || 'article'} on "${keyword}"`,
+      });
+    } catch { /* non-critical */ }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('Content agent error:', error);

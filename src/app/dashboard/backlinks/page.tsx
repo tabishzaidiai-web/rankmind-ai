@@ -2,7 +2,16 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star, Link2, Copy, Check, X, ArrowRight } from 'lucide-react';
+import { Search, AlertCircle, Loader2, Globe, ExternalLink, Mail, CheckCircle2, Star, Link2, Copy, Check, X, ArrowRight, Wand2 } from 'lucide-react';
+
+// Extract clean domain from a URL string
+function getDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 function ProgressStep({ label, delay }: { label: string; delay: number }) {
   const [visible, setVisible] = useState(false);
@@ -80,6 +89,7 @@ export default function BacklinksPage() {
   const [selectedOpp, setSelectedOpp] = useState<BacklinkOpportunity | null>(null);
   const [contacted, setContacted] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [generatingEmail, setGeneratingEmail] = useState(false);
 
   const isConfigError = error.includes('not configured') || error.includes('SERPER_API_KEY');
 
@@ -142,6 +152,34 @@ export default function BacklinksPage() {
       if (next.has(domain)) next.delete(domain); else next.add(domain);
       return next;
     });
+  };
+
+  const handleGenerateEmail = async () => {
+    if (!selectedOpp) return;
+    setGeneratingEmail(true);
+    try {
+      const domain = selectedOpp.domain || getDomain(selectedOpp.url);
+      const res = await fetch('/api/generate-outreach-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain, url: selectedOpp.url, type: selectedOpp.type }),
+      });
+      const data = await res.json();
+      if (res.ok && data.subject && data.body) {
+        setSelectedOpp(prev => prev ? { ...prev, outreach_email: { subject: data.subject, body: data.body } } : prev);
+        // Also update in the result list
+        setResult(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            opportunities: prev.opportunities.map(o =>
+              o.domain === selectedOpp.domain ? { ...o, outreach_email: { subject: data.subject, body: data.body } } : o
+            ),
+          };
+        });
+      }
+    } catch { /* silently fail */ }
+    finally { setGeneratingEmail(false); }
   };
 
   const daColor = (da: number) => da >= 60 ? 'text-emerald-400' : da >= 40 ? 'text-amber-400' : 'text-white/60';
@@ -304,7 +342,7 @@ export default function BacklinksPage() {
                         >
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-white">{opp.domain}</span>
+                              <span className="font-medium text-white">{opp.domain ? opp.domain.replace(/^www\./, '') : getDomain(opp.url)}</span>
                               <a href={opp.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                                 <ExternalLink className="w-3 h-3 text-white/30 hover:text-teal-400 transition-colors" />
                               </a>
@@ -350,7 +388,7 @@ export default function BacklinksPage() {
                     <Mail className="w-4 h-4 text-teal-400" />
                   </div>
                   <div>
-                    <div className="font-semibold text-white text-sm">{selectedOpp.domain}</div>
+                    <div className="font-semibold text-white text-sm">{selectedOpp.domain ? selectedOpp.domain.replace(/^www\./, '') : getDomain(selectedOpp.url)}</div>
                     <div className="flex items-center gap-2 text-xs text-white/40 mt-0.5">
                       <a href={selectedOpp.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-teal-400 transition-colors">
                         {selectedOpp.url.slice(0, 50)}{selectedOpp.url.length > 50 ? '…' : ''}
@@ -394,13 +432,13 @@ export default function BacklinksPage() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={handleCopyEmail}
                       className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium rounded-xl transition-all"
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copied ? 'Copied!' : 'Copy Email'}
+                      {copied ? 'Copied ✓' : 'Copy Email'}
                     </button>
                     <button
                       onClick={() => handleMarkContacted(selectedOpp.domain)}
@@ -416,7 +454,17 @@ export default function BacklinksPage() {
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-white/40 italic">No outreach email was generated for this site.</p>
+                <div className="flex flex-col items-start gap-3">
+                  <p className="text-sm text-white/50">No outreach email was generated for this prospect.</p>
+                  <button
+                    onClick={handleGenerateEmail}
+                    disabled={generatingEmail}
+                    className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-all"
+                  >
+                    {generatingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    {generatingEmail ? 'Generating...' : 'Generate Outreach Email'}
+                  </button>
+                </div>
               )}
             </div>
           )}

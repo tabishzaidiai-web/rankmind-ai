@@ -52,7 +52,18 @@ interface AuditResult {
   };
   content_quality: { score: number; readability_score: number; fact_density: number; recommendation: string };
   geo_readiness: { score: number; has_faq: boolean; has_statistics: boolean; has_expert_quotes: boolean; recommendation: string };
-  action_plan: Array<{ priority: string; action: string; impact: string; effort: string }>;
+  action_plan: Array<{
+    priority: number;
+    action: string;
+    task?: string;
+    whyItMatters?: string;
+    recommendation?: string;
+    exampleFix?: string;
+    impact: string;
+    effort: string;
+    timeline?: string;
+    category?: string;
+  }>;
   llm_recommendations: string[];
 }
 
@@ -452,17 +463,34 @@ export default function SEOAuditPage() {
                 {expandedSection === 'actions' ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
               </button>
               {expandedSection === 'actions' && (
-                <div className="px-5 pb-5 space-y-3 border-t border-white/10 pt-4">
+                <div className="px-5 pb-5 space-y-4 border-t border-white/10 pt-4">
                   {result.action_plan.map((item, i) => (
-                    <div key={i} className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${
-                        item.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                        item.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                        'bg-emerald-500/20 text-emerald-400'
-                      }`}>{item.priority}</span>
-                      <div className="flex-1">
-                        <div className="text-sm text-white">{item.action}</div>
-                        <div className="text-xs text-white/40 mt-0.5">Impact: {item.impact} &bull; Effort: {item.effort}</div>
+                    <div key={i} className="py-3 border-b border-white/5 last:border-0">
+                      <div className="flex items-start gap-3 mb-2">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5 ${
+                          item.impact === 'high' ? 'bg-red-500/20 text-red-400' :
+                          item.impact === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                          'bg-emerald-500/20 text-emerald-400'
+                        }`}>{item.impact}</span>
+                        <div className="font-semibold text-white text-sm">{item.action || item.task}</div>
+                      </div>
+                      {item.whyItMatters && (
+                        <p className="text-xs text-white/50 mb-1.5 ml-0">{item.whyItMatters}</p>
+                      )}
+                      {item.recommendation && (
+                        <p className="text-xs text-teal-400 mb-1.5">&rarr; {item.recommendation}</p>
+                      )}
+                      {item.exampleFix && (
+                        <p className="text-xs text-white/30 font-mono bg-white/5 rounded px-2 py-1 mb-1.5">{item.exampleFix}</p>
+                      )}
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          item.effort === 'quick-win' ? 'bg-emerald-500/20 text-emerald-400' :
+                          item.effort === 'advanced' ? 'bg-red-500/20 text-red-400' :
+                          'bg-amber-500/20 text-amber-400'
+                        }`}>{item.effort === 'quick-win' ? 'Quick Win' : item.effort === 'advanced' ? 'Advanced' : 'Moderate'}</span>
+                        {item.timeline && <span className="text-xs text-white/30">{item.timeline}</span>}
+                        {item.category && <span className="text-xs text-white/20 capitalize">{item.category}</span>}
                       </div>
                     </div>
                   ))}

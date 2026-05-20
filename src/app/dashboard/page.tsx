@@ -101,15 +101,44 @@ export default async function DashboardPage() {
         .eq('status', 'pending_approval')
     : { count: 0 };
 
-  // Fetch agent activity
-  const { data: activity } = user
+  // Fetch agent activity — try timeline_events first, fall back to agent_activity
+  const { data: timelineActivity } = user
+    ? await supabase
+        .from('timeline_events')
+        .select('id, agent, action, outcome, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+    : { data: null };
+
+  const { data: legacyActivity } = user
     ? await supabase
         .from('agent_activity')
-        .select('*')
+        .select('id, agent, action, details, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(8)
-    : { data: [] };
+    : { data: null };
+
+  // Merge: timeline_events takes priority, normalise to common shape
+  const activity = [
+    ...(timelineActivity ?? []).map((e: { id: string; agent: string; action: string; outcome?: string; created_at: string }) => ({
+      id: e.id,
+      agent: e.agent,
+      action: e.action,
+      details: e.outcome ?? null,
+      created_at: e.created_at,
+    })),
+    ...(legacyActivity ?? []).map((e: { id: string; agent: string; action: string; details?: string; created_at: string }) => ({
+      id: e.id,
+      agent: e.agent,
+      action: e.action,
+      details: e.details ?? null,
+      created_at: e.created_at,
+    })),
+  ]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 20);
 
   const seoScore = latestAudit?.score ?? null;
   const geoScore = latestGeo?.visibility_score ?? null;
@@ -196,7 +225,7 @@ export default async function DashboardPage() {
                 {seoScore !== null && <span className="text-sm font-normal text-white/30">/100</span>}
               </div>
               {latestAudit?.grade && <div className="text-xs text-white/40 mt-1">Grade: {latestAudit.grade}</div>}
-              {!latestAudit && <div className="text-xs text-white/30 mt-1">Run first audit \u2192</div>}
+              {!latestAudit && <div className="text-xs text-white/30 mt-1">Run first audit &rarr;</div>}
             </Link>
 
             <Link href="/dashboard/geo-score" className="col-span-1 bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-blue-500/30 transition-all">
@@ -262,9 +291,19 @@ export default async function DashboardPage() {
                   </Link>
                 )}
                 {(contentPending ?? 0) === 0 && (backlinkPending ?? 0) === 0 && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <CheckCircle2 className="w-3 h-3" />All caught up!
-                  </span>
+                  !latestAudit ? (
+                    <Link href="/dashboard/seo-audit" className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300">
+                      <Zap className="w-3 h-3" />Run your first SEO audit &rarr;
+                    </Link>
+                  ) : !latestGeo ? (
+                    <Link href="/dashboard/geo-score" className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
+                      <Globe className="w-3 h-3" />Check your GEO visibility score &rarr;
+                    </Link>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-xs text-green-400">
+                      <CheckCircle2 className="w-3 h-3" />Great progress &mdash; keep building!
+                    </span>
+                  )
                 )}
               </div>
             </div>
@@ -278,7 +317,7 @@ export default async function DashboardPage() {
               </div>
               {activity && activity.length > 0 ? (
                 <div className="space-y-3">
-                  {activity.map((item: { id: string; agent: string; action: string; details?: string; created_at: string }) => {
+                  {activity.map((item: { id: string; agent: string; action: string; details?: string | null; created_at: string }) => {
                     const icon = agentIcon(item.agent);
                     return (
                       <div key={item.id} className="flex items-start gap-3 p-3 bg-white/[0.02] rounded-xl border border-white/[0.05]">

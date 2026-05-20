@@ -79,19 +79,25 @@ function MarkdownPreview({ content }: { content: string }) {
 
 export default function ContentPage() {
   const [url, setUrl] = useState('');
-  const [website, setWebsite] = useState<{ id: string; domain: string } | null>(null);
+  const [website, setWebsite] = useState<{ id: string; domain: string; url?: string } | null>(null);
   const [queueItems, setQueueItems] = useState<Array<{ id: string; title: string; target_keyword: string; word_count: number; status: string; created_at: string; content?: string }>>([]);
   const [activeMainTab, setActiveMainTab] = useState<'generate' | 'queue'>('generate');
   const [previewItem, setPreviewItem] = useState<{ id: string; title: string; target_keyword: string; word_count: number; status: string; created_at: string; content?: string } | null>(null);
 
   const loadWebsiteAndQueue = useCallback(async () => {
     const supabase = createClient();
-    const { data: ws } = await supabase.from('websites').select('id, domain').order('created_at', { ascending: true }).limit(1).single();
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: ws } = await supabase.from('websites').select('id, domain, url').order('created_at', { ascending: true }).limit(1).single();
     if (ws) {
       setWebsite(ws);
+      if (ws.url) setUrl(ws.url);
       const res = await fetch(`/api/content?websiteId=${ws.id}`);
       const data = await res.json();
       setQueueItems(data.items || []);
+    } else if (user) {
+      // Fallback: pre-fill from users.website_url
+      const { data: profile } = await supabase.from('users').select('website_url').eq('id', user.id).single();
+      if (profile?.website_url) setUrl(profile.website_url);
     }
   }, []);
 

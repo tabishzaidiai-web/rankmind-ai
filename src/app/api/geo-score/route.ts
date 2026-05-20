@@ -21,6 +21,18 @@ export async function POST(request: NextRequest) {
       targetUrl = 'https://' + targetUrl;
     }
     const result = await runGEOAnalysis(targetUrl, user.email);
+
+    // Log to timeline_events (best-effort)
+    try {
+      const gapCount = result.content_gaps?.length ?? 0;
+      await supabase.from('timeline_events').insert({
+        user_id: user.id,
+        agent: 'GEO-G',
+        action: 'Completed GEO Visibility Scan',
+        outcome: `GEO Score: ${result.geo_score}/100 — ${gapCount} content gaps identified`,
+      });
+    } catch { /* non-critical */ }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('GEO agent error:', error);

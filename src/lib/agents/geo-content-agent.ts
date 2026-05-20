@@ -29,11 +29,15 @@ export interface GEOAnalysis {
 
 export interface AIVisibility {
   score: number;
+  chatgpt_score: number;
+  perplexity_score: number;
+  gemini_score: number;
   chatgpt_optimized: boolean;
   perplexity_optimized: boolean;
   google_sge_optimized: boolean;
   issues: string[];
   strengths: string[];
+  weaknesses: string[];
 }
 
 export interface ContentGap {
@@ -41,7 +45,9 @@ export interface ContentGap {
   search_intent: 'informational' | 'commercial' | 'navigational' | 'transactional';
   ai_search_volume: 'high' | 'medium' | 'low';
   priority: number;
+  importance: number; // alias for priority, 1-10
   recommended_format: 'blog_post' | 'faq' | 'how_to' | 'comparison' | 'listicle';
+  suggested_content?: string;
 }
 
 export interface SchemaRecommendation {
@@ -77,6 +83,7 @@ export interface GEOAction {
   category: 'schema' | 'content' | 'technical' | 'authority';
   impact: 'high' | 'medium' | 'low';
   implementation: string;
+  timeline: string;
 }
 
 /**
@@ -155,17 +162,23 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
     Return JSON:
     {
       "geo_score": 0-100,
+      "chatgpt_score": 0-100,
+      "perplexity_score": 0-100,
+      "gemini_score": 0-100,
       "chatgpt_optimized": true/false,
       "perplexity_optimized": true/false,
       "google_sge_optimized": true/false,
-      "ai_visibility_issues": ["list of issues preventing AI engine visibility"],
-      "ai_visibility_strengths": ["list of existing strengths"],
+      "ai_visibility_issues": ["3 specific issues preventing AI engine visibility"],
+      "ai_visibility_strengths": ["3 existing strengths for AI visibility"],
+      "ai_visibility_weaknesses": ["3 specific weaknesses to address"],
       "content_gaps": [
         {
           "topic": "specific topic to cover",
           "search_intent": "informational/commercial/navigational/transactional",
           "ai_search_volume": "high/medium/low",
           "priority": 1-10,
+          "importance": 1-10,
+          "suggested_content": "brief description of what to write",
           "recommended_format": "blog_post/faq/how_to/comparison/listicle"
         }
       ],
@@ -196,7 +209,8 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
           "action": "specific action to take",
           "category": "schema/content/technical/authority",
           "impact": "high/medium/low",
-          "implementation": "how to implement this"
+          "implementation": "how to implement this",
+          "timeline": "Fix today / This week / This month"
         }
       ]
     }`
@@ -210,17 +224,23 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
     geo_score: currentScore,
     ai_visibility: {
       score: currentScore,
+      chatgpt_score: (analysis as { chatgpt_score?: number }).chatgpt_score ?? (analysis.chatgpt_optimized ? Math.round(currentScore * 1.05) : Math.round(currentScore * 0.75)),
+      perplexity_score: (analysis as { perplexity_score?: number }).perplexity_score ?? (analysis.perplexity_optimized ? Math.round(currentScore * 1.02) : Math.round(currentScore * 0.70)),
+      gemini_score: (analysis as { gemini_score?: number }).gemini_score ?? (analysis.google_sge_optimized ? Math.round(currentScore * 1.03) : Math.round(currentScore * 0.72)),
       chatgpt_optimized: analysis.chatgpt_optimized,
       perplexity_optimized: analysis.perplexity_optimized,
       google_sge_optimized: analysis.google_sge_optimized,
       issues: analysis.ai_visibility_issues,
       strengths: analysis.ai_visibility_strengths,
+      weaknesses: (analysis as { ai_visibility_weaknesses?: string[] }).ai_visibility_weaknesses ?? [],
     },
     content_gaps: analysis.content_gaps.map(g => ({
       topic: g.topic,
       search_intent: g.search_intent as ContentGap['search_intent'],
       ai_search_volume: g.ai_search_volume as ContentGap['ai_search_volume'],
       priority: g.priority,
+      importance: (g as { importance?: number }).importance ?? g.priority,
+      suggested_content: (g as { suggested_content?: string }).suggested_content,
       recommended_format: g.recommended_format as ContentGap['recommended_format'],
     })),
     schema_recommendations: analysis.schema_recommendations.map(s => ({
@@ -250,6 +270,7 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
       category: a.category as GEOAction['category'],
       impact: a.impact as GEOAction['impact'],
       implementation: a.implementation,
+      timeline: (a as { timeline?: string }).timeline ?? (a.impact === 'high' ? 'Fix today' : a.impact === 'medium' ? 'This week' : 'This month'),
     })),
   };
 

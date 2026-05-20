@@ -17,7 +17,18 @@ export interface SEOAuditResult {
   content_quality: ContentQualityData;
   geo_readiness: GEOReadinessData;
   backlink_opportunities: BacklinkOpportunity[];
-  action_plan: ActionItem[];
+  action_plan: Array<{
+    priority: number;
+    action: string;
+    task: string;
+    whyItMatters: string;
+    recommendation: string;
+    exampleFix?: string;
+    impact: 'high' | 'medium' | 'low';
+    effort: 'quick-win' | 'moderate' | 'advanced';
+    timeline: string;
+    category: string;
+  }>;
   llm_recommendations: string[];
 }
 
@@ -75,9 +86,14 @@ interface BacklinkOpportunity {
 
 interface ActionItem {
   priority: number;
-  task: string;
+  action: string;       // issue title (was: task)
+  task: string;         // kept for email template compatibility
+  whyItMatters: string;
+  recommendation: string;
+  exampleFix?: string;
   impact: 'high' | 'medium' | 'low';
-  effort: 'easy' | 'medium' | 'hard';
+  effort: 'quick-win' | 'moderate' | 'advanced';
+  timeline: string;
   category: string;
 }
 
@@ -144,7 +160,16 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
       "content_improvements": ["specific content improvement suggestions"],
       "geo_recommendations": ["recommendations for AI search engine optimization"],
       "action_items": [
-        {"task": "specific task", "impact": "high/medium/low", "effort": "easy/medium/hard", "category": "on-page/technical/content/backlinks"}
+        {
+          "action": "short issue title (e.g. 'Missing H1 Tag')",
+          "whyItMatters": "one sentence explaining the SEO impact",
+          "recommendation": "specific actionable fix instruction",
+          "exampleFix": "optional example of the fix",
+          "impact": "high/medium/low",
+          "effort": "quick-win/moderate/advanced",
+          "timeline": "Fix today / This week / This month",
+          "category": "on-page/technical/content/backlinks"
+        }
       ],
       "llm_recommendations": ["5 specific recommendations for ranking in AI search engines like ChatGPT, Perplexity, Google SGE"],
       "has_faq": true/false,
@@ -219,11 +244,19 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
   ];
 
   // Step 7: Build action plan
-  const actionPlan: ActionItem[] = analysis.action_items.slice(0, 8).map((item, i) => ({
+  const actionPlan: ActionItem[] = analysis.action_items.slice(0, 8).map((item: {
+    action?: string; task?: string; whyItMatters?: string; recommendation?: string;
+    exampleFix?: string; impact: string; effort: string; timeline?: string; category: string;
+  }, i) => ({
     priority: i + 1,
-    task: item.task,
+    action: item.action || item.task || 'Optimise this element',
+    task: item.action || item.task || 'Optimise this element',
+    whyItMatters: item.whyItMatters || '',
+    recommendation: item.recommendation || '',
+    exampleFix: item.exampleFix,
     impact: item.impact as 'high' | 'medium' | 'low',
-    effort: item.effort as 'easy' | 'medium' | 'hard',
+    effort: (item.effort === 'easy' ? 'quick-win' : item.effort === 'hard' ? 'advanced' : item.effort) as 'quick-win' | 'moderate' | 'advanced',
+    timeline: item.timeline || (item.impact === 'high' ? 'Fix today' : item.impact === 'medium' ? 'This week' : 'This month'),
     category: item.category,
   }));
 
