@@ -32,9 +32,14 @@ export interface AIVisibility {
   chatgpt_score: number;
   perplexity_score: number;
   gemini_score: number;
+  google_ai_mode_score: number;
+  semantic_completeness_score: number;
+  entity_density_score: number;
+  eeat_score: number;
   chatgpt_optimized: boolean;
   perplexity_optimized: boolean;
   google_sge_optimized: boolean;
+  ai_mode_citation_readiness: string;
   issues: string[];
   strengths: string[];
   weaknesses: string[];
@@ -140,15 +145,24 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
       implementation: string;
     }>;
   }>(
-    `You are an expert in Generative Engine Optimization (GEO) — the practice of optimizing websites to appear in AI-generated search results from ChatGPT, Perplexity, Google SGE, and similar AI search engines.
+    `You are an expert in Generative Engine Optimization (GEO) for 2026 — the practice of optimizing websites to appear in AI-generated search results from Google AI Overviews, Google AI Mode, ChatGPT Search, Perplexity, and Gemini.
     
-    Analyze the provided website and give comprehensive GEO recommendations. Focus on:
-    - Structured data and schema markup
-    - Content clarity and direct answers (AI engines prefer clear, factual answers)
-    - Topical authority and content depth
-    - FAQ sections and Q&A format content
-    - E-E-A-T signals (Experience, Expertise, Authoritativeness, Trustworthiness)
-    - Citation-worthy content (statistics, research, unique insights)`,
+    Critical 2026 AI Search facts:
+    - Google AI Mode surpassed 1 billion monthly users at Google I/O 2026 — it is now mainstream
+    - AI Overviews appear on 48% of all Google queries
+    - Only 53% of AI Mode citations match the top 10 organic results — ranking does NOT equal citation
+    - Content scoring 8.5/10+ on semantic completeness is 4.2x more likely in AI Overviews
+    - Optimal AI-extractable passage length is 134-167 words
+    - Pages with 15+ recognized entities show 4.8x higher citation probability
+    - FAQ sections get cited at 3x the rate of non-FAQ content
+    - 44.2% of all LLM citations come from the FIRST 30% of page text
+    - Multi-modal content sees 156% higher selection rates
+    - 96% of AI Overview citations come from sources with strong E-E-A-T signals
+    - Content under 90 days old is 3x more likely to be cited
+    - Google AI Mode uses Gemini 3.5 Flash and reasons across multiple sources simultaneously
+    
+    Analyze the provided website across ALL these dimensions and provide specific numeric scores and actionable recommendations.`,
+
     `Website URL: ${url}
     Title: ${pageData.title}
     Meta Description: ${pageData.metaDescription}
@@ -165,12 +179,17 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
       "chatgpt_score": 0-100,
       "perplexity_score": 0-100,
       "gemini_score": 0-100,
+      "google_ai_mode_score": 0-100,
+      "semantic_completeness_score": 0-10,
+      "entity_density_score": 0-100,
+      "eeat_score": 0-100,
       "chatgpt_optimized": true/false,
       "perplexity_optimized": true/false,
       "google_sge_optimized": true/false,
       "ai_visibility_issues": ["3 specific issues preventing AI engine visibility"],
       "ai_visibility_strengths": ["3 existing strengths for AI visibility"],
       "ai_visibility_weaknesses": ["3 specific weaknesses to address"],
+      "ai_mode_citation_readiness": "brief assessment of Google AI Mode citation readiness",
       "content_gaps": [
         {
           "topic": "specific topic to cover",
@@ -227,9 +246,14 @@ export async function runGEOAnalysis(url: string, clientEmail?: string): Promise
       chatgpt_score: (analysis as { chatgpt_score?: number }).chatgpt_score ?? (analysis.chatgpt_optimized ? Math.round(currentScore * 1.05) : Math.round(currentScore * 0.75)),
       perplexity_score: (analysis as { perplexity_score?: number }).perplexity_score ?? (analysis.perplexity_optimized ? Math.round(currentScore * 1.02) : Math.round(currentScore * 0.70)),
       gemini_score: (analysis as { gemini_score?: number }).gemini_score ?? (analysis.google_sge_optimized ? Math.round(currentScore * 1.03) : Math.round(currentScore * 0.72)),
+      google_ai_mode_score: (analysis as { google_ai_mode_score?: number }).google_ai_mode_score ?? Math.round(currentScore * 0.95),
+      semantic_completeness_score: (analysis as { semantic_completeness_score?: number }).semantic_completeness_score ?? Math.round(currentScore / 10),
+      entity_density_score: (analysis as { entity_density_score?: number }).entity_density_score ?? Math.round(currentScore * 0.85),
+      eeat_score: (analysis as { eeat_score?: number }).eeat_score ?? Math.round(currentScore * 0.9),
       chatgpt_optimized: analysis.chatgpt_optimized,
       perplexity_optimized: analysis.perplexity_optimized,
       google_sge_optimized: analysis.google_sge_optimized,
+      ai_mode_citation_readiness: (analysis as { ai_mode_citation_readiness?: string }).ai_mode_citation_readiness ?? 'Needs improvement',
       issues: analysis.ai_visibility_issues,
       strengths: analysis.ai_visibility_strengths,
       weaknesses: (analysis as { ai_visibility_weaknesses?: string[] }).ai_visibility_weaknesses ?? [],

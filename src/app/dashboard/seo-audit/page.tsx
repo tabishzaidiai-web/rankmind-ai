@@ -65,6 +65,14 @@ interface AuditResult {
     category?: string;
   }>;
   llm_recommendations: string[];
+  ai_citation_readiness_score?: number;
+  ai_citation_readiness_summary?: string;
+  eeat_score?: number;
+  eeat_breakdown?: { experience: number; expertise: number; authoritativeness: number; trustworthiness: number };
+  topical_authority_score?: number;
+  topical_authority_gaps?: string[];
+  semantic_completeness_score?: number;
+  entity_density_estimate?: number;
 }
 
 interface AuditHistoryItem {
@@ -492,6 +500,56 @@ export default function SEOAuditPage() {
                         {item.timeline && <span className="text-xs text-white/30">{item.timeline}</span>}
                         {item.category && <span className="text-xs text-white/20 capitalize">{item.category}</span>}
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AI Citation Readiness — New 2026 Section */}
+          {(result.ai_citation_readiness_score !== undefined || result.eeat_score !== undefined) && (
+            <div className="bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/20 rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4 text-cyan-400" />
+                <span className="font-semibold text-white text-sm">AI Citation Readiness — 2026</span>
+                <span className="text-xs text-white/30 ml-auto">Google AI Mode · ChatGPT · Perplexity</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                {[
+                  { label: 'AI Citation Score', value: result.ai_citation_readiness_score, color: 'text-cyan-400' },
+                  { label: 'E-E-A-T Score', value: result.eeat_score, color: 'text-amber-400' },
+                  { label: 'Topical Authority', value: result.topical_authority_score, color: 'text-violet-400' },
+                  { label: 'Semantic Completeness', value: result.semantic_completeness_score !== undefined ? result.semantic_completeness_score * 10 : undefined, color: 'text-emerald-400' },
+                ].filter(m => m.value !== undefined).map((metric, i) => (
+                  <div key={i} className="bg-white/5 rounded-xl p-3 text-center">
+                    <div className={`text-2xl font-bold ${metric.color}`}>{metric.value}</div>
+                    <div className="text-white/40 text-xs mt-1">{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+              {result.ai_citation_readiness_summary && (
+                <p className="text-white/60 text-sm mb-3 p-3 bg-white/5 rounded-xl">{result.ai_citation_readiness_summary}</p>
+              )}
+              {result.eeat_breakdown && (
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {Object.entries(result.eeat_breakdown).map(([key, val]) => (
+                    <div key={key} className="flex items-center justify-between text-xs">
+                      <span className="text-white/50 capitalize">{key}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-white/10 rounded-full"><div className="h-full rounded-full bg-amber-400" style={{ width: `${val}%` }} /></div>
+                        <span className="text-white/70 w-6 text-right">{val}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {result.topical_authority_gaps && result.topical_authority_gaps.length > 0 && (
+                <div>
+                  <p className="text-xs text-white/40 mb-1.5">Topical authority gaps:</p>
+                  {result.topical_authority_gaps.map((gap, i) => (
+                    <div key={i} className="flex items-start gap-1.5 text-xs text-white/60 mb-1">
+                      <span className="text-red-400 mt-0.5">−</span>{gap}
                     </div>
                   ))}
                 </div>

@@ -33,6 +33,11 @@ interface GEOAnalysis {
     chatgpt_score: number;
     perplexity_score: number;
     gemini_score: number;
+    google_ai_mode_score?: number;
+    semantic_completeness_score?: number;
+    entity_density_score?: number;
+    eeat_score?: number;
+    ai_mode_citation_readiness?: string;
     overall: number;
     strengths: string[];
     weaknesses: string[];
@@ -245,9 +250,13 @@ export default function GEOScorePage() {
               <div className="flex-1 space-y-3">
                 {result.ai_visibility && (
                   <>
-                    <ScoreBar label="ChatGPT Visibility" score={result.ai_visibility.chatgpt_score} color={barColor(result.ai_visibility.chatgpt_score)} />
-                    <ScoreBar label="Perplexity Visibility" score={result.ai_visibility.perplexity_score} color={barColor(result.ai_visibility.perplexity_score)} />
-                    <ScoreBar label="Gemini Visibility" score={result.ai_visibility.gemini_score} color={barColor(result.ai_visibility.gemini_score)} />
+                    <ScoreBar label="ChatGPT Search" score={result.ai_visibility.chatgpt_score} color={barColor(result.ai_visibility.chatgpt_score)} />
+                    <ScoreBar label="Perplexity" score={result.ai_visibility.perplexity_score} color={barColor(result.ai_visibility.perplexity_score)} />
+                    <ScoreBar label="Gemini" score={result.ai_visibility.gemini_score} color={barColor(result.ai_visibility.gemini_score)} />
+                    <ScoreBar label="Google AI Mode" score={result.ai_visibility.google_ai_mode_score ?? result.ai_visibility.gemini_score} color={barColor(result.ai_visibility.google_ai_mode_score ?? result.ai_visibility.gemini_score)} />
+                    <ScoreBar label="Semantic Completeness" score={(result.ai_visibility.semantic_completeness_score ?? 7) * 10} color={barColor((result.ai_visibility.semantic_completeness_score ?? 7) * 10)} />
+                    <ScoreBar label="Entity Density" score={result.ai_visibility.entity_density_score ?? 60} color={barColor(result.ai_visibility.entity_density_score ?? 60)} />
+                    <ScoreBar label="E-E-A-T" score={result.ai_visibility.eeat_score ?? 65} color={barColor(result.ai_visibility.eeat_score ?? 65)} />
                   </>
                 )}
               </div>

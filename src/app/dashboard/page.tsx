@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   BarChart3, Globe, Link2, FileText, TrendingUp,
-  AlertCircle, CheckCircle2, Clock, Zap, ArrowRight, Plus
+  AlertCircle, CheckCircle2, Clock, Zap, ArrowRight, Plus, Brain, Code2, RefreshCw
 } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -84,6 +84,17 @@ export default async function DashboardPage() {
         .eq('status', 'published')
     : { count: 0 };
 
+  // Fetch AI citation score (latest geo_scores has ai_citation_readiness_score)
+  const { data: latestCitation } = website
+    ? await supabase
+        .from('geo_scores')
+        .select('ai_citation_readiness_score, created_at')
+        .eq('website_id', website.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+    : { data: null };
+
   // Fetch backlink counts
   const { count: backlinkTotal } = website
     ? await supabase
@@ -142,6 +153,7 @@ export default async function DashboardPage() {
 
   const seoScore = latestAudit?.score ?? null;
   const geoScore = latestGeo?.visibility_score ?? null;
+  const citationScore = (latestCitation as { ai_citation_readiness_score?: number } | null)?.ai_citation_readiness_score ?? null;
 
   const scoreColor = (s: number | null) => {
     if (s === null) return 'text-white/40';
@@ -214,7 +226,7 @@ export default async function DashboardPage() {
       {/* Stats grid */}
       {effectiveWebsite && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             <Link href="/dashboard/seo-audit" className="col-span-1 bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-violet-500/30 transition-all">
               <div className="flex items-center gap-2 mb-3">
                 <BarChart3 className="w-4 h-4 text-violet-400" />
@@ -274,6 +286,18 @@ export default async function DashboardPage() {
               </div>
             </Link>
 
+            <Link href="/dashboard/ai-citation" className="col-span-1 bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-3">
+                <Brain className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs text-white/50 font-medium">AI Citations</span>
+              </div>
+              <div className={`text-3xl font-bold ${scoreColor(citationScore)}`}>
+                {citationScore !== null ? citationScore : '\u2014'}
+                {citationScore !== null && <span className="text-sm font-normal text-white/30">/100</span>}
+              </div>
+              <div className="text-xs text-white/30 mt-1">Citation readiness</div>
+            </Link>
+
             <div className="col-span-1 bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between">
               <div className="flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-violet-400" />
@@ -298,6 +322,10 @@ export default async function DashboardPage() {
                   ) : !latestGeo ? (
                     <Link href="/dashboard/geo-score" className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
                       <Globe className="w-3 h-3" />Check your GEO visibility score &rarr;
+                    </Link>
+                  ) : !citationScore ? (
+                    <Link href="/dashboard/ai-citation" className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300">
+                      <Brain className="w-3 h-3" />Check AI citation readiness &rarr;
                     </Link>
                   ) : (
                     <span className="flex items-center gap-1.5 text-xs text-green-400">
@@ -363,10 +391,13 @@ export default async function DashboardPage() {
             <div className="space-y-4">
               <h2 className="text-white font-semibold">Your AI Agents</h2>
               {[
-                { href: '/dashboard/seo-audit', src: '/agent-rankbot-transparent.png', name: 'RankBot', desc: 'SEO Audit Agent', color: 'hover:border-violet-500/30' },
-                { href: '/dashboard/backlinks', src: '/agent-linkbot-transparent.png', name: 'LinkBot', desc: 'Backlink Builder', color: 'hover:border-teal-500/30' },
+                { href: '/dashboard/seo-audit', src: '/agent-rankbot-transparent.png', name: 'RankBot', desc: 'SEO Audit + AI Readiness', color: 'hover:border-violet-500/30' },
+                { href: '/dashboard/geo-score', src: '/agent-geog-transparent.png', name: 'GEO-G', desc: 'AI Mode Optimizer', color: 'hover:border-blue-500/30' },
+                { href: '/dashboard/ai-citation', src: '/agent-geog-transparent.png', name: 'CitationBot', desc: 'AI Citation Tracker', color: 'hover:border-cyan-500/30', icon: 'brain' },
+                { href: '/dashboard/schema-generator', src: '/agent-rankbot-transparent.png', name: 'SchemaBot', desc: 'Schema Generator', color: 'hover:border-emerald-500/30', icon: 'code' },
+                { href: '/dashboard/freshness', src: '/agent-contentai-transparent.png', name: 'FreshnessBot', desc: 'Content Freshness', color: 'hover:border-orange-500/30', icon: 'refresh' },
                 { href: '/dashboard/content', src: '/agent-contentai-transparent.png', name: 'ContentAI', desc: 'Content Writer', color: 'hover:border-amber-500/30' },
-                { href: '/dashboard/geo-score', src: '/agent-geog-transparent.png', name: 'GEO-G', desc: 'GEO Optimizer', color: 'hover:border-blue-500/30' },
+                { href: '/dashboard/backlinks', src: '/agent-linkbot-transparent.png', name: 'LinkBot', desc: 'Backlink Builder', color: 'hover:border-teal-500/30' },
               ].map(agent => (
                 <Link
                   key={agent.href}

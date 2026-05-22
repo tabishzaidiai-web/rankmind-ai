@@ -30,6 +30,14 @@ export interface SEOAuditResult {
     category: string;
   }>;
   llm_recommendations: string[];
+  ai_citation_readiness_score?: number;
+  ai_citation_readiness_summary?: string;
+  eeat_score?: number;
+  eeat_breakdown?: { experience: number; expertise: number; authoritativeness: number; trustworthiness: number };
+  topical_authority_score?: number;
+  topical_authority_gaps?: string[];
+  semantic_completeness_score?: number;
+  entity_density_estimate?: number;
 }
 
 interface KeywordData {
@@ -131,10 +139,18 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
     has_clear_answers: boolean;
     has_schema_signals: boolean;
   }>(
-    `You are an expert SEO analyst. Analyze the provided webpage content and return a comprehensive SEO analysis as JSON.
-    
+    `You are an expert SEO analyst specializing in both traditional SEO and AI-era optimization for 2026.
+    Analyze the provided webpage content and return a comprehensive SEO analysis as JSON.
     Be specific and actionable. Base your analysis entirely on the actual content provided.
-    Return realistic keyword difficulty scores (0-100) and volume estimates based on the niche.`,
+    Return realistic keyword difficulty scores (0-100) and volume estimates based on the niche.
+    
+    Critical 2026 context: Google AI Mode now has 1 billion monthly users. AI Overviews appear on 48% of all queries.
+    Only 53% of AI Mode citations match the top 10 organic results — ranking does NOT equal citation.
+    Your analysis MUST include AI citation readiness scoring alongside traditional SEO metrics.
+    Key AI citation signals: semantic completeness (8.5+/10 = 4.2x more citations), entity density (15+ entities = 4.8x boost),
+    FAQ sections (3x citation rate), front-loaded key claims (44.2% of citations from first 30% of text),
+    E-E-A-T signals (96% of AI Overview citations require strong E-E-A-T), content freshness (under 90 days = 3x boost).`,
+
     `Analyze this webpage:
     
     URL: ${url}
@@ -171,7 +187,20 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
           "category": "on-page/technical/content/backlinks"
         }
       ],
-      "llm_recommendations": ["5 specific recommendations for ranking in AI search engines like ChatGPT, Perplexity, Google SGE"],
+      "llm_recommendations": ["5 specific recommendations for ranking in AI search engines like ChatGPT, Perplexity, Google AI Mode, Google SGE"],
+      "ai_citation_readiness_score": 0-100,
+      "ai_citation_readiness_summary": "brief assessment of AI citation readiness",
+      "eeat_score": 0-100,
+      "eeat_breakdown": {
+        "experience": 0-100,
+        "expertise": 0-100,
+        "authoritativeness": 0-100,
+        "trustworthiness": 0-100
+      },
+      "topical_authority_score": 0-100,
+      "topical_authority_gaps": ["3 specific topic gaps that reduce topical authority"],
+      "semantic_completeness_score": 0-10,
+      "entity_density_estimate": 0-30,
       "has_faq": true/false,
       "has_clear_answers": true/false,
       "has_schema_signals": true/false
@@ -259,6 +288,11 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
     timeline: item.timeline || (item.impact === 'high' ? 'Fix today' : item.impact === 'medium' ? 'This week' : 'This month'),
     category: item.category,
   }));
+
+  // Extract new AI-era fields with safe fallbacks
+  const aiCitationScore = (analysis as { ai_citation_readiness_score?: number }).ai_citation_readiness_score ?? Math.round(overallScore * 0.85);
+  const eeatScore = (analysis as { eeat_score?: number }).eeat_score ?? Math.round(overallScore * 0.9);
+  const topicalAuthorityScore = (analysis as { topical_authority_score?: number }).topical_authority_score ?? Math.round(overallScore * 0.8);
 
   const result: SEOAuditResult = {
     url,
@@ -356,6 +390,14 @@ export async function runSEOAudit(url: string, clientEmail?: string): Promise<SE
     ],
     action_plan: actionPlan,
     llm_recommendations: analysis.llm_recommendations,
+    ai_citation_readiness_score: aiCitationScore,
+    ai_citation_readiness_summary: (analysis as { ai_citation_readiness_summary?: string }).ai_citation_readiness_summary,
+    eeat_score: eeatScore,
+    eeat_breakdown: (analysis as { eeat_breakdown?: { experience: number; expertise: number; authoritativeness: number; trustworthiness: number } }).eeat_breakdown,
+    topical_authority_score: topicalAuthorityScore,
+    topical_authority_gaps: (analysis as { topical_authority_gaps?: string[] }).topical_authority_gaps,
+    semantic_completeness_score: (analysis as { semantic_completeness_score?: number }).semantic_completeness_score,
+    entity_density_estimate: (analysis as { entity_density_estimate?: number }).entity_density_estimate,
   };
 
   // Step 8: Send email report if client email provided
