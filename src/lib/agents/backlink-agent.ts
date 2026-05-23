@@ -160,9 +160,17 @@ Only include sites with niche_relevance >= 5 and estimated_da >= 20. Max 8 resul
 Return: { "opportunities": [...] }`
   );
 
-  return (qualified.opportunities || []).map((opp, i) => ({
+  return (qualified.opportunities || []).map((opp, i) => {
+    // Always extract domain server-side — never trust AI to provide it correctly
+    let cleanDomain = '';
+    try {
+      cleanDomain = new URL(opp.url).hostname.replace(/^www\./, '');
+    } catch {
+      cleanDomain = opp.domain || opp.url || 'unknown';
+    }
+    return {
     id: `opp_${i + 1}`,
-    domain: opp.domain || (() => { try { return new URL(opp.url).hostname; } catch { return opp.url; } })(),
+    domain: cleanDomain,
     url: opp.url,
     title: opp.title,
     type: (opp.type as BacklinkOpportunity['type']) || 'guest_post',
@@ -173,7 +181,8 @@ Return: { "opportunities": [...] }`
     has_write_for_us: opp.has_write_for_us,
     status: 'qualified' as const,
     notes: opp.notes || '',
-  }));
+  };
+  });
 }
 
 async function writeOutreachEmails(

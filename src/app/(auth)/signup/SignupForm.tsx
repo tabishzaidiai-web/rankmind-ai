@@ -29,6 +29,7 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
 export default function SignupForm() {
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan') || '';
+  const urlParam = searchParams.get('url') || '';
   const planInfo = PLAN_LABELS[plan];
 
   const [name, setName] = useState('');
@@ -65,6 +66,7 @@ export default function SignupForm() {
       setLoading(false);
     } else {
       if (plan) sessionStorage.setItem('rankmind_selected_plan', plan);
+      if (urlParam) sessionStorage.setItem('rankmind_hero_url', urlParam);
       router.push('/verify-email');
     }
   };
@@ -84,6 +86,14 @@ export default function SignupForm() {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
         <p className="text-white/50 text-sm mb-5">Start with a free SEO audit — no credit card required</p>
+
+        {/* URL analysis banner */}
+        {urlParam && (
+          <div className="flex items-start gap-2 p-3 rounded-xl border border-violet-500/30 bg-violet-500/10 text-sm text-violet-300 mb-5">
+            <span className="text-base leading-none mt-0.5">🔍</span>
+            <span>We&apos;ll analyse <strong className="text-white">{decodeURIComponent(urlParam).replace(/^https?:\/\//, '')}</strong> as soon as you sign up</span>
+          </div>
+        )}
 
         {/* Plan banner */}
         {planInfo && (

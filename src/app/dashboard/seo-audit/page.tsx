@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -172,17 +173,28 @@ function ProgressStep({ label, delay }: { label: string; delay: number }) {
 }
 
 export default function SEOAuditPage() {
-  const [url, setUrl] = useState('');
+  const searchParams = useSearchParams();
+  const [url, setUrl] = useState(searchParams.get('url') ? decodeURIComponent(searchParams.get('url')!) : '');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [error, setError] = useState('');
   const [expandedSection, setExpandedSection] = useState<string | null>('on_page');
   const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
 
-  // Pre-fill URL from saved website
+  // Pre-fill URL: 1) ?url param  2) sessionStorage hero URL  3) saved website
   useEffect(() => {
     const prefillUrl = async () => {
       try {
+        // 1. URL search param takes highest priority
+        if (searchParams.get('url')) return;
+        // 2. sessionStorage hero URL from homepage form
+        const heroUrl = sessionStorage.getItem('rankmind_hero_url');
+        if (heroUrl) {
+          setUrl(decodeURIComponent(heroUrl));
+          sessionStorage.removeItem('rankmind_hero_url');
+          return;
+        }
+        // 3. Fallback: user's saved website
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -197,7 +209,7 @@ export default function SEOAuditPage() {
       } catch { /* no website saved yet */ }
     };
     prefillUrl();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchHistory = async () => {

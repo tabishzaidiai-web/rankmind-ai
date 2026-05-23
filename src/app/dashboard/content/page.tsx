@@ -90,14 +90,15 @@ export default function ContentPage() {
     const { data: ws } = await supabase.from('websites').select('id, domain, url').order('created_at', { ascending: true }).limit(1).single();
     if (ws) {
       setWebsite(ws);
-      if (ws.url) setUrl(ws.url);
+      // Only pre-fill if the user hasn't already typed something (prevents concatenation bug)
+      if (ws.url) setUrl((prev) => prev || ws.url!);
       const res = await fetch(`/api/content?websiteId=${ws.id}`);
       const data = await res.json();
       setQueueItems(data.items || []);
     } else if (user) {
-      // Fallback: pre-fill from users.website_url
+      // Fallback: pre-fill from users.website_url (only if empty)
       const { data: profile } = await supabase.from('users').select('website_url').eq('id', user.id).single();
-      if (profile?.website_url) setUrl(profile.website_url);
+      if (profile?.website_url) setUrl((prev) => prev || profile.website_url);
     }
   }, []);
 
