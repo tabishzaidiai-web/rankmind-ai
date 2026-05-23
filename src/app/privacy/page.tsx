@@ -4,6 +4,15 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacy Policy — RankMind AI',
   description: 'RankMind AI Privacy Policy. Learn how we collect, use, and protect your data.',
+  alternates: {
+    canonical: 'https://www.rank-mind.com/privacy',
+  },
+  openGraph: {
+    url: 'https://www.rank-mind.com/privacy',
+    title: 'Privacy Policy — RankMind AI',
+    description: 'RankMind AI Privacy Policy. Learn how we collect, use, and protect your data.',
+    images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
+  },
 };
 
 const LAST_UPDATED = 'May 15, 2026';

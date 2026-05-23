@@ -27,7 +27,7 @@ export default function Sidebar({ user }: { user: User }) {
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push('/');
   };
 
   const isActive = (href: string) =>
@@ -159,7 +159,7 @@ export default function Sidebar({ user }: { user: User }) {
         </div>
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400/70 hover:text-red-300 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
         >
           <LogOut className="w-4 h-4" />
           Sign Out

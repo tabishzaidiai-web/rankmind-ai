@@ -5,16 +5,23 @@ import Link from 'next/link';
 import { Cookie, X, Check } from 'lucide-react';
 
 export default function CookieBanner() {
+  // mounted guard: prevents localStorage access during SSR and hydration mismatch
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    // Only access localStorage after the component has mounted on the client
     const consent = localStorage.getItem('rankmind_cookie_consent');
     if (!consent) {
-      // Small delay so it doesn't flash on first render
-      const timer = setTimeout(() => setVisible(true), 800);
+      const timer = setTimeout(() => setVisible(true), 1200);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [mounted]);
 
   const accept = () => {
     localStorage.setItem('rankmind_cookie_consent', 'accepted');
@@ -29,11 +36,12 @@ export default function CookieBanner() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  // Don't render anything until mounted (prevents SSR/hydration mismatch)
+  if (!mounted || !visible) return null;
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6"
+      className="fixed bottom-0 left-0 right-0 z-[9999] p-4 sm:p-6"
       role="dialog"
       aria-label="Cookie consent"
       aria-live="polite"

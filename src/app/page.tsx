@@ -127,16 +127,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function HomePage() {
-  const [heroUrl, setHeroUrl] = useState('');
   const [scrolled, setScrolled] = useState(false);
-
-  const handleHeroSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = heroUrl.trim();
-    if (!trimmed) return;
-    const fullUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
-    window.location.href = `/signup?url=${encodeURIComponent(fullUrl)}`;
-  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -232,33 +223,18 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Hero URL input form */}
-          <form onSubmit={handleHeroSubmit} className="w-full max-w-xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-stretch gap-3">
-              <input
-                type="text"
-                value={heroUrl}
-                onChange={(e) => setHeroUrl(e.target.value)}
-                placeholder="Enter your website URL — e.g. yoursite.com"
-                className="flex-1 bg-white/5 border border-white/15 rounded-xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
-              />
-              <button
-                type="submit"
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-6 py-4 rounded-xl transition-all text-sm whitespace-nowrap"
-              >
-                Analyse My Site Free <ArrowRight className="w-4 h-4" />
-              </button>
+          {/* Live Demo — working inline demo, no signup required */}
+          <div className="w-full max-w-3xl mx-auto mt-2">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="text-sm text-white/50 bg-white/5 border border-white/10 rounded-full px-4 py-1.5">
+                🔍 Live Demo — No signup required
+              </span>
             </div>
-          </form>
-          <p className="mt-4 text-sm text-white/40">No credit card required. Free SEO audit included.</p>
-          <a href="#how-it-works" className="mt-2 flex items-center justify-center gap-1.5 text-white/40 hover:text-white/70 transition-colors text-sm">
-            See How It Works <ArrowRight className="w-3 h-3" />
-          </a>
+            <AgentDemo />
+          </div>
+          <p className="mt-6 text-sm text-white/30">No credit card required. Free SEO audit included.</p>
         </div>
       </section>
-
-      {/* Interactive Agent Demo */}
-      <AgentDemo />
 
       {/* Stats */}
       <section className="py-12 px-6 border-y border-white/5">

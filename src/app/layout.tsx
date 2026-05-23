@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import CookieBanner from '@/components/CookieBanner';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mind.com';
+export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mind.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

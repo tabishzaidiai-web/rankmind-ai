@@ -1,9 +1,19 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import SignupForm from './SignupForm';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Sign Up — RankMind AI',
   description: 'Create your RankMind AI account and start your free SEO audit.',
+  alternates: {
+    canonical: 'https://www.rank-mind.com/signup',
+  },
+  openGraph: {
+    url: 'https://www.rank-mind.com/signup',
+    title: 'Sign Up — RankMind AI',
+    description: 'Create your RankMind AI account and start your free SEO audit.',
+    images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
+  },
 };
 
 export default function SignupPage() {
