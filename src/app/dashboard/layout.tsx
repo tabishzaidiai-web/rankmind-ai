@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
+import { DashboardVoiceAgent } from '@/components/DashboardVoiceAgent';
 
 export default async function DashboardLayout({
   children,
@@ -17,6 +18,14 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
+  // Fetch user plan for the voice agent
+  const { data: userData } = await supabase
+    .from('users')
+    .select('plan_name')
+    .eq('id', user.id)
+    .single();
+  const plan = userData?.plan_name || 'starter';
+
   return (
     <div className="flex h-screen bg-[#0a0a0f] overflow-hidden">
       {/* Persistent Sidebar — always visible on desktop */}
@@ -31,6 +40,9 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Gemini Voice Agent — Paid Mode (all 7 agents available) */}
+      <DashboardVoiceAgent plan={plan} />
     </div>
   );
 }
