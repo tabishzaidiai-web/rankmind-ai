@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { GoogleGenAI, Type, type FunctionDeclaration } from '@google/genai'
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
 
 export const maxDuration = 60
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
-
 // ============================================
-// TOOL DEFINITIONS — Your existing agents as Gemini tools
+// TOOL DEFINITIONS — RankMind agents as Gemini function declarations
 // ============================================
-const RANKMIND_TOOLS: FunctionDeclaration[] = [
+const RANKMIND_TOOLS = [
   {
     name: 'run_seo_audit',
     description: 'Runs a full SEO audit on a website. Checks title tag, meta description, H1, HTTPS, page speed, mobile friendliness, schema markup, canonical tags, content depth, and image alt text. Returns a score out of 100, a letter grade, specific issues found, and quick wins.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
         url: {
-          type: Type.STRING,
+          type: SchemaType.STRING,
           description: 'The full website URL to audit. Always include https://'
         }
       },
@@ -28,9 +26,12 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_geo_analysis',
     description: 'Analyses how visible the website is in AI search engines — ChatGPT, Perplexity, Google AI Overviews, Gemini, and Microsoft Copilot. Returns a GEO visibility score and specific recommendations to appear in AI-generated answers.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The full website URL to analyse' }
+        url: {
+          type: SchemaType.STRING,
+          description: 'The full website URL to analyse'
+        }
       },
       required: ['url']
     }
@@ -39,12 +40,15 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_backlink_finder',
     description: 'Finds real backlink opportunities for a website. Searches the web for guest post sites, contributor blogs, and resource pages in the same niche. Returns prospects with domain authority scores and ready-to-send outreach email templates.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The website URL' },
+        url: {
+          type: SchemaType.STRING,
+          description: 'The website URL'
+        },
         niche: {
-          type: Type.STRING,
-          description: 'The business niche or industry. Examples: digital marketing, e-commerce fashion, SaaS project management, plumbing services, accounting software'
+          type: SchemaType.STRING,
+          description: 'The business niche or industry. Examples: digital marketing, e-commerce fashion, SaaS project management'
         }
       },
       required: ['url', 'niche']
@@ -54,9 +58,12 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_ai_citation_check',
     description: 'Checks how well the website content is structured to be cited by AI systems like ChatGPT and Perplexity when answering user questions. Returns citation readiness score, E-E-A-T score, semantic completeness score, and specific gaps to fill.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The website URL to check' }
+        url: {
+          type: SchemaType.STRING,
+          description: 'The website URL to check'
+        }
       },
       required: ['url']
     }
@@ -65,11 +72,14 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_schema_generator',
     description: 'Generates JSON-LD structured data schema markup for the website. Helps Google display rich results like star ratings, FAQs, prices, and business info in search results.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The website URL' },
+        url: {
+          type: SchemaType.STRING,
+          description: 'The website URL'
+        },
         page_type: {
-          type: Type.STRING,
+          type: SchemaType.STRING,
           description: 'Type of page: homepage, product, article, local_business, faq, or auto'
         }
       },
@@ -80,9 +90,12 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_content_freshness',
     description: 'Analyses content decay risk — checks if the website content is becoming outdated and losing rankings. Returns a freshness score, risk level, and a 12-week content refresh plan.',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The website URL' }
+        url: {
+          type: SchemaType.STRING,
+          description: 'The website URL'
+        }
       },
       required: ['url']
     }
@@ -91,11 +104,14 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
     name: 'run_full_audit',
     description: 'Runs ALL agents in sequence — SEO audit, GEO analysis, AI citation check, schema generation, content freshness, and backlink finder. Use this when the user wants a complete analysis or says things like "analyse everything", "full audit", "check my whole site", or "run all agents".',
     parameters: {
-      type: Type.OBJECT,
+      type: SchemaType.OBJECT,
       properties: {
-        url: { type: Type.STRING, description: 'The website URL' },
+        url: {
+          type: SchemaType.STRING,
+          description: 'The website URL'
+        },
         niche: {
-          type: Type.STRING,
+          type: SchemaType.STRING,
           description: 'Business niche for backlink finding. If unknown, make a reasonable guess from the URL or ask.'
         }
       },
@@ -107,313 +123,299 @@ const RANKMIND_TOOLS: FunctionDeclaration[] = [
 // ============================================
 // SYSTEM PROMPTS
 // ============================================
-const VISITOR_SYSTEM_PROMPT = `You are RankMind — a friendly, expert SEO voice agent on the RankMind AI website.
+const VISITOR_SYSTEM_PROMPT = `You are the RankMind AI Voice Agent — a friendly, expert SEO assistant on the RankMind AI website.
 
-You are talking to a VISITOR who has not yet signed up. Your job is to:
-1. Impress them with a real, fast SEO analysis of their website
-2. Show them exactly what problems their site has
-3. Convince them to sign up to fix those problems automatically
+You are in VISITOR MODE. You can only run one tool: run_seo_audit.
 
-YOUR PERSONALITY:
-- Warm, confident, and direct — like a senior SEO consultant
-- Speak in short sentences under 15 words each — this is voice output
-- Never use markdown, bullet points, asterisks, or formatting
-- Sound human and conversational, not robotic
+Your personality: Confident, helpful, slightly enthusiastic about SEO. Speak in plain English, not jargon. Keep responses under 3 sentences for voice delivery.
 
-YOUR RULES:
-- You can ONLY run the SEO audit tool for visitors — no backlinks, GEO, or other agents
-- Always ask for the website URL if not provided
-- Confirm the URL before running: "Let me analyse example.com right now"
-- After getting results, speak the score and top 2 issues only
-- Always end with: "Want me to automatically fix all of this? Sign up free — it takes 30 seconds"
-- Keep every response under 60 words
+When a user gives you a URL, immediately call run_seo_audit with that URL. Do not ask for confirmation.
 
-EXAMPLE GOOD RESPONSE:
-"I just audited shopify.com. They score 90 out of 100. The main issue is the meta description is slightly long at 179 characters. Google is trimming it in search results. Want me to find and fix all issues on your site automatically? Sign up free — it takes 30 seconds."
+After delivering results, always end with: "Sign up free at rank-mind.com to get your full report, track keywords, and find backlink opportunities."
 
-EXAMPLE BAD RESPONSE (never do this):
-"Here are the results: • HTTPS: 100/100 • Title Tag: 70/100 • Meta Description: 65/100" (never use bullet points or numbers like this in voice)`
+If the user asks about other features (GEO, backlinks, content), say: "That's available in your dashboard — sign up free and I'll run it for you."
 
-const DASHBOARD_SYSTEM_PROMPT = (userEmail: string, plan: string) =>
-`You are the RankMind AI Master Agent — a powerful, autonomous SEO and GEO agent working exclusively for ${userEmail}.
+Always be encouraging and positive about what can be improved.`
 
-You have FULL access to all 7 specialist agents and you decide which ones to run and in what order.
+const DASHBOARD_SYSTEM_PROMPT = `You are the RankMind AI Voice Agent — a powerful AI SEO assistant embedded in the RankMind AI dashboard.
 
-YOUR PERSONALITY:
-- Confident, proactive, and action-oriented — you are a senior SEO director
-- Speak in short sentences under 15 words each — this is voice output
-- Never use markdown, bullet points, asterisks, or symbols
-- After completing each agent task, immediately suggest the next logical step
-- You are proactive — if SEO audit reveals backlink issues, you offer to run LinkBot next
+You have access to 7 specialist agents:
+1. run_seo_audit — Full technical SEO audit with score, grade, issues, and quick wins
+2. run_geo_analysis — AI search visibility across ChatGPT, Perplexity, Gemini, AI Overviews
+3. run_backlink_finder — Real backlink opportunities with outreach email templates
+4. run_ai_citation_check — Citation readiness for AI systems, E-E-A-T scoring
+5. run_schema_generator — JSON-LD structured data markup generator
+6. run_content_freshness — Content decay risk analysis and 12-week refresh plan
+7. run_full_audit — Runs ALL agents in sequence for a complete site analysis
 
-YOUR AGENTS:
-- RankBot: SEO audit — technical on-page analysis
-- GEO-G: AI visibility — ChatGPT, Perplexity, Google AI Overviews
-- LinkBot: Backlink finder — real prospects with outreach emails
-- CitationBot: AI citation readiness — E-E-A-T and semantic completeness
-- SchemaBot: JSON-LD schema generator — rich results in Google
-- FreshnessBot: Content decay analysis — 12-week refresh plan
-- Full Audit: Runs all agents in sequence automatically
+Your personality: Expert, efficient, results-focused. Speak in plain English. Keep spoken responses under 4 sentences — the full data appears in the dashboard.
 
-CURRENT USER PLAN: ${plan}
-${plan === 'starter' ? 'Note: This user is on Starter plan. Do not offer backlink finding — it requires Growth plan.' : ''}
+When a user gives you a URL and a task, call the appropriate tool immediately. Do not ask for confirmation.
 
-YOUR RULES:
-- Always confirm the URL before running any tool
-- After each agent completes, summarise in 2-3 short spoken sentences
-- Always suggest the next logical agent: "Want me to check your AI visibility next?"
-- If user says "run everything" or "full audit" → call run_full_audit immediately
-- Keep every response under 80 words
-- Remember context across the conversation — if they mentioned a URL earlier, use it
+After tool results, summarise the key finding in 1-2 sentences and say "Full results are now in your dashboard."
 
-EXAMPLE FLOW:
-User: "Check my website"
-You: "What is your website URL?"
-User: "rank-mind.com"
-You: "Running the full SEO audit on rank-mind.com now. Give me 15 seconds."
-[calls run_seo_audit]
-You: "Done. Rank-mind scores 73 out of 100, grade B. The headings structure needs work and you have no FAQ schema. Want me to generate the schema markup automatically?"`
+For run_full_audit, tell the user you're running all 7 agents and it will take about 30 seconds.`
 
 // ============================================
-// MAIN API HANDLER
+// TOOL EXECUTOR — calls existing agent API routes
 // ============================================
-export async function POST(request: Request) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const {
-    message,
-    conversationHistory = [],
-    isVisitor = false,
-    sessionUrl = null
-  } = await request.json()
-
-  if (!message?.trim()) {
-    return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+async function executeTool(
+  name: string,
+  args: Record<string, string>,
+  origin: string,
+  cookieHeader: string
+): Promise<Record<string, unknown>> {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Cookie': cookieHeader,
+    'x-internal-call': 'voice-agent'
   }
 
-  const isAuthenticated = !!user
-  const useVisitorMode = isVisitor || !isAuthenticated
-
-  let plan = 'starter'
-  let userEmail = 'visitor'
-
-  if (isAuthenticated && user) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('plan_name, subscription_status')
-      .eq('id', user.id)
-      .single()
-    plan = userData?.plan_name || 'starter'
-    userEmail = user.email || 'user'
-  }
-
-  const systemPrompt = useVisitorMode
-    ? VISITOR_SYSTEM_PROMPT
-    : DASHBOARD_SYSTEM_PROMPT(userEmail, plan)
-
-  const contextMessage = sessionUrl
-    ? `${message} (The user already entered this URL in the demo: ${sessionUrl})`
-    : message
-
-  const contents = [
-    ...conversationHistory,
-    { role: 'user', parts: [{ text: contextMessage }] }
-  ]
-
-  // Visitors only get the SEO audit tool
-  const availableTools = useVisitorMode
-    ? RANKMIND_TOOLS.filter(t => t.name === 'run_seo_audit')
-    : RANKMIND_TOOLS
-
-  // First Gemini call — decides what to do
-  let response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents,
-    config: {
-      systemInstruction: systemPrompt,
-      tools: [{ functionDeclarations: availableTools }]
-    }
-  })
-
-  const candidate = response.candidates?.[0]
-  const functionCall = candidate?.content?.parts?.find((p: any) => p.functionCall)
-
-  if (functionCall?.functionCall) {
-    const { name, args = {} } = functionCall.functionCall
-
-    // Log the agentic action to timeline
-    if (isAuthenticated && user) {
-      void (async () => {
-        try {
-          await supabase.from('timeline_events').insert({
-            user_id: user.id,
-            agent: 'VoiceMaster',
-            action: `Called ${name}`,
-            outcome: `Args: ${JSON.stringify(args)}`
-          })
-        } catch { /* non-critical */ }
-      })()
-    }
-
-    const origin = request.headers.get('origin') ||
-                   process.env.NEXT_PUBLIC_SITE_URL ||
-                   'http://localhost:3000'
-    const cookieHeader = request.headers.get('cookie') || ''
-
-    let toolResult: any = {}
-
-    try {
-      if (name === 'run_seo_audit') {
+  try {
+    switch (name) {
+      case 'run_seo_audit': {
         const res = await fetch(`${origin}/api/seo-audit`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
+          headers,
           body: JSON.stringify({ url: args.url })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_geo_analysis') {
+      case 'run_geo_analysis': {
         const res = await fetch(`${origin}/api/geo-score`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
+          headers,
           body: JSON.stringify({ url: args.url })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_backlink_finder') {
+      case 'run_backlink_finder': {
         const res = await fetch(`${origin}/api/backlinks`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-          body: JSON.stringify({ url: args.url, niche: args.niche })
+          headers,
+          body: JSON.stringify({ url: args.url, niche: args.niche || 'general' })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_ai_citation_check') {
+      case 'run_ai_citation_check': {
         const res = await fetch(`${origin}/api/ai-citation`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
+          headers,
           body: JSON.stringify({ url: args.url })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_schema_generator') {
+      case 'run_schema_generator': {
         const res = await fetch(`${origin}/api/schema-generator`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-          body: JSON.stringify({ url: args.url, pageType: args.page_type || 'auto' })
+          headers,
+          body: JSON.stringify({ url: args.url, page_type: args.page_type || 'auto' })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_content_freshness') {
+      case 'run_content_freshness': {
         const res = await fetch(`${origin}/api/freshness`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
+          headers,
           body: JSON.stringify({ url: args.url })
         })
-        toolResult = await res.json()
+        return await res.json()
+      }
 
-      } else if (name === 'run_full_audit') {
-        // Run all agents in parallel for speed
-        const [seo, geo, citation, schema, freshness] = await Promise.allSettled([
-          fetch(`${origin}/api/seo-audit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-            body: JSON.stringify({ url: args.url })
-          }).then(r => r.json()),
-          fetch(`${origin}/api/geo-score`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-            body: JSON.stringify({ url: args.url })
-          }).then(r => r.json()),
-          fetch(`${origin}/api/ai-citation`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-            body: JSON.stringify({ url: args.url })
-          }).then(r => r.json()),
-          fetch(`${origin}/api/schema-generator`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-            body: JSON.stringify({ url: args.url, pageType: 'auto' })
-          }).then(r => r.json()),
-          fetch(`${origin}/api/freshness`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': cookieHeader },
-            body: JSON.stringify({ url: args.url })
-          }).then(r => r.json()),
+      case 'run_full_audit': {
+        // Run SEO + GEO in parallel, then the rest
+        const [seoRes, geoRes] = await Promise.all([
+          fetch(`${origin}/api/seo-audit`, { method: 'POST', headers, body: JSON.stringify({ url: args.url }) }),
+          fetch(`${origin}/api/geo-score`, { method: 'POST', headers, body: JSON.stringify({ url: args.url }) })
+        ])
+        const [seo, geo] = await Promise.all([seoRes.json(), geoRes.json()])
+
+        const [citationRes, schemaRes, freshnessRes, backlinksRes] = await Promise.all([
+          fetch(`${origin}/api/ai-citation`, { method: 'POST', headers, body: JSON.stringify({ url: args.url }) }),
+          fetch(`${origin}/api/schema-generator`, { method: 'POST', headers, body: JSON.stringify({ url: args.url }) }),
+          fetch(`${origin}/api/freshness`, { method: 'POST', headers, body: JSON.stringify({ url: args.url }) }),
+          fetch(`${origin}/api/backlinks`, { method: 'POST', headers, body: JSON.stringify({ url: args.url, niche: args.niche || 'general' }) })
+        ])
+        const [citation, schema, freshness, backlinks] = await Promise.all([
+          citationRes.json(), schemaRes.json(), freshnessRes.json(), backlinksRes.json()
         ])
 
-        toolResult = {
-          seo_audit: seo.status === 'fulfilled' ? seo.value : { error: 'failed' },
-          geo_analysis: geo.status === 'fulfilled' ? geo.value : { error: 'failed' },
-          ai_citation: citation.status === 'fulfilled' ? citation.value : { error: 'failed' },
-          schema: schema.status === 'fulfilled' ? schema.value : { error: 'failed' },
-          freshness: freshness.status === 'fulfilled' ? freshness.value : { error: 'failed' },
+        return {
+          seo_audit: { score: seo.score, grade: seo.grade, top_issues: seo.issues?.slice(0, 3) },
+          geo_analysis: { score: geo.overall_score, top_recommendation: geo.recommendations?.[0] },
+          ai_citation: { score: citation.citation_score, top_gap: citation.gaps?.[0] },
+          schema: { types_generated: schema.schema_types?.join(', ') },
+          freshness: { risk_level: freshness.risk_level, score: freshness.freshness_score },
+          backlinks: { opportunities_found: backlinks.opportunities?.length || 0 }
         }
       }
-    } catch (err) {
-      toolResult = { error: 'Tool call failed', details: String(err) }
+
+      default:
+        return { error: `Unknown tool: ${name}` }
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`[VoiceAgent] Tool execution failed for ${name}:`, message)
+    return { error: `Tool ${name} failed: ${message}` }
+  }
+}
+
+// ============================================
+// MAIN POST HANDLER
+// ============================================
+export async function POST(request: Request) {
+  // Guard: check API key before doing anything
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('[VoiceAgent] GEMINI_API_KEY is not set in environment variables')
+    return NextResponse.json({
+      response: 'The voice agent is not configured yet. Please contact support.',
+      conversationHistory: [],
+      error: 'Agent not configured'
+    }, { status: 500 })
+  }
+
+  try {
+    const body = await request.json()
+    const { message, isVisitor, conversationHistory = [], userPlan } = body
+
+    if (!message?.trim()) {
+      return NextResponse.json({
+        response: 'Please say or type something.',
+        conversationHistory
+      })
     }
 
-    // Second Gemini call — synthesise tool result into a voice-friendly response
-    const toolResultSummary = JSON.stringify(toolResult).slice(0, 3000) // cap to avoid token overflow
+    // Auth check for dashboard mode
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const isAuthenticated = !!user
 
-    const finalResponse = await ai.models.generateContent({
+    // Build origin — always use NEXT_PUBLIC_SITE_URL in production
+    const origin = process.env.NEXT_PUBLIC_SITE_URL ||
+                   `https://${request.headers.get('host')}` ||
+                   'https://www.rank-mind.com'
+
+    // Cookie forwarding for authenticated agent calls
+    const cookieHeader = request.headers.get('cookie') || ''
+
+    // System prompt based on mode
+    const systemPrompt = isVisitor ? VISITOR_SYSTEM_PROMPT : DASHBOARD_SYSTEM_PROMPT
+
+    // Available tools based on mode
+    const availableTools = isVisitor
+      ? RANKMIND_TOOLS.filter(t => t.name === 'run_seo_audit')
+      : RANKMIND_TOOLS
+
+    // Initialise Gemini with the stable SDK
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      contents: [
-        ...contents,
-        { role: 'model', parts: [{ functionCall: { name, args } }] },
-        {
-          role: 'tool',
-          parts: [{
-            functionResponse: {
-              name,
-              response: { result: toolResultSummary }
-            }
-          }]
-        }
-      ],
-      config: {
-        systemInstruction: systemPrompt
-      }
+      systemInstruction: systemPrompt,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: [{ functionDeclarations: availableTools as any[] }]
     })
 
-    const finalText = finalResponse.candidates?.[0]?.content?.parts
-      ?.filter((p: any) => p.text)
-      ?.map((p: any) => p.text)
-      ?.join(' ')
-      ?.trim() || 'I completed the analysis. Please check your dashboard for the full results.'
+    // Build chat history from conversation
+    const history = conversationHistory
+      .filter((msg: { role: string }) => msg.role === 'user' || msg.role === 'model')
+      .map((msg: { role: string; parts: { text: string }[] }) => ({
+        role: msg.role,
+        parts: msg.parts
+      }))
 
-    // Build updated conversation history for the client
+    const chat = model.startChat({ history })
+
+    // Add context about user plan if in dashboard mode
+    const contextMessage = isAuthenticated && !isVisitor
+      ? `[User plan: ${userPlan || 'starter'}] ${message}`
+      : message
+
+    // Send message to Gemini
+    const result = await chat.sendMessage(contextMessage)
+    const response = result.response
+
+    // Check for function call
+    const functionCalls = response.functionCalls()
+    if (functionCalls && functionCalls.length > 0) {
+      const { name, args } = functionCalls[0]
+
+      // Log to timeline (non-blocking)
+      if (isAuthenticated && user) {
+        void (async () => {
+          try {
+            await supabase.from('timeline_events').insert({
+              user_id: user.id,
+              agent: 'VoiceMaster',
+              action: `Called ${name}`,
+              outcome: `Args: ${JSON.stringify(args)}`
+            })
+          } catch { /* non-critical */ }
+        })()
+      }
+
+      // Execute the tool
+      const toolResult = await executeTool(
+        name,
+        args as Record<string, string>,
+        origin,
+        cookieHeader
+      )
+
+      // Send tool result back to Gemini for synthesis
+      const toolResultSummary = JSON.stringify(toolResult).slice(0, 3000)
+      const finalResult = await chat.sendMessage([{
+        functionResponse: {
+          name,
+          response: { result: toolResultSummary }
+        }
+      }])
+
+      const spokenText = finalResult.response.text() ||
+        'I completed the analysis. Please check your dashboard for the full results.'
+
+      // Build updated conversation history
+      const updatedHistory = [
+        ...conversationHistory,
+        { role: 'user', parts: [{ text: message }] },
+        { role: 'model', parts: [{ text: spokenText }] }
+      ]
+
+      return NextResponse.json({
+        response: spokenText,
+        toolCalled: name,
+        agentAction: true,
+        conversationHistory: updatedHistory
+      })
+    }
+
+    // No function call — direct text response
+    const spokenText = response.text() ||
+      "I'm not sure how to help with that. Try asking me to analyse a website URL."
+
     const updatedHistory = [
-      ...contents,
-      { role: 'model', parts: [{ text: finalText }] }
+      ...conversationHistory,
+      { role: 'user', parts: [{ text: message }] },
+      { role: 'model', parts: [{ text: spokenText }] }
     ]
 
     return NextResponse.json({
-      response: finalText,
-      toolCalled: name,
-      agentAction: true,
+      response: spokenText,
       conversationHistory: updatedHistory
     })
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+    console.error('[VoiceAgent] Fatal error:', message, stack)
+    return NextResponse.json({
+      response: "I'm having trouble connecting right now. Please try again in a moment.",
+      conversationHistory: [],
+      error: process.env.NODE_ENV === 'development' ? message : 'Internal error'
+    }, { status: 500 })
   }
-
-  // No tool call — just a conversational response
-  const textResponse = candidate?.content?.parts
-    ?.filter((p: any) => p.text)
-    ?.map((p: any) => p.text)
-    ?.join(' ')
-    ?.trim() || "I'm here to help with your SEO. What would you like to analyse?"
-
-  const updatedHistory = [
-    ...contents,
-    { role: 'model', parts: [{ text: textResponse }] }
-  ]
-
-  return NextResponse.json({
-    response: textResponse,
-    toolCalled: null,
-    agentAction: false,
-    conversationHistory: updatedHistory
-  })
 }

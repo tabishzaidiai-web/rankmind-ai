@@ -86,53 +86,6 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
     synthRef.current.speak(utterance)
   }, [])
 
-  const startListening = useCallback(() => {
-    if (isThinking) return
-    const SpeechRecognition = (window as any).SpeechRecognition ||
-                               (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      alert('Voice input requires Chrome browser. Please use Chrome or type your message below.')
-      return
-    }
-    synthRef.current?.cancel()
-    setIsSpeaking(false)
-    setTranscript('')
-
-    recognitionRef.current = new SpeechRecognition()
-    recognitionRef.current.continuous = false
-    recognitionRef.current.interimResults = true
-    recognitionRef.current.lang = 'en-US'
-
-    recognitionRef.current.onstart = () => setIsListening(true)
-
-    recognitionRef.current.onresult = (event: any) => {
-      const result = event.results[event.results.length - 1]
-      setTranscript(result[0].transcript)
-    }
-
-    recognitionRef.current.onend = () => {
-      setIsListening(false)
-      setTranscript(prev => {
-        if (prev.trim()) {
-          handleSend(prev.trim())
-        }
-        return ''
-      })
-    }
-
-    recognitionRef.current.onerror = () => {
-      setIsListening(false)
-      setTranscript('')
-    }
-
-    recognitionRef.current.start()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isThinking])
-
-  const stopListening = useCallback(() => {
-    recognitionRef.current?.stop()
-  }, [])
-
   const handleSend = useCallback(async (text: string) => {
     if (!text.trim() || isThinking) return
 
@@ -188,6 +141,63 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
       setInputText('')
     }
   }
+
+  const toggleListening = useCallback(() => {
+    if (isThinking) return
+
+    if (isListening) {
+      // Stop listening immediately
+      recognitionRef.current?.stop()
+      setIsListening(false)
+      return
+    }
+
+    // Start listening
+    const SpeechRecognition = (window as any).SpeechRecognition ||
+                               (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Voice input requires Chrome browser. Please use Chrome or type your message below.')
+      return
+    }
+    synthRef.current?.cancel()
+    setIsSpeaking(false)
+    setTranscript('')
+
+    recognitionRef.current = new SpeechRecognition()
+    recognitionRef.current.continuous = false
+    recognitionRef.current.interimResults = true
+    recognitionRef.current.lang = 'en-US'
+
+    recognitionRef.current.onstart = () => setIsListening(true)
+
+    recognitionRef.current.onresult = (event: any) => {
+      const result = event.results[event.results.length - 1]
+      const text = result[0].transcript
+      setTranscript(text)
+      // Auto-stop when speech is final
+      if (result.isFinal) {
+        recognitionRef.current?.stop()
+      }
+    }
+
+    recognitionRef.current.onend = () => {
+      setIsListening(false)
+      setTranscript(prev => {
+        if (prev.trim()) {
+          handleSend(prev.trim())
+        }
+        return ''
+      })
+    }
+
+    recognitionRef.current.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error)
+      setIsListening(false)
+      setTranscript('')
+    }
+
+    recognitionRef.current.start()
+  }, [isListening, isThinking, handleSend])
 
   // Tool name to friendly label
   const toolLabel: Record<string, string> = {
@@ -382,10 +392,7 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
             flexShrink: 0
           }}>
             <button
-              onMouseDown={startListening}
-              onMouseUp={stopListening}
-              onTouchStart={startListening}
-              onTouchEnd={stopListening}
+              onClick={toggleListening}
               disabled={isThinking}
               style={{
                 width: '100%',
@@ -405,15 +412,15 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                transition: 'all 0.15s',
+                transition: 'all 0.2s',
                 letterSpacing: '0.2px'
               }}
             >
               {isThinking
                 ? '⚙️ Agent working...'
                 : isListening
-                  ? '🔴 Release to send'
-                  : '🎙️ Hold to speak'
+                  ? '🔴 Click to send'
+                  : '🎙️ Click to speak'
               }
             </button>
 
