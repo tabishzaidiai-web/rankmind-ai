@@ -3,6 +3,14 @@ import stripe from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
+  console.log('[Stripe Checkout] ENV CHECK:', {
+    hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
+    secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8),
+    starterPriceId: process.env.STRIPE_STARTER_PRICE_ID,
+    growthPriceId: process.env.STRIPE_GROWTH_PRICE_ID,
+    enterprisePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+  });
   try {
     const supabase = await createClient();
 
@@ -58,7 +66,7 @@ export async function POST(request: NextRequest) {
         .eq('id', user.id);
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'https://www.rank-mind.com';
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -109,8 +117,8 @@ export async function GET(request: NextRequest) {
 
   const PLAN_PRICE_MAP: Record<string, string> = {
     starter: process.env.STRIPE_STARTER_PRICE_ID!,
-    growth: process.env.STRIPE_PRO_PRICE_ID!,
-    pro: process.env.STRIPE_PRO_PRICE_ID!, // legacy alias
+    growth: process.env.STRIPE_GROWTH_PRICE_ID ?? process.env.STRIPE_PRO_PRICE_ID!,
+    pro: process.env.STRIPE_GROWTH_PRICE_ID ?? process.env.STRIPE_PRO_PRICE_ID!, // legacy alias
     enterprise: process.env.STRIPE_ENTERPRISE_PRICE_ID!,
   };
 
@@ -134,7 +142,7 @@ export async function GET(request: NextRequest) {
       await supabase.from('users').update({ stripe_customer_id: customerId }).eq('id', user.id);
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.rank-mind.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.rank-mind.com';
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',

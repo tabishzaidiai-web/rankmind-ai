@@ -63,7 +63,16 @@ export async function updateSession(request: NextRequest) {
       .select('onboarding_completed')
       .eq('id', user.id)
       .single();
-    url.pathname = (!profile || !profile.onboarding_completed) ? '/dashboard/onboarding' : '/dashboard';
+    const plan = request.nextUrl.searchParams.get('plan');
+    if (!profile || !profile.onboarding_completed) {
+      url.pathname = '/dashboard/onboarding';
+    } else if (plan) {
+      // Logged-in user clicked a pricing button — send directly to Stripe checkout GET route
+      url.pathname = '/api/stripe/checkout';
+      url.searchParams.set('plan', plan);
+    } else {
+      url.pathname = '/dashboard';
+    }
     return NextResponse.redirect(url);
   }
 

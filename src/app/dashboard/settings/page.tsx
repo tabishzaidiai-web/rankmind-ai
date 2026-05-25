@@ -157,12 +157,30 @@ export default async function SettingsPage() {
           {periodEnd && <p className="text-xs text-white/30 mt-3">Renews {periodEnd}</p>}
         </div>
         {isFree ? (
-          <Link
-            href="/#pricing"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold rounded-xl text-sm transition-all"
-          >
-            View Starter, Growth &amp; Enterprise Plans <ExternalLink className="w-4 h-4" />
-          </Link>
+          <div className="space-y-2">
+            <p className="text-xs text-white/40 mb-3">Choose a plan to unlock full access:</p>
+            <a
+              href="/api/stripe/checkout?plan=starter"
+              className="flex items-center justify-between w-full px-4 py-2.5 bg-white/5 hover:bg-violet-500/10 border border-white/10 hover:border-violet-500/30 text-white rounded-xl text-sm transition-all"
+            >
+              <span>Starter <span className="text-white/40">$29/mo</span></span>
+              <ExternalLink className="w-3.5 h-3.5 text-white/40" />
+            </a>
+            <a
+              href="/api/stripe/checkout?plan=growth"
+              className="flex items-center justify-between w-full px-4 py-2.5 bg-gradient-to-r from-violet-600/20 to-cyan-600/10 hover:from-violet-600/30 hover:to-cyan-600/20 border border-violet-500/30 text-white rounded-xl text-sm transition-all"
+            >
+              <span className="font-semibold">Growth <span className="text-white/60">$79/mo</span> <span className="text-xs text-violet-400 ml-1">Most Popular</span></span>
+              <ExternalLink className="w-3.5 h-3.5 text-violet-400" />
+            </a>
+            <a
+              href="/api/stripe/checkout?plan=enterprise"
+              className="flex items-center justify-between w-full px-4 py-2.5 bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-white rounded-xl text-sm transition-all"
+            >
+              <span>Enterprise <span className="text-white/40">$149/mo</span></span>
+              <ExternalLink className="w-3.5 h-3.5 text-white/40" />
+            </a>
+          </div>
         ) : (
           <a href="/api/stripe/portal" className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl text-sm transition-all">
             Manage Billing <ExternalLink className="w-4 h-4" />

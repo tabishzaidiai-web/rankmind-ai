@@ -126,6 +126,35 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+function PricingButton({ planKey, cta, className }: { planKey: string; cta: string; className: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    // Always go to signup for unauthenticated flow — the GET checkout route handles auth check
+    // For logged-in users, use the GET route which redirects directly to Stripe
+    // We use the GET route as a universal entry point to avoid client-side auth checks
+    // (The GET route checks auth server-side and redirects to login if needed)
+    e.preventDefault();
+    setLoading(true);
+    try {
+      window.location.href = `/api/stripe/checkout?plan=${planKey}`;
+    } catch {
+      setLoading(false);
+      window.location.href = `/signup?plan=${planKey}`;
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className={`${className} disabled:opacity-70 disabled:cursor-wait`}
+    >
+      {loading ? 'Loading...' : cta}
+    </button>
+  );
+}
+
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -417,13 +446,12 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
-                  {/* Plan pre-selection: pass plan query param to signup */}
-                  <Link
-                    href={`/signup?plan=${plan.planKey}`}
-                    className={`block text-center py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
-                  >
-                    {plan.cta}
-                  </Link>
+                  {/* Pricing CTA: GET /api/stripe/checkout?plan=X handles auth check server-side */}
+                  <PricingButton
+                    planKey={plan.planKey}
+                    cta={plan.cta}
+                    className={`w-full block text-center py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                  />
                 </div>
               </FadeSection>
             ))}
