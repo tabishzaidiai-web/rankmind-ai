@@ -88,16 +88,15 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
 
   const handleSend = useCallback(async (text: string) => {
     if (!text.trim() || isThinking) return
-
     synthRef.current?.cancel()
     setIsSpeaking(false)
-
     const userMessage: Message = { role: 'user', text }
     setMessages(prev => [...prev, userMessage])
     setIsThinking(true)
 
     try {
-      const res = await fetch('/api/voice-agent', {
+      // ── Call 1: Send to Gemini, get tool decision (< 8s) ──────────────────
+      const call1Res = await fetch('/api/voice-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -107,24 +106,48 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
           sessionUrl
         })
       })
+      if (!call1Res.ok) throw new Error(`Call 1 error: ${call1Res.status}`)
+      const call1Data = await call1Res.json()
 
-      if (!res.ok) throw new Error(`API error: ${res.status}`)
+      if (call1Data.type === 'tool') {
+        // ── Call 2: Execute the tool and synthesise response (< 8s) ──────────
+        // Show a thinking label while the agent runs
+        const call2Res = await fetch('/api/voice-agent/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toolName: call1Data.toolName,
+            toolArgs: call1Data.toolArgs,
+            conversationHistory: call1Data.conversationHistory,
+            isVisitor,
+            userId: call1Data.userId
+          })
+        })
+        if (!call2Res.ok) throw new Error(`Call 2 error: ${call2Res.status}`)
+        const call2Data = await call2Res.json()
 
-      const data = await res.json()
-
-      if (data.response) {
         const agentMessage: Message = {
           role: 'agent',
-          text: data.response,
-          agentAction: data.agentAction,
-          toolCalled: data.toolCalled
+          text: call2Data.response,
+          agentAction: true,
+          toolCalled: call1Data.toolName
         }
         setMessages(prev => [...prev, agentMessage])
-        setConversationHistory(data.conversationHistory || [])
+        setConversationHistory(call2Data.conversationHistory || [])
+        setTimeout(() => speak(call2Data.response), 200)
 
-        // Small delay before speaking so UI updates first
-        setTimeout(() => speak(data.response), 200)
+      } else {
+        // ── Direct text response — no tool needed ─────────────────────────
+        const agentMessage: Message = {
+          role: 'agent',
+          text: call1Data.response,
+          agentAction: false
+        }
+        setMessages(prev => [...prev, agentMessage])
+        setConversationHistory(call1Data.conversationHistory || [])
+        setTimeout(() => speak(call1Data.response), 200)
       }
+
     } catch {
       const errMsg = 'Sorry, I had a connection issue. Please try again.'
       setMessages(prev => [...prev, { role: 'agent', text: errMsg }])
