@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!
+  apiKey: (process.env.Rank_mind_Claude || process.env.ANTHROPIC_API_KEY)!
 })
 
 const AUDITOR_SYSTEM_PROMPT = `You are an elite SEO and GEO audit specialist with 20 years experience.
