@@ -405,23 +405,23 @@ export default function HomePage() {
           <FadeSection>
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-              <p className="text-white/60 text-lg">Start free. Scale as you grow.</p>
+              <p className="text-white/60 text-lg">Flash Sale — lock in your rate before it goes up.</p>
             </div>
           </FadeSection>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: 'Starter', price: '$29', planKey: 'starter', desc: 'Perfect for individual websites',
+                name: 'Starter', price: '$29', launchPrice: '$5', planKey: 'starter', desc: 'Perfect for individual websites',
                 features: ['Full SEO Audit (20+ factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
                 cta: 'Start with Starter', popular: false,
               },
               {
-                name: 'Growth', price: '$79', planKey: 'growth', desc: 'For agencies and growing businesses',
+                name: 'Growth', price: '$79', launchPrice: '$15', planKey: 'growth', desc: 'For agencies and growing businesses',
                 features: ['Everything in Starter', 'Backlink Builder Agent', '10 backlinks/week guaranteed', 'Outreach email automation', 'Google Sheets tracking', '5 websites'],
                 cta: 'Start with Growth', popular: true,
               },
               {
-                name: 'Enterprise', price: '$149', planKey: 'enterprise', desc: 'Full SEO machine for agencies',
+                name: 'Enterprise', price: '$149', launchPrice: '$49', planKey: 'enterprise', desc: 'Full SEO machine for agencies',
                 features: ['Everything in Growth', 'GEO Optimizer Agent', 'AI Content Writer Agent', 'ChatGPT/Perplexity visibility', 'Custom agent instructions', 'Unlimited websites', 'Priority support'],
                 cta: 'Start with Enterprise', popular: false,
               },
@@ -432,12 +432,17 @@ export default function HomePage() {
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">MOST POPULAR</div>
                   )}
                   <div className="mb-6">
-                    <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                    <p className="text-white/50 text-sm mb-4">{plan.desc}</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      <span className="text-white/50">/month</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-xl font-bold">{plan.name}</h3>
+                      <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Flash Sale</span>
                     </div>
+                    <p className="text-white/50 text-sm mb-4">{plan.desc}</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold">{plan.launchPrice}</span>
+                      <span className="text-white/50">/month</span>
+                      <span className="text-white/40 line-through text-lg ml-1">{plan.price}</span>
+                    </div>
+                    <p className="text-amber-400/80 text-xs mt-1">Was {plan.price}/mo — save {Math.round((1 - parseInt(plan.launchPrice.replace('$','')) / parseInt(plan.price.replace('$',''))) * 100)}% during flash sale</p>
                   </div>
                   <ul className="space-y-3 mb-8 flex-1">
                     {plan.features.map((f) => (
