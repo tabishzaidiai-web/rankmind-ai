@@ -121,11 +121,12 @@ Rules:
 - Never read out raw JSON, long lists, or technical field names.`
 
 export async function POST(request: Request) {
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('[VoiceAgent/Think] GEMINI_API_KEY is not set')
+  const geminiKey = process.env.Gemini_API_Key || process.env.GEMINI_API_KEY
+  if (!geminiKey) {
+    console.error('[VoiceAgent/Think] Gemini_API_Key is not set')
     return NextResponse.json({
       type: 'text',
-      response: 'The voice agent is not configured yet. Please add your GEMINI_API_KEY to Vercel environment variables.',
+      response: 'The voice agent is not configured yet. Please add your Gemini_API_Key to Vercel environment variables.',
       conversationHistory: [],
       error: 'Agent not configured'
     }, { status: 500 })
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
       ? RANKMIND_TOOLS.filter(t => t.name === 'run_seo_audit')
       : RANKMIND_TOOLS
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const genAI = new GoogleGenerativeAI(geminiKey)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt,

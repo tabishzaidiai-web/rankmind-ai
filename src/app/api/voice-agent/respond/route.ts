@@ -19,8 +19,9 @@ Highlight the single most important finding and one quick win. Tell the user to 
 Never read raw JSON, field names, or long lists.`
 
 export async function POST(request: Request) {
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('[VoiceAgent/Respond] GEMINI_API_KEY is not set')
+  const geminiKey = process.env.Gemini_API_Key || process.env.GEMINI_API_KEY
+  if (!geminiKey) {
+    console.error('[VoiceAgent/Respond] Gemini_API_Key is not set')
     return NextResponse.json({
       response: 'The voice agent is not configured yet.',
       error: 'Agent not configured'
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const genAI = new GoogleGenerativeAI(geminiKey)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: isVisitor ? SYNTHESIS_PROMPT_VISITOR : SYNTHESIS_PROMPT_DASHBOARD
