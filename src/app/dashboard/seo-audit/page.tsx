@@ -181,6 +181,40 @@ export default function SEOAuditPage() {
   const [expandedSection, setExpandedSection] = useState<string | null>('on_page');
   const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
 
+  // ── Deep Audit (Claude AI) ────────────────────────────────────────────────
+  const [deepLoading, setDeepLoading] = useState(false);
+  const [deepResult, setDeepResult] = useState<{
+    url: string; overall_score: number; grade: string; summary: string;
+    issues: Array<{ severity: string; title: string; detail: string; fix: string; category: string }>;
+    wins: string[]; scores: Record<string, number>; quick_wins: string[];
+  } | null>(null);
+  const [deepError, setDeepError] = useState<string | null>(null);
+
+  const handleDeepAudit = async () => {
+    if (!url.trim()) return;
+    setDeepLoading(true);
+    setDeepError(null);
+    setDeepResult(null);
+    try {
+      const res = await fetch('/api/claude-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.status === 403) {
+        setDeepError('upgrade_required');
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Deep audit failed');
+      setDeepResult(data);
+    } catch (err) {
+      setDeepError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setDeepLoading(false);
+    }
+  };
+
   // Pre-fill URL: 1) ?url param  2) sessionStorage hero URL  3) saved website
   useEffect(() => {
     const prefillUrl = async () => {
@@ -292,6 +326,16 @@ export default function SEOAuditPage() {
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 {loading ? 'Analyzing...' : 'Run Audit'}
               </button>
+              <button
+                type="button"
+                onClick={handleDeepAudit}
+                disabled={deepLoading || !url.trim()}
+                title="Deep Audit uses Claude AI to browse your live site and find real specific issues. Growth & Enterprise only."
+                className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap border border-amber-500/30"
+              >
+                {deepLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                {deepLoading ? 'Deep Scanning...' : 'Deep Audit'}
+              </button>
             </div>
             {loading && (
               <div className="mt-5 space-y-2">
@@ -311,6 +355,144 @@ export default function SEOAuditPage() {
             <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
+            </div>
+          )}
+
+          {/* Deep Audit loading steps */}
+          {deepLoading && (
+            <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
+              <p className="text-amber-400 text-xs font-semibold mb-2">Claude AI is browsing your live site…</p>
+              {[
+                { label: 'Fetching live page source and reading real content', delay: 0 },
+                { label: 'Checking title tags, meta descriptions, H1 tags', delay: 800 },
+                { label: 'Scanning for JSON-LD schema and structured data', delay: 2000 },
+                { label: 'Analysing brand consistency and GEO signals', delay: 4000 },
+                { label: 'Generating specific fixes with real values found', delay: 6000 },
+              ].map((step, i) => <ProgressStep key={i} label={step.label} delay={step.delay} />)}
+            </div>
+          )}
+
+          {/* Deep Audit upgrade prompt */}
+          {deepError === 'upgrade_required' && (
+            <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span className="text-amber-400 font-semibold text-sm">Deep Audit — Growth & Enterprise Only</span>
+              </div>
+              <p className="text-white/60 text-sm mb-3">Claude AI browses your actual live site, reads real page source, and finds specific issues with exact values. Upgrade to unlock.</p>
+              <a href="/#pricing" className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl transition-all">
+                View Growth Plan →
+              </a>
+            </div>
+          )}
+
+          {/* Deep Audit general error */}
+          {deepError && deepError !== 'upgrade_required' && (
+            <div className="flex items-center gap-3 mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              Deep Audit: {deepError}
+            </div>
+          )}
+
+          {/* Deep Audit Results */}
+          {deepResult && (
+            <div className="mt-5 space-y-4">
+              {/* Score header */}
+              <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                  <span className="font-bold text-white">Claude Deep Audit Results</span>
+                  <span className="text-xs text-white/30 ml-auto">Browsed your live site</span>
+                </div>
+                <div className="flex items-center gap-6 mb-4">
+                  <div className="text-center">
+                    <div className="text-4xl font-black text-amber-400">{deepResult.overall_score}</div>
+                    <div className="text-xs text-white/40 mt-1">Overall Score</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-4xl font-black ${deepResult.grade === 'A' || deepResult.grade === 'A+' ? 'text-emerald-400' : deepResult.grade === 'B' || deepResult.grade === 'B+' ? 'text-cyan-400' : deepResult.grade === 'C' || deepResult.grade === 'C+' ? 'text-amber-400' : 'text-red-400'}`}>{deepResult.grade}</div>
+                    <div className="text-xs text-white/40 mt-1">Grade</div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white/70 text-sm leading-relaxed">{deepResult.summary}</p>
+                  </div>
+                </div>
+                {/* Score breakdown */}
+                {Object.keys(deepResult.scores).length > 0 && (
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {Object.entries(deepResult.scores).map(([key, val]) => (
+                      <div key={key} className="text-center">
+                        <div className={`text-lg font-bold ${val >= 80 ? 'text-emerald-400' : val >= 60 ? 'text-amber-400' : 'text-red-400'}`}>{val}</div>
+                        <div className="text-white/30 text-xs capitalize">{key}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick wins */}
+              {deepResult.quick_wins.length > 0 && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span className="font-semibold text-white text-sm">Quick Wins</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {deepResult.quick_wins.map((win, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                        <span className="text-emerald-400 mt-0.5">✓</span>{win}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Issues */}
+              {deepResult.issues.length > 0 && (
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-red-400" />
+                    <span className="font-semibold text-white text-sm">{deepResult.issues.length} Issues Found</span>
+                  </div>
+                  <div className="space-y-3">
+                    {deepResult.issues.map((issue, i) => (
+                      <div key={i} className={`p-3 rounded-xl border ${
+                        issue.severity === 'critical' ? 'bg-red-500/10 border-red-500/20' :
+                        issue.severity === 'warning' ? 'bg-amber-500/10 border-amber-500/20' :
+                        'bg-white/5 border-white/10'
+                      }`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase px-1.5 py-0.5 rounded ${
+                            issue.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                            issue.severity === 'warning' ? 'bg-amber-500/20 text-amber-400' :
+                            'bg-white/10 text-white/50'
+                          }`}>{issue.severity}</span>
+                          <span className="text-white font-medium text-sm">{issue.title}</span>
+                        </div>
+                        <p className="text-white/60 text-xs mb-1.5">{issue.detail}</p>
+                        <p className="text-teal-400 text-xs">→ {issue.fix}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Wins */}
+              {deepResult.wins.length > 0 && (
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                    <span className="font-semibold text-white text-sm">What You&apos;re Doing Well</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {deepResult.wins.map((win, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                        <span className="text-cyan-400 mt-0.5">✓</span>{win}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 

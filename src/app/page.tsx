@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AgentDemo from '@/components/AgentDemo';
-import { VoiceAgent } from '@/components/VoiceAgent';
 import RankEverywhere from '@/components/RankEverywhere';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -509,16 +508,14 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Live Chat Widget — moved left so it doesn't overlap VoiceAgent */}
+      {/* Support Chat Widget */}
       <a
         href="mailto:support@rankmind.ai"
-        className="fixed bottom-6 right-24 z-40 w-12 h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30 hover:scale-110 transition-transform"
+        className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30 hover:scale-110 transition-transform"
         title="Contact Support"
       >
         <MessageCircle className="w-5 h-5 text-white" />
       </a>
-      {/* Gemini Voice Agent — Visitor Mode (no signup required) */}
-      <VoiceAgent isVisitor={true} sessionUrl={null} userPlan="free" />
     </div>
   );
 }
