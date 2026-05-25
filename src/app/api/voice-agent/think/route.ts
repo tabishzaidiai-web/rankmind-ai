@@ -2,17 +2,16 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai'
 
-// ─── Vercel Hobby: 10s max — this route must complete in < 8s ─────────────────
-// Call 1 of 2: Send user message to Gemini, get tool decision back.
-// NO tool execution happens here. Returns either:
-//   { type: 'tool',   toolName, toolArgs, conversationHistory }
-//   { type: 'direct', response, conversationHistory }
-// The frontend then calls /api/voice-agent/execute for tool calls.
+// ─── Call 1 of 3: THINK ───────────────────────────────────────────────────────
+// Sends the user message to Gemini 2.0 Flash with tool declarations.
+// Returns EITHER:
+//   { type: 'tool_call', toolName, toolArgs, conversationHistory, userId }
+//   { type: 'text',      response, conversationHistory }
+// No tool execution happens here — this call completes in ~2-4s.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const maxDuration = 8
+export const maxDuration = 10
 
-// ── Tool declarations (schema only — no execution here) ──────────────────────
 const RANKMIND_TOOLS = [
   {
     name: 'run_seo_audit',
@@ -20,10 +19,7 @@ const RANKMIND_TOOLS = [
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The full website URL to audit. Always include https://'
-        }
+        url: { type: SchemaType.STRING, description: 'The full website URL to audit. Always include https://' }
       },
       required: ['url']
     }
@@ -34,60 +30,42 @@ const RANKMIND_TOOLS = [
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The full website URL to analyse'
-        }
+        url: { type: SchemaType.STRING, description: 'The full website URL to analyse' }
       },
       required: ['url']
     }
   },
   {
     name: 'run_backlink_finder',
-    description: 'Finds real backlink opportunities for a website. Searches the web for guest post sites, contributor blogs, and resource pages in the same niche. Returns prospects with domain authority scores and ready-to-send outreach email templates.',
+    description: 'Finds real backlink opportunities for a website. Searches the web for guest post sites, contributor blogs, and resource pages in the same niche.',
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The website URL'
-        },
-        niche: {
-          type: SchemaType.STRING,
-          description: 'The business niche or industry. Examples: digital marketing, e-commerce fashion, SaaS project management'
-        }
+        url: { type: SchemaType.STRING, description: 'The website URL' },
+        niche: { type: SchemaType.STRING, description: 'The business niche or industry' }
       },
       required: ['url', 'niche']
     }
   },
   {
     name: 'run_ai_citation_check',
-    description: 'Checks how well the website content is structured to be cited by AI systems like ChatGPT and Perplexity. Returns citation readiness score, E-E-A-T score, semantic completeness score, and specific gaps to fill.',
+    description: 'Checks how well the website content is structured to be cited by AI systems like ChatGPT and Perplexity. Returns citation readiness score, E-E-A-T score, and specific gaps to fill.',
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The website URL to check'
-        }
+        url: { type: SchemaType.STRING, description: 'The website URL to check' }
       },
       required: ['url']
     }
   },
   {
     name: 'run_schema_generator',
-    description: 'Generates JSON-LD structured data schema markup for the website. Helps Google display rich results like star ratings, FAQs, prices, and business info in search results.',
+    description: 'Generates JSON-LD structured data schema markup for the website. Helps Google display rich results.',
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The website URL'
-        },
-        page_type: {
-          type: SchemaType.STRING,
-          description: 'Type of page: homepage, product, article, local_business, faq, or auto'
-        }
+        url: { type: SchemaType.STRING, description: 'The website URL' },
+        page_type: { type: SchemaType.STRING, description: 'Type of page: homepage, product, article, local_business, faq, or auto' }
       },
       required: ['url']
     }
@@ -98,35 +76,25 @@ const RANKMIND_TOOLS = [
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The website URL'
-        }
+        url: { type: SchemaType.STRING, description: 'The website URL' }
       },
       required: ['url']
     }
   },
   {
     name: 'run_full_audit',
-    description: 'Runs ALL agents in sequence — SEO audit, GEO analysis, AI citation check, schema generation, content freshness, and backlink finder. Use this when the user wants a complete analysis or says things like "analyse everything", "full audit", "check my whole site", or "run all agents".',
+    description: 'Runs ALL agents in sequence — SEO audit, GEO analysis, AI citation check, schema generation, content freshness, and backlink finder. Use this when the user wants a complete analysis.',
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        url: {
-          type: SchemaType.STRING,
-          description: 'The website URL'
-        },
-        niche: {
-          type: SchemaType.STRING,
-          description: 'Business niche for backlink finding. If unknown, make a reasonable guess from the URL or ask.'
-        }
+        url: { type: SchemaType.STRING, description: 'The website URL' },
+        niche: { type: SchemaType.STRING, description: 'Business niche for backlink finding' }
       },
       required: ['url']
     }
   }
 ]
 
-// ── System prompts ────────────────────────────────────────────────────────────
 const VISITOR_SYSTEM_PROMPT = `You are Aria, the RankMind AI voice assistant. You help website owners improve their SEO and AI search visibility.
 
 You are speaking to a visitor who has NOT signed up yet. You can run ONE tool: run_seo_audit.
@@ -152,12 +120,11 @@ Rules:
 - Keep all responses under 100 words — this will be spoken aloud.
 - Never read out raw JSON, long lists, or technical field names.`
 
-// ── Main handler: Call 1 ──────────────────────────────────────────────────────
 export async function POST(request: Request) {
   if (!process.env.GEMINI_API_KEY) {
-    console.error('[VoiceAgent/Call1] GEMINI_API_KEY is not set')
+    console.error('[VoiceAgent/Think] GEMINI_API_KEY is not set')
     return NextResponse.json({
-      type: 'direct',
+      type: 'text',
       response: 'The voice agent is not configured yet. Please add your GEMINI_API_KEY to Vercel environment variables.',
       conversationHistory: [],
       error: 'Agent not configured'
@@ -170,24 +137,21 @@ export async function POST(request: Request) {
 
     if (!message?.trim()) {
       return NextResponse.json({
-        type: 'direct',
+        type: 'text',
         response: 'Please say or type something.',
         conversationHistory
       })
     }
 
-    // Auth check for dashboard mode
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const isAuthenticated = !!user
 
-    // System prompt and tools based on mode
     const systemPrompt = isVisitor ? VISITOR_SYSTEM_PROMPT : DASHBOARD_SYSTEM_PROMPT
     const availableTools = isVisitor
       ? RANKMIND_TOOLS.filter(t => t.name === 'run_seo_audit')
       : RANKMIND_TOOLS
 
-    // Initialise Gemini
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
@@ -196,7 +160,6 @@ export async function POST(request: Request) {
       tools: [{ functionDeclarations: availableTools as any[] }]
     })
 
-    // Build chat history (user/model turns only)
     const history = conversationHistory
       .filter((msg: { role: string }) => msg.role === 'user' || msg.role === 'model')
       .map((msg: { role: string; parts: { text: string }[] }) => ({
@@ -206,12 +169,10 @@ export async function POST(request: Request) {
 
     const chat = model.startChat({ history })
 
-    // Add plan context for dashboard users
     const contextMessage = isAuthenticated && !isVisitor
       ? `[User plan: ${userPlan || 'starter'}] ${message}`
       : message
 
-    // ── Send to Gemini — ONLY get the decision, do NOT execute ──────────────
     const result = await chat.sendMessage(contextMessage)
     const response = result.response
     const functionCalls = response.functionCalls()
@@ -219,16 +180,13 @@ export async function POST(request: Request) {
     if (functionCalls && functionCalls.length > 0) {
       const { name, args } = functionCalls[0]
 
-      // Build updated history including this turn (tool call pending)
       const updatedHistory = [
         ...conversationHistory,
         { role: 'user', parts: [{ text: message }] }
-        // model turn will be added after execution in Call 2
       ]
 
-      // Return tool decision to frontend — no execution here
       return NextResponse.json({
-        type: 'tool',
+        type: 'tool_call',
         toolName: name,
         toolArgs: args,
         conversationHistory: updatedHistory,
@@ -237,7 +195,6 @@ export async function POST(request: Request) {
       })
     }
 
-    // ── Direct text response (no tool needed) ────────────────────────────────
     const spokenText = response.text() ||
       "I'm not sure how to help with that. Try asking me to analyse a website URL."
 
@@ -248,7 +205,7 @@ export async function POST(request: Request) {
     ]
 
     return NextResponse.json({
-      type: 'direct',
+      type: 'text',
       response: spokenText,
       conversationHistory: updatedHistory
     })
@@ -256,9 +213,9 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error)
     const stack = error instanceof Error ? error.stack : undefined
-    console.error('[VoiceAgent/Call1] Error:', msg, stack)
+    console.error('[VoiceAgent/Think] Error:', msg, stack)
     return NextResponse.json({
-      type: 'direct',
+      type: 'text',
       response: "I'm having trouble connecting right now. Please try again in a moment.",
       conversationHistory: [],
       error: process.env.NODE_ENV === 'development' ? msg : 'Internal error'

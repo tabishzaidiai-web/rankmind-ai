@@ -95,8 +95,8 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
     setIsThinking(true)
 
     try {
-      // ── Call 1: Send to Gemini, get tool decision (< 8s) ──────────────────
-      const call1Res = await fetch('/api/voice-agent', {
+      // ── Call 1 /think: Send to Gemini, get tool decision (~2-4s) ──────────
+      const thinkRes = await fetch('/api/voice-agent/think', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,46 +106,59 @@ export function VoiceAgent({ isVisitor, sessionUrl, userPlan }: VoiceAgentProps)
           sessionUrl
         })
       })
-      if (!call1Res.ok) throw new Error(`Call 1 error: ${call1Res.status}`)
-      const call1Data = await call1Res.json()
+      if (!thinkRes.ok) throw new Error(`/think error: ${thinkRes.status}`)
+      const thinkData = await thinkRes.json()
 
-      if (call1Data.type === 'tool') {
-        // ── Call 2: Execute the tool and synthesise response (< 8s) ──────────
-        // Show a thinking label while the agent runs
-        const call2Res = await fetch('/api/voice-agent/execute', {
+      if (thinkData.type === 'tool_call') {
+        // ── Call 2 /execute: Run the agent tool (~4-7s) ───────────────────
+        const executeRes = await fetch('/api/voice-agent/execute', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            toolName: call1Data.toolName,
-            toolArgs: call1Data.toolArgs,
-            conversationHistory: call1Data.conversationHistory,
+            toolName: thinkData.toolName,
+            toolArgs: thinkData.toolArgs,
+            conversationHistory: thinkData.conversationHistory,
             isVisitor,
-            userId: call1Data.userId
+            userId: thinkData.userId
           })
         })
-        if (!call2Res.ok) throw new Error(`Call 2 error: ${call2Res.status}`)
-        const call2Data = await call2Res.json()
+        if (!executeRes.ok) throw new Error(`/execute error: ${executeRes.status}`)
+        const executeData = await executeRes.json()
+
+        // ── Call 3 /respond: Synthesise spoken response (~2-3s) ───────────
+        const respondRes = await fetch('/api/voice-agent/respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toolName: thinkData.toolName,
+            toolResult: executeData.result,
+            conversationHistory: thinkData.conversationHistory,
+            isVisitor
+          })
+        })
+        if (!respondRes.ok) throw new Error(`/respond error: ${respondRes.status}`)
+        const respondData = await respondRes.json()
 
         const agentMessage: Message = {
           role: 'agent',
-          text: call2Data.response,
+          text: respondData.response,
           agentAction: true,
-          toolCalled: call1Data.toolName
+          toolCalled: thinkData.toolName
         }
         setMessages(prev => [...prev, agentMessage])
-        setConversationHistory(call2Data.conversationHistory || [])
-        setTimeout(() => speak(call2Data.response), 200)
+        setConversationHistory(respondData.conversationHistory || [])
+        setTimeout(() => speak(respondData.response), 200)
 
       } else {
         // ── Direct text response — no tool needed ─────────────────────────
         const agentMessage: Message = {
           role: 'agent',
-          text: call1Data.response,
+          text: thinkData.response,
           agentAction: false
         }
         setMessages(prev => [...prev, agentMessage])
-        setConversationHistory(call1Data.conversationHistory || [])
-        setTimeout(() => speak(call1Data.response), 200)
+        setConversationHistory(thinkData.conversationHistory || [])
+        setTimeout(() => speak(thinkData.response), 200)
       }
 
     } catch {
