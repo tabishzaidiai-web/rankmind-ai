@@ -208,8 +208,14 @@ export default function SEOAuditPage() {
       }
       if (!res.ok) throw new Error(data.error || 'Deep audit failed');
       setDeepResult(data);
-    } catch (err) {
-      setDeepError(err instanceof Error ? err.message : 'Something went wrong');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong';
+      console.error('[DeepAudit Frontend]', msg);
+      setDeepError(
+        msg.includes('JSON') || msg.includes('token') || msg.includes('Unexpected')
+          ? 'The audit service encountered an error. Please try again in a moment.'
+          : msg || 'Deep audit failed. Please try again.'
+      );
     } finally {
       setDeepLoading(false);
     }

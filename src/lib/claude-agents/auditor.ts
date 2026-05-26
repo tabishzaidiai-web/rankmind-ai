@@ -1,8 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-const anthropic = new Anthropic({
-  apiKey: (process.env.Rank_mind_Claude || process.env.ANTHROPIC_API_KEY)!
-})
+// Read API key from either env var name — Vercel uses Rank_mind_Claude
+const apiKey = process.env.Rank_mind_Claude || process.env.ANTHROPIC_API_KEY || ''
+
+if (!apiKey) {
+  console.error('[ClaudeAudit] No Anthropic API key found. Checked: Rank_mind_Claude, ANTHROPIC_API_KEY')
+}
+
+const anthropic = new Anthropic({ apiKey })
 
 const AUDITOR_SYSTEM_PROMPT = `You are an elite SEO and GEO audit specialist with 20 years experience.
 
@@ -70,10 +75,28 @@ export interface ClaudeAuditResult {
 }
 
 export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult> {
+  // Guard: fail fast with a clean error result if no API key
+  const key = process.env.Rank_mind_Claude || process.env.ANTHROPIC_API_KEY
+  if (!key) {
+    console.error('[ClaudeAudit] Missing API key')
+    return {
+      url,
+      overall_score: 0,
+      grade: 'F',
+      summary: 'Audit service is not configured. Please contact support@rankmind.ai',
+      issues: [],
+      wins: [],
+      scores: {},
+      quick_wins: [],
+      error: 'API key not configured'
+    }
+  }
+
   try {
-    const response = await anthropic.messages.create({
+    // ── First turn: let Claude use web_search tool ────────────────────────────
+    const firstResponse = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 3000,
+      max_tokens: 4000,
       system: AUDITOR_SYSTEM_PROMPT,
       tools: [
         {
@@ -89,32 +112,69 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
       ]
     })
 
-    // Extract text content from response — may come after tool use blocks
-    const textContent = response.content
+    console.log('[ClaudeAudit] First response stop_reason:', firstResponse.stop_reason)
+
+    // ── Extract any text from the first response ──────────────────────────────
+    const firstTextBlocks = firstResponse.content
       .filter((block): block is Anthropic.TextBlock => block.type === 'text')
       .map(block => block.text)
       .join('\n')
       .trim()
 
-    if (!textContent) {
-      throw new Error('No text response from Claude — the model may have only returned tool use blocks')
+    // If Claude already returned a text block with JSON, use it directly
+    if (firstTextBlocks && firstTextBlocks.includes('"overall_score"')) {
+      return parseAuditJson(firstTextBlocks, url)
     }
 
-    // Clean and parse JSON — strip any accidental markdown fences
-    const cleaned = textContent
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim()
+    // ── If Claude stopped to use tools, send a second turn ───────────────────
+    // This is the normal flow: Claude searches, then we ask it to synthesize
+    if (firstResponse.stop_reason === 'tool_use' || firstResponse.stop_reason === 'end_turn') {
+      const secondResponse = await anthropic.messages.create({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        system: AUDITOR_SYSTEM_PROMPT,
+        tools: [
+          {
+            type: 'web_search_20250305' as const,
+            name: 'web_search'
+          }
+        ],
+        messages: [
+          {
+            role: 'user',
+            content: `Perform a deep SEO and GEO audit of this website. Browse it, read the real source, find real specific issues: ${url}`
+          },
+          {
+            role: 'assistant',
+            content: firstResponse.content
+          },
+          {
+            role: 'user',
+            content: 'Now based on what you found, return the complete JSON audit result. Return ONLY the raw JSON object, no markdown, no explanation.'
+          }
+        ]
+      })
 
-    const result = JSON.parse(cleaned) as ClaudeAuditResult
-    return result
+      console.log('[ClaudeAudit] Second response stop_reason:', secondResponse.stop_reason)
+
+      const secondTextBlocks = secondResponse.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map(block => block.text)
+        .join('\n')
+        .trim()
+
+      if (secondTextBlocks) {
+        return parseAuditJson(secondTextBlocks, url)
+      }
+    }
+
+    // Fallback: no text content found in either response
+    throw new Error('No text response from Claude after two turns — model may have only returned tool use blocks')
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error)
     console.error('[ClaudeAudit] Error:', msg)
 
-    // Return a safe error result instead of throwing
     return {
       url,
       overall_score: 0,
@@ -127,4 +187,25 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
       error: msg
     }
   }
+}
+
+/** Parse and clean the JSON string returned by Claude */
+function parseAuditJson(text: string, url: string): ClaudeAuditResult {
+  // Strip accidental markdown fences
+  const cleaned = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim()
+
+  // Find the JSON object boundaries in case there is surrounding prose
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  if (start === -1 || end === -1) {
+    throw new Error(`Response did not contain a JSON object. Raw: ${cleaned.substring(0, 200)}`)
+  }
+
+  const jsonStr = cleaned.substring(start, end + 1)
+  const result = JSON.parse(jsonStr) as ClaudeAuditResult
+  return result
 }
