@@ -13,6 +13,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectMessage = searchParams.get('message');
+  const redirectPath = searchParams.get('redirect');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -41,13 +42,13 @@ function LoginForm() {
           setLockedUntil(lockout);
           setError(`Too many failed attempts. Your account is temporarily locked for ${LOCKOUT_MINUTES} minutes.`);
         } else if (newAttempts >= 3) {
-          setError(`${signInError.message} — ${MAX_ATTEMPTS - newAttempts} attempt${MAX_ATTEMPTS - newAttempts === 1 ? '' : 's'} remaining before lockout.`);
+          setError(`Incorrect email or password. Please try again — ${MAX_ATTEMPTS - newAttempts} attempt${MAX_ATTEMPTS - newAttempts === 1 ? '' : 's'} remaining before lockout.`);
         } else {
-          setError(signInError.message);
+          setError('Incorrect email or password. Please try again.');
         }
       } else {
         setFailedAttempts(0);
-        router.push('/dashboard');
+        router.push(redirectPath || '/dashboard');
         router.refresh();
       }
     } catch {

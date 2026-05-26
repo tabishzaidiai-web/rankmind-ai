@@ -126,6 +126,24 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+function AgentLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Check if user is logged in by looking for supabase auth cookie
+    const hasSession = document.cookie.includes('sb-') || document.cookie.includes('supabase-auth');
+    if (hasSession) {
+      window.location.href = href;
+    } else {
+      window.location.href = `/login?redirect=${encodeURIComponent(href)}`;
+    }
+  };
+  return (
+    <a href={href} onClick={handleClick} className={className}>
+      {children}
+    </a>
+  );
+}
+
 function PricingButton({ planKey, cta, className }: { planKey: string; cta: string; className: string }) {
   const [loading, setLoading] = useState(false);
 
@@ -225,7 +243,7 @@ export default function HomePage() {
               const anims = ['float', 'float2', 'float3', 'float4'];
               const delays = ['0s', '0.5s', '1s', '1.5s'];
               return (
-                <Link
+                <AgentLink
                   key={agent.name}
                   href={agent.href}
                   className="group flex flex-col items-center gap-2 cursor-pointer"
@@ -247,7 +265,7 @@ export default function HomePage() {
                   </div>
                   <span className="text-xs font-semibold text-white/60 group-hover:text-white transition-colors">{agent.name}</span>
                   <span className="text-xs text-white/0 group-hover:text-white/50 transition-colors -mt-1">Open Agent →</span>
-                </Link>
+                </AgentLink>
               );
             })}
           </div>
@@ -300,10 +318,9 @@ export default function HomePage() {
               const delays = ['0s', '0.8s', '0.4s', '1.2s'];
               return (
                 <FadeSection key={agent.name} delay={i * 80}>
-                  <Link
+                  <AgentLink
                     href={agent.href}
                     className={`agent-card group relative flex flex-col bg-white/5 backdrop-blur-sm border-t-2 ${agent.border} border-b border-l border-r border-white/10 rounded-2xl p-6 cursor-pointer overflow-hidden h-full`}
-                    style={{ borderTopColor: agent.color }}
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" style={{ background: `radial-gradient(circle at 50% 0%, ${agent.glow} 0%, transparent 70%)` }} />
                     <div className="flex justify-center mb-4 relative z-10">
@@ -318,7 +335,7 @@ export default function HomePage() {
                       <p className="text-white/60 text-sm leading-relaxed mb-4">{agent.description}</p>
                       <div className="agent-cta text-sm font-semibold" style={{ color: agent.color }}>→ Open Agent</div>
                     </div>
-                  </Link>
+                  </AgentLink>
                 </FadeSection>
               );
             })}

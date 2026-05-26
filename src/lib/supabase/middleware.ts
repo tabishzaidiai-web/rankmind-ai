@@ -35,6 +35,7 @@ export async function updateSession(request: NextRequest) {
   if (!user && pathname.startsWith('/dashboard')) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('message', 'Sign in to access your agent dashboard');
+    loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
