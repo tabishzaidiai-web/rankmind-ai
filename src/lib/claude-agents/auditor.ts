@@ -9,38 +9,29 @@ if (!apiKey) {
 
 const anthropic = new Anthropic({ apiKey })
 
-const AUDITOR_SYSTEM_PROMPT = `You are an elite SEO and GEO audit specialist with 20 years experience.
+// Tighter prompt — Claude must do ONE search then immediately return JSON in the same response
+const AUDITOR_SYSTEM_PROMPT = `You are an elite SEO auditor. You have ONE web search call available.
 
-When given a website URL, you MUST use the web_search tool to:
-1. Browse the actual live website and read its real content
-2. Check the page source for title tags, meta descriptions, H1 tags
-3. Look for JSON-LD schema markup blocks
-4. Check if FAQ answers are visible in HTML or hidden by JavaScript
-5. Identify brand name consistency across domain, email, and social handles
-6. Check for AI citation signals and GEO visibility
+WORKFLOW (strictly follow this order):
+1. Call web_search ONCE to browse the given URL
+2. In your VERY NEXT message, immediately return the JSON audit result — no preamble, no explanation
 
-RULES:
-- Always search for the actual URL first before giving any findings
-- Quote real values you found (e.g. "Title is 'Your actual title here' at 67 characters")
-- Never invent or assume — only report what you actually found by browsing
-- Be specific: mention actual tag values, actual character counts, actual issues
-
-Return ONLY a valid JSON object with NO markdown formatting, NO code blocks, just the raw JSON:
+The JSON must be the ONLY thing in your final text response:
 {
   "url": "the URL you audited",
   "overall_score": 0-100,
   "grade": "A/B/C/D/F",
-  "summary": "2 sentences mentioning the actual page title and real issues found",
+  "summary": "2 sentences with real findings from the page",
   "issues": [
     {
-      "severity": "critical",
+      "severity": "critical|warning|info",
       "title": "Short issue title",
-      "detail": "Specific detail with actual values found on this site",
+      "detail": "Specific detail with actual values found",
       "fix": "Exact actionable fix",
-      "category": "technical"
+      "category": "technical|content|seo|geo"
     }
   ],
-  "wins": ["Specific good thing found on this actual site"],
+  "wins": ["Specific good thing found on this site"],
   "scores": {
     "title": 0-100,
     "meta": 0-100,
@@ -51,8 +42,10 @@ Return ONLY a valid JSON object with NO markdown formatting, NO code blocks, jus
     "content": 0-100,
     "geo": 0-100
   },
-  "quick_wins": ["Fastest fix that will have immediate impact"]
-}`
+  "quick_wins": ["Fastest fix with immediate impact"]
+}
+
+CRITICAL: After the web search, output ONLY the raw JSON. No markdown. No code fences. No explanation.`
 
 export interface AuditIssue {
   severity: 'critical' | 'warning' | 'info'
@@ -93,10 +86,13 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
   }
 
   try {
-    // ── First turn: let Claude use web_search tool ────────────────────────────
-    const firstResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 4000,
+    console.log('[ClaudeAudit] Starting single-turn audit for:', url)
+    const startTime = Date.now()
+
+    // Single turn: Claude searches and immediately returns JSON in one response
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',  // Faster model to stay under 60s timeout
+      max_tokens: 2000,
       system: AUDITOR_SYSTEM_PROMPT,
       tools: [
         {
@@ -104,34 +100,33 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
           name: 'web_search'
         }
       ],
+      tool_choice: { type: 'auto' },
       messages: [
         {
           role: 'user',
-          content: `Perform a deep SEO and GEO audit of this website. Browse it, read the real source, find real specific issues: ${url}`
+          content: `Audit this website: ${url}\n\nSearch for it once, then immediately return the JSON audit result.`
         }
       ]
     })
 
-    console.log('[ClaudeAudit] First response stop_reason:', firstResponse.stop_reason)
+    const elapsed = Date.now() - startTime
+    console.log('[ClaudeAudit] Response received in', elapsed, 'ms. Stop reason:', response.stop_reason)
 
-    // ── Extract any text from the first response ──────────────────────────────
-    const firstTextBlocks = firstResponse.content
+    // Extract all text blocks from the response (may come after tool_use blocks)
+    const textContent = response.content
       .filter((block): block is Anthropic.TextBlock => block.type === 'text')
       .map(block => block.text)
       .join('\n')
       .trim()
 
-    // If Claude already returned a text block with JSON, use it directly
-    if (firstTextBlocks && firstTextBlocks.includes('"overall_score"')) {
-      return parseAuditJson(firstTextBlocks, url)
-    }
+    if (!textContent) {
+      // Claude only returned tool_use blocks — need a follow-up turn
+      // This is a fallback for when claude-haiku doesn't auto-continue
+      console.log('[ClaudeAudit] No text in first response, sending follow-up turn...')
 
-    // ── If Claude stopped to use tools, send a second turn ───────────────────
-    // This is the normal flow: Claude searches, then we ask it to synthesize
-    if (firstResponse.stop_reason === 'tool_use' || firstResponse.stop_reason === 'end_turn') {
-      const secondResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4000,
+      const followUp = await anthropic.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 2000,
         system: AUDITOR_SYSTEM_PROMPT,
         tools: [
           {
@@ -142,34 +137,33 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
         messages: [
           {
             role: 'user',
-            content: `Perform a deep SEO and GEO audit of this website. Browse it, read the real source, find real specific issues: ${url}`
+            content: `Audit this website: ${url}\n\nSearch for it once, then immediately return the JSON audit result.`
           },
           {
             role: 'assistant',
-            content: firstResponse.content
+            content: response.content
           },
           {
             role: 'user',
-            content: 'Now based on what you found, return the complete JSON audit result. Return ONLY the raw JSON object, no markdown, no explanation.'
+            content: 'Return the JSON now. Only the raw JSON object, nothing else.'
           }
         ]
       })
 
-      console.log('[ClaudeAudit] Second response stop_reason:', secondResponse.stop_reason)
-
-      const secondTextBlocks = secondResponse.content
+      const followUpText = followUp.content
         .filter((block): block is Anthropic.TextBlock => block.type === 'text')
         .map(block => block.text)
         .join('\n')
         .trim()
 
-      if (secondTextBlocks) {
-        return parseAuditJson(secondTextBlocks, url)
+      if (!followUpText) {
+        throw new Error('No text response from Claude after follow-up turn')
       }
+
+      return parseAuditJson(followUpText, url)
     }
 
-    // Fallback: no text content found in either response
-    throw new Error('No text response from Claude after two turns — model may have only returned tool use blocks')
+    return parseAuditJson(textContent, url)
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error)
