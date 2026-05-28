@@ -7,9 +7,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Mail, Lock, User, AlertCircle, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 
 const PLAN_LABELS: Record<string, { label: string; price: string; color: string }> = {
-  starter: { label: 'Starter Plan', price: '$29/mo', color: 'text-violet-400 border-violet-500/30 bg-violet-500/10' },
-  growth: { label: 'Growth Plan', price: '$79/mo', color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' },
-  enterprise: { label: 'Enterprise Plan', price: '$149/mo', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
+  starter: { label: 'Starter Plan', price: '$5/mo (flash sale)', color: 'text-violet-400 border-violet-500/30 bg-violet-500/10' },
+  growth: { label: 'Growth Plan', price: '$15/mo (flash sale)', color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' },
+  enterprise: { label: 'Enterprise Plan', price: '$49/mo (flash sale)', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
 };
 
 function getPasswordStrength(pw: string): { score: number; label: string; color: string; barColor: string } {

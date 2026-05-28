@@ -41,14 +41,14 @@ export default async function SettingsPage() {
     },
     starter: {
       name: 'Starter',
-      price: '$29/mo',
+      price: '$5/mo',
       color: 'text-violet-400',
       bg: 'bg-violet-500/10',
       features: ['5 SEO audits/month', '50 keywords tracked', '4 articles/month', '5 backlink campaigns'],
     },
     growth: {
       name: 'Growth',
-      price: '$79/mo',
+      price: '$15/mo',
       color: 'text-cyan-400',
       bg: 'bg-cyan-500/10',
       features: ['Unlimited audits', '500 keywords', 'Unlimited content', 'Priority support'],
@@ -56,14 +56,14 @@ export default async function SettingsPage() {
     // Legacy key mapping
     pro: {
       name: 'Growth',
-      price: '$79/mo',
+      price: '$15/mo',
       color: 'text-cyan-400',
       bg: 'bg-cyan-500/10',
       features: ['Unlimited audits', '500 keywords', 'Unlimited content', 'Priority support'],
     },
     enterprise: {
       name: 'Enterprise',
-      price: '$149/mo',
+      price: '$49/mo',
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       features: ['Everything in Growth', 'White-label reports', 'Multi-client management', 'Dedicated support'],
@@ -163,21 +163,21 @@ export default async function SettingsPage() {
               href="/api/stripe/checkout?plan=starter"
               className="flex items-center justify-between w-full px-4 py-2.5 bg-white/5 hover:bg-violet-500/10 border border-white/10 hover:border-violet-500/30 text-white rounded-xl text-sm transition-all"
             >
-              <span>Starter <span className="text-white/40">$29/mo</span></span>
+              <span>Starter <span className="text-white/40">$5/mo</span></span>
               <ExternalLink className="w-3.5 h-3.5 text-white/40" />
             </a>
             <a
               href="/api/stripe/checkout?plan=growth"
               className="flex items-center justify-between w-full px-4 py-2.5 bg-gradient-to-r from-violet-600/20 to-cyan-600/10 hover:from-violet-600/30 hover:to-cyan-600/20 border border-violet-500/30 text-white rounded-xl text-sm transition-all"
             >
-              <span className="font-semibold">Growth <span className="text-white/60">$79/mo</span> <span className="text-xs text-violet-400 ml-1">Most Popular</span></span>
+              <span className="font-semibold">Growth <span className="text-white/60">$15/mo</span> <span className="text-xs text-violet-400 ml-1">Most Popular</span></span>
               <ExternalLink className="w-3.5 h-3.5 text-violet-400" />
             </a>
             <a
               href="/api/stripe/checkout?plan=enterprise"
               className="flex items-center justify-between w-full px-4 py-2.5 bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-white rounded-xl text-sm transition-all"
             >
-              <span>Enterprise <span className="text-white/40">$149/mo</span></span>
+              <span>Enterprise <span className="text-white/40">$49/mo</span></span>
               <ExternalLink className="w-3.5 h-3.5 text-white/40" />
             </a>
           </div>

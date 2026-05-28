@@ -128,9 +128,9 @@ export async function canRunAgent(
   const permissions = TIER_PERMISSIONS[tier];
 
   if (!permissions.agents.includes(agentType)) {
-    const requiredTier = agentType === 'backlink_builder' ? 'Growth ($79/mo)' :
-                         agentType === 'geo_optimizer' || agentType === 'content_writer' ? 'Enterprise ($149/mo)' :
-                         'Starter ($29/mo)';
+    const requiredTier = agentType === 'backlink_builder' ? 'Growth ($15/mo)' :
+                         agentType === 'geo_optimizer' || agentType === 'content_writer' ? 'Enterprise ($49/mo)' :
+                         'Starter ($5/mo)';
     return {
       allowed: false,
       reason: `This agent requires the ${requiredTier} plan. Please upgrade to access it.`,
