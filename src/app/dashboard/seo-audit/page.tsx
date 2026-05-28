@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3, ArrowRight } from 'lucide-react';
+import DownloadReportButton from '@/components/DownloadReportButton';
 
 const WHATS_NEXT_SEO = [
   {
@@ -180,6 +181,7 @@ export default function SEOAuditPage() {
   const [error, setError] = useState('');
   const [expandedSection, setExpandedSection] = useState<string | null>('on_page');
   const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
+  const [userTier, setUserTier] = useState<string>('free');
 
   // ── Deep Audit (Claude AI) ────────────────────────────────────────────────
   const [deepLoading, setDeepLoading] = useState(false);
@@ -250,6 +252,28 @@ export default function SEOAuditPage() {
     };
     prefillUrl();
   }, [searchParams]);
+
+  // Fetch subscription tier once on mount
+  useEffect(() => {
+    const fetchTier = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('users')
+          .select('subscription_tier, subscription_status, current_period_end')
+          .eq('id', user.id)
+          .single();
+        const isActive = data?.subscription_status === 'active' ||
+          (data?.current_period_end && new Date(data.current_period_end) > new Date());
+        if (isActive && data?.subscription_tier) {
+          setUserTier(data.subscription_tier);
+        }
+      } catch { /* silently fail */ }
+    };
+    fetchTier();
+  }, []);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -542,7 +566,10 @@ export default function SEOAuditPage() {
                   <span className="text-white/50 text-sm">Overall SEO Score</span>
                 </div>
                 <div className="text-white/40 text-xs">{result.url} &bull; Analyzed {new Date(result.analyzed_at).toLocaleString()}</div>
-                <div className="mt-3 flex gap-6">
+                <div className="mt-3">
+                  <DownloadReportButton auditData={result} tier={userTier} />
+                </div>
+                <div className="mt-2 flex gap-6">
                   <div className="text-center">
                     <div className="text-lg font-bold text-white">{result.keywords?.length || 0}</div>
                     <div className="text-xs text-white/40">Keywords</div>
