@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Zap, CheckCircle2, Circle, X, Globe, BarChart3, Link2, FileText } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 const AGENTS = [
   {
@@ -88,6 +89,7 @@ interface Props {
 export default function DashboardOverviewClient({ plan, isActive, isAdmin = false, userName }: Props) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [stats, setStats] = useState({ audits: 0, backlinks: 0, geoScore: '--', content: 0 });
   const [checklist, setChecklist] = useState([false, false, false]);
 
   useEffect(() => {
@@ -98,11 +100,35 @@ export default function DashboardOverviewClient({ plan, isActive, isAdmin = fals
     }
   }, []);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const [auditsRes, backlinksRes, contentRes] = await Promise.all([
+          supabase.from('audit_history').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('backlink_campaigns').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('user_content').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        ]);
+        setStats({
+          audits: auditsRes.count ?? 0,
+          backlinks: backlinksRes.count ?? 0,
+          geoScore: '--',
+          content: contentRes.count ?? 0,
+        });
+      } catch (e) {
+        console.error('[DashboardStats]', e);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const handleChecklistToggle = (i: number) => {
     setChecklist((prev) => prev.map((v, idx) => idx === i ? !v : v));
   };
 
-  const statValues = ['0', '0', '--', '0'];
+  const statValues = [String(stats.audits), String(stats.backlinks), stats.geoScore, String(stats.content)];
 
   return (
     <div className="space-y-8 relative">

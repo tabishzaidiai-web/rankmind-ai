@@ -204,22 +204,57 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* No website state */}
+      {/* No website state — actionable empty state cards */}
       {!effectiveWebsite && (
-        <div className="border border-dashed border-white/15 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-4">
-          <div className="flex gap-3">
-            {['/agent-rankbot-transparent.png','/agent-linkbot-transparent.png','/agent-geog-transparent.png','/agent-contentai-transparent.png'].map((src, i) => (
-              <div key={i} className="w-14 h-14 relative opacity-60">
-                <Image src={src} alt="Agent" fill className="object-contain" />
-              </div>
-            ))}
+        <div className="space-y-6">
+          <div className="border border-dashed border-white/15 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-4">
+            <div className="flex gap-3">
+              {['/agent-rankbot-transparent.png','/agent-linkbot-transparent.png','/agent-geog-transparent.png','/agent-contentai-transparent.png'].map((src, i) => (
+                <div key={i} className="w-14 h-14 relative opacity-60">
+                  <Image src={src} alt="Agent" fill className="object-contain" />
+                </div>
+              ))}
+            </div>
+            <h2 className="text-white font-semibold text-xl">Your AI SEO team is ready</h2>
+            <p className="text-white/40 text-sm max-w-md">Connect your website to get started — or jump straight into any agent below.</p>
+            <Link href="/dashboard/onboarding" className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-all text-sm">
+              <Zap className="w-4 h-4" />
+              Complete Setup
+            </Link>
           </div>
-          <h2 className="text-white font-semibold text-xl">Your AI SEO team is ready</h2>
-          <p className="text-white/40 text-sm max-w-md">Complete your onboarding to connect your website and start your first SEO audit, keyword research, and content calendar.</p>
-          <Link href="/dashboard/onboarding" className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-all text-sm">
-            <Zap className="w-4 h-4" />
-            Complete Setup
-          </Link>
+          {/* Quick-start action cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/dashboard/seo-audit" className="group bg-violet-500/10 border border-violet-500/20 hover:border-violet-500/50 rounded-2xl p-6 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center mb-4">
+                <BarChart3 className="w-5 h-5 text-violet-400" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Run Your First SEO Audit</h3>
+              <p className="text-sm text-white/50">Scores 10 key SEO factors and gives you a prioritised action plan.</p>
+              <div className="mt-4 flex items-center gap-1 text-violet-400 text-sm font-medium group-hover:gap-2 transition-all">
+                Start now <ArrowRight className="w-4 h-4" />
+              </div>
+            </Link>
+            <Link href="/dashboard/content" className="group bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/50 rounded-2xl p-6 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4">
+                <FileText className="w-5 h-5 text-amber-400" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Generate Your First Article</h3>
+              <p className="text-sm text-white/50">ContentAI writes a full SEO-optimized article for your niche in minutes.</p>
+              <div className="mt-4 flex items-center gap-1 text-amber-400 text-sm font-medium group-hover:gap-2 transition-all">
+                Write now <ArrowRight className="w-4 h-4" />
+              </div>
+            </Link>
+            <Link href="/dashboard/backlinks" className="group bg-teal-500/10 border border-teal-500/20 hover:border-teal-500/50 rounded-2xl p-6 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center mb-4">
+                <Link2 className="w-5 h-5 text-teal-400" />
+              </div>
+              <h3 className="font-semibold text-white mb-1">Find Backlink Opportunities</h3>
+              <p className="text-sm text-white/50">LinkBot finds high-authority sites in your niche and writes outreach emails.</p>
+              <div className="mt-4 flex items-center gap-1 text-teal-400 text-sm font-medium group-hover:gap-2 transition-all">
+                Find links <ArrowRight className="w-4 h-4" />
+              </div>
+            </Link>
+          </div>
         </div>
       )}
 

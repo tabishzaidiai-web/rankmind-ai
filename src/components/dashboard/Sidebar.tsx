@@ -14,6 +14,11 @@ const coreAgents = [
   { href: '/dashboard/backlinks', label: 'LinkBot', sublabel: 'Backlink Builder', avatar: '/agent-linkbot-transparent.png' },
 ];
 
+const managementLinks = [
+  { href: '/dashboard/clients', label: 'Clients', sublabel: 'Manage client websites', icon: 'users' },
+  { href: '/dashboard/content-queue', label: 'Content Queue', sublabel: 'Review & approve articles', icon: 'list' },
+];
+
 const aiEraTools = [
   { href: '/dashboard/ai-citation', label: 'AI Citation Tracker', sublabel: 'Google AI Mode · ChatGPT · Perplexity', icon: Brain, color: 'text-cyan-400', activeBg: 'bg-cyan-500/20 border-cyan-500/30 text-cyan-300' },
   { href: '/dashboard/schema-generator', label: 'Schema Generator', sublabel: 'JSON-LD · Rich Results · AI Signals', icon: Code2, color: 'text-emerald-400', activeBg: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300' },
@@ -120,6 +125,39 @@ export default function Sidebar({ user }: { user: User }) {
                   }`}
                 >
                   <Icon className={`w-4 h-4 flex-shrink-0 ${active ? '' : item.color}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="leading-tight">{item.label}</div>
+                    <div className="text-[10px] text-white/30 leading-tight truncate">{item.sublabel}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Management */}
+        <div>
+          <div className="flex items-center gap-1.5 px-3 mb-2">
+            <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">Management</span>
+          </div>
+          <div className="space-y-0.5">
+            {managementLinks.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                    active
+                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                      : 'text-white/60 hover:text-white hover:bg-white/5 hover:translate-x-0.5'
+                  }`}
+                >
+                  {item.icon === 'users' ? (
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  ) : (
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="leading-tight">{item.label}</div>
                     <div className="text-[10px] text-white/30 leading-tight truncate">{item.sublabel}</div>

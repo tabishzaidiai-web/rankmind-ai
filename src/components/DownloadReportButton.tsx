@@ -103,9 +103,11 @@ export default function DownloadReportButton({
     <>
       {/* Download Button */}
       <div className={`flex flex-col gap-1.5 ${className}`}>
+        <div className="relative group inline-block">
         <button
           onClick={handleDownload}
           disabled={loading}
+          title={isPaid ? '4-page branded PDF: Cover + Scores, On-Page SEO, Technical, Content, GEO, Keywords, Action Plan, 30-Day Roadmap' : 'Upgrade to download your full branded PDF report'}
           className={`
             flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
             transition-all duration-200 select-none
@@ -132,6 +134,7 @@ export default function DownloadReportButton({
             </span>
           )}
         </button>
+        </div>
 
         {/* Error message */}
         {error && (

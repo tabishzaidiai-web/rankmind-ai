@@ -277,6 +277,22 @@ export default function ContentPage() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-amber-500 transition-colors text-sm"
               />
               <p className="text-xs text-white/30 mt-1">This ensures the article matches your industry — not a generic topic</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {['SaaS / Software', 'E-commerce', 'Real Estate', 'Healthcare', 'Finance', 'Legal Services', 'Home Services', 'Digital Marketing', 'Education', 'Travel'].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => setNiche(suggestion)}
+                    className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                      niche === suggestion
+                        ? 'border-amber-500 bg-amber-500/20 text-amber-300'
+                        : 'border-white/10 bg-white/5 text-white/40 hover:text-white/70 hover:border-white/30'
+                    }`}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {topic && keyword && (

@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3, ArrowRight } from 'lucide-react';
+import { Search, AlertCircle, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, Globe, FileText, Zap, Link2, BarChart3, ArrowRight, X, RefreshCw } from 'lucide-react';
 import DownloadReportButton from '@/components/DownloadReportButton';
 
 const WHATS_NEXT_SEO = [
@@ -292,9 +292,18 @@ export default function SEOAuditPage() {
     fetchHistory();
   }, [result]); // re-fetch after each new audit
 
+  const normalizeUrl = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return 'https://' + trimmed;
+    return trimmed;
+  };
+
   const handleAudit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
+    const normalizedUrl = normalizeUrl(url);
+    setUrl(normalizedUrl);
     setLoading(true);
     setError('');
     setResult(null);
@@ -302,7 +311,7 @@ export default function SEOAuditPage() {
       const res = await fetch('/api/seo-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: normalizedUrl }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Audit failed');
@@ -312,6 +321,14 @@ export default function SEOAuditPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearUrl = () => {
+    setUrl('');
+    setResult(null);
+    setError('');
+    setDeepResult(null);
+    setDeepError(null);
   };
 
   const toggle = (section: string) => setExpandedSection(expandedSection === section ? null : section);
@@ -344,9 +361,20 @@ export default function SEOAuditPage() {
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                   placeholder="https://yourwebsite.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-9 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors text-sm"
                 />
+                {url && (
+                  <button
+                    type="button"
+                    onClick={handleClearUrl}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                    title="Clear URL"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               <button
                 type="submit"
@@ -565,7 +593,16 @@ export default function SEOAuditPage() {
                   <span className={`text-5xl font-black ${gradeColor(result.grade)}`}>{result.grade}</span>
                   <span className="text-white/50 text-sm">Overall SEO Score</span>
                 </div>
-                <div className="text-white/40 text-xs">{result.url} &bull; Analyzed {new Date(result.analyzed_at).toLocaleString()}</div>
+                <div className="flex items-center gap-3">
+                  <div className="text-white/40 text-xs">{result.url} &bull; Analyzed {new Date(result.analyzed_at).toLocaleString()}</div>
+                  <button
+                    onClick={() => { setResult(null); setUrl(''); setError(''); }}
+                    className="text-xs text-white/40 hover:text-white/70 border border-white/10 hover:border-white/30 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 flex-shrink-0"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    New Audit
+                  </button>
+                </div>
                 <div className="mt-3">
                   <DownloadReportButton auditData={result} tier={userTier} />
                 </div>
@@ -682,6 +719,19 @@ export default function SEOAuditPage() {
                       ))}
                     </tbody>
                   </table>
+                  <div className="px-5 py-4 border-t border-white/10 flex items-center justify-between">
+                    <p className="text-xs text-white/40">Showing top {Math.min(result.keywords.length, 10)} keywords found on your site</p>
+                    <button
+                      onClick={() => {
+                        const kws = result.keywords.slice(0, 10).map((k: { keyword: string }) => k.keyword).join('\n');
+                        navigator.clipboard.writeText(kws).then(() => alert('Keywords copied to clipboard!'));
+                      }}
+                      className="flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 border border-amber-500/30 hover:border-amber-500/60 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                      Copy Keywords
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

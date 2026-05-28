@@ -80,7 +80,9 @@ export async function POST(request: NextRequest) {
 
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string;
-        const planName = session.metadata?.plan_name ?? null;
+        // Normalize plan name: 'pro' is the legacy alias for 'growth'
+        const rawPlanName = session.metadata?.plan_name ?? null;
+        const planName = rawPlanName === 'pro' ? 'growth' : rawPlanName;
 
         let subscription: Stripe.Subscription | null = null;
         if (subscriptionId) {
@@ -110,10 +112,12 @@ export async function POST(request: NextRequest) {
         const customerId = subscription.customer as string;
 
         const priceId = subscription.items?.data?.[0]?.price?.id ?? null;
-        const planName =
+        const rawPlanName =
           subscription.metadata?.plan_name ??
           subscription.items?.data?.[0]?.price?.nickname ??
           null;
+        // Normalize plan name: 'pro' is the legacy alias for 'growth'
+        const planName = rawPlanName === 'pro' ? 'growth' : rawPlanName;
         const currentPeriodEnd = subscription.current_period_end
           ? new Date(subscription.current_period_end * 1000).toISOString()
           : null;

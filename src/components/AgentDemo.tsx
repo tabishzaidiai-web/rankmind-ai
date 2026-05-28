@@ -98,7 +98,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
 
   const handleStart = async (submitUrl?: string) => {
     const targetUrl = submitUrl || url;
-    if (!targetUrl.trim()) return;
+    if (!targetUrl.trim()) { setError('Please enter your website URL to get a free SEO audit.'); return; }
     let cleanUrl = targetUrl.trim();
     if (!cleanUrl.startsWith('http')) cleanUrl = 'https://' + cleanUrl;
     try { new URL(cleanUrl); } catch { setError('Please enter a valid website URL (e.g. yoursite.com)'); return; }
@@ -155,6 +155,9 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
             {loading ? 'Analysing...' : 'Analyse My Site Free →'}
           </button>
         </div>
+      )}
+      {!started && error && (
+        <p className="mt-2 text-center text-sm text-red-400">{error}</p>
       )}
 
       {rateLimited && (
@@ -224,11 +227,12 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
             <div className="p-3 border-t border-white/10">
               <div className="flex gap-2">
                 <input type="text" value={inputText} onChange={e => setInputText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type your answer..." className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-violet-500 transition-all" />
+                  placeholder="Type a reply or pick an option above..." className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-violet-500 transition-all" />
                 <button onClick={handleSendMessage} className="w-10 h-10 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity flex-shrink-0">
                   <Send className="w-4 h-4 text-white" />
                 </button>
               </div>
+              <p className="text-xs text-white/25 mt-1.5 text-center">Press Enter to send · or click a quick reply above</p>
             </div>
           </div>
 
@@ -236,10 +240,14 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
           <div className="lg:col-span-3 space-y-4 overflow-y-auto" style={{ maxHeight: '620px' }}>
             {/* SEO Score */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-white mb-1 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-violet-400" />
                 SEO Score — {auditResult?.url?.replace(/^https?:\/\//, '').replace(/\/.*$/, '') || url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}
               </h3>
+              <p className="text-xs text-amber-400/80 mb-4 flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                Free preview: showing 4 of 10+ SEO factors — <a href={signupUrl} className="underline hover:text-amber-300">upgrade to see all</a>
+              </p>
               {dashboardStep < 1 ? (
                 <div className="flex items-center gap-6"><Skeleton className="w-36 h-36 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /><Skeleton className="h-4 w-2/3" /></div></div>
               ) : auditResult ? (
