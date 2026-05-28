@@ -12,7 +12,7 @@ const AGENTS = [
     avatar: '/agent-rankbot-transparent.png',
     name: 'RankBot',
     title: 'SEO Audit Agent',
-    description: 'Deep crawls your website, scores 20+ SEO factors, finds quick wins, and creates a prioritized action plan.',
+    description: 'Deep crawls your website, scores 10 key SEO factors, finds quick wins, and creates a prioritized action plan.',
     href: '/dashboard/seo-audit',
     glow: 'rgba(139,92,246,0.4)',
     border: 'border-violet-500/40',
@@ -26,7 +26,7 @@ const AGENTS = [
     avatar: '/agent-linkbot-transparent.png',
     name: 'LinkBot',
     title: 'Backlink Builder',
-    description: 'Finds real DA 40+ websites in your niche, writes guest posts, sends outreach emails, and tracks results.',
+    description: 'Finds real high-authority websites in your niche, writes guest posts, sends outreach emails, and tracks results.',
     href: '/dashboard/backlinks',
     glow: 'rgba(20,184,166,0.4)',
     border: 'border-teal-500/40',
@@ -413,37 +413,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Early Adopter Program — replaces fake testimonials */}
       <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto text-center">
           <FadeSection>
-            <h2 className="text-4xl font-bold text-center mb-16">What Our Clients Say</h2>
+            <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">EARLY ADOPTER PROGRAM</p>
+            <h2 className="text-4xl font-bold mb-5">Be Among the First to See Real Results</h2>
+            <p className="text-white/60 text-lg max-w-xl mx-auto mb-12 leading-relaxed">
+              RankMind AI launched in 2026. We are building our first case studies with early adopters right now. Join at flash sale pricing and become one of our first documented success stories.
+            </p>
           </FadeSection>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
             {[
-              { name: 'Sarah K.', role: 'SEO Agency Owner', initials: 'SK', color: 'from-violet-500 to-purple-600', text: "RankMind AI built 40 real backlinks for my client in the first month. Rankings jumped from page 4 to page 1. This is the real deal." },
-              { name: 'Ahmed M.', role: 'E-commerce Founder', initials: 'AM', color: 'from-teal-500 to-cyan-600', text: "The GEO optimizer got my product appearing in ChatGPT recommendations. I've never seen anything like it." },
-              { name: 'Lisa T.', role: 'Digital Marketing Manager', initials: 'LT', color: 'from-amber-500 to-orange-600', text: "We manage 15 client websites. RankMind AI handles all the SEO work automatically. It's like having 5 extra team members." },
-            ].map((t, i) => (
-              <FadeSection key={t.name} delay={i * 80}>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 h-full flex flex-col">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-                  </div>
-                  <p className="text-white/70 text-sm mb-5 leading-relaxed flex-1">&ldquo;{t.text}&rdquo;</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
-                      {t.initials}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-sm">{t.name}</div>
-                      <div className="text-white/40 text-xs">{t.role}</div>
-                    </div>
-                  </div>
+              { icon: '🔬', title: 'Real Audits, Real Data', desc: 'Our SEO audit crawls your actual live website and scores 10 technical factors in real time — not generated data.' },
+              { icon: '🤖', title: 'Autonomous Agents', desc: '4 specialist AI agents work on your website automatically every week — auditing, building backlinks, and optimizing for AI search.' },
+              { icon: '🔒', title: 'Flash Sale Pricing', desc: 'Lock in the lowest price we will ever offer. Early adopters keep their rate for life — even after we raise prices.' },
+            ].map((card, i) => (
+              <FadeSection key={card.title} delay={i * 80}>
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-7 h-full flex flex-col text-left">
+                  <div className="text-3xl mb-4">{card.icon}</div>
+                  <div className="font-semibold text-base mb-2">{card.title}</div>
+                  <div className="text-white/55 text-sm leading-relaxed">{card.desc}</div>
                 </div>
               </FadeSection>
             ))}
           </div>
+          <FadeSection>
+            <a href="/signup" className="inline-block bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all text-base">
+              Join as an Early Adopter &rarr;
+            </a>
+          </FadeSection>
         </div>
       </section>
 
@@ -500,7 +499,7 @@ export default function HomePage() {
             {[
               {
                 name: 'Starter', price: '$29', launchPrice: '$5', planKey: 'starter', desc: 'Perfect for individual websites',
-                features: ['Full SEO Audit (20+ factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
+                features: ['Full SEO Audit (10 key factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
                 cta: 'Start with Starter', popular: false,
               },
               {

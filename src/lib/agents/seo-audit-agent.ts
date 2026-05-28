@@ -1,7 +1,7 @@
 /**
  * RankMind AI - SEO Audit Agent (Starter Tier)
  * Performs real website analysis: crawls pages, extracts keywords,
- * scores 20+ SEO factors, identifies technical issues, generates recommendations
+ * scores 10 key SEO factors, identifies technical issues, generates recommendations
  */
 
 import { agentReason, fetchPageContent, googleSearch, sendEmail } from './core';

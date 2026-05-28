@@ -325,19 +325,17 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
               </div>
             )}
 
-            {/* Backlinks (blurred) */}
+            {/* Backlinks — honest paid-feature teaser */}
             {dashboardStep >= 4 && (
-              <div className="relative bg-white/5 border border-white/10 rounded-2xl p-5">
-                <h3 className="font-bold text-white mb-4 flex items-center gap-2"><Link2 className="w-4 h-4 text-teal-400" />Backlink Opportunities</h3>
-                <div className="space-y-2 select-none">
-                  {[{ type: 'Guest post on industry blogs', da: 'DA 40-60' }, { type: 'Resource page link building', da: 'DA 50-70' }, { type: 'Competitor backlink replication', da: 'DA 35-55' }].map((bl, i) => (
-                    <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3 opacity-50">
-                      <p className="text-sm text-white/70">{bl.type}</p>
-                      <span className="text-xs bg-teal-500/20 text-teal-400 px-2 py-0.5 rounded-full">{bl.da}</span>
-                    </div>
-                  ))}
-                </div>
-                <BlurOverlay label="Unlock 15+ real backlink prospects" signupUrl={signupUrl} />
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2"><Link2 className="w-4 h-4 text-teal-400" />Backlink Opportunities</h3>
+                <p className="text-sm text-white/60 mb-4 leading-relaxed">
+                  LinkBot uses live web search to find real high-authority websites in your niche — then writes personalised outreach emails automatically. Results are specific to your website and industry.
+                </p>
+                <a href={signupUrl} className="inline-flex items-center gap-2 text-sm text-teal-400 font-medium hover:text-teal-300 transition-colors">
+                  Unlock real backlink finder &rarr;
+                </a>
+                <p className="text-xs text-white/30 mt-2">Available on Growth and Enterprise plans</p>
               </div>
             )}
 
@@ -354,7 +352,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
                   ))}
                 </div>
                 <a href={signupUrl} className="block w-full text-center bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold py-3.5 rounded-xl transition-all text-sm">
-                  Start Automating This Plan — From $29/mo →
+                  Start Automating This Plan — From $5/mo →
                 </a>
                 {auditResult && <p className="text-center text-xs text-white/30 mt-2">{auditResult.remaining} free audit{auditResult.remaining !== 1 ? 's' : ''} remaining today</p>}
               </div>

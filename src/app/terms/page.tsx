@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = 'May 15, 2026';
+const LAST_UPDATED = 'May 28, 2026';
 
 export default function TermsPage() {
   return (
@@ -30,7 +30,12 @@ export default function TermsPage() {
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-white/40 text-sm mb-10">Last updated: {LAST_UPDATED}</p>
+        <p className="text-white/40 text-sm mb-3">Last updated: {LAST_UPDATED}</p>
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-10 text-sm text-amber-200">
+          Current subscription prices reflect flash sale promotional pricing. See{' '}
+          <a href="https://www.rank-mind.com/#pricing" className="underline hover:text-amber-100">rank-mind.com/#pricing</a>{' '}
+          for current rates.
+        </div>
 
         <div className="space-y-8 text-white/70 leading-relaxed">
 
@@ -58,7 +63,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. Subscription Plans and Billing</h2>
-            <p>RankMind AI offers the following subscription tiers: Free, Starter ($29/mo), Growth ($79/mo), and Enterprise ($149/mo). By subscribing to a paid plan, you agree that:</p>
+            <p>RankMind AI offers the following subscription tiers: Free, Starter ($5/mo), Growth ($15/mo), and Enterprise ($49/mo) during the current flash sale promotional period. Promotional pricing is subject to change with 30 days&apos; notice. Current pricing is always displayed at <a href="https://www.rank-mind.com/#pricing" className="text-violet-400 hover:text-violet-300 underline">rank-mind.com/#pricing</a>. By subscribing to a paid plan, you agree that:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Subscription fees are billed in advance on a monthly or annual basis.</li>
               <li>All payments are processed securely by Stripe.</li>
