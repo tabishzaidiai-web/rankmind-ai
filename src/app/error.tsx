@@ -28,7 +28,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
       </div>
       <h1 className="text-2xl font-bold mb-3">Something Went Wrong</h1>
       <p className="text-white/50 max-w-md mb-8">
-        RankBot hit an unexpected error. Our team has been notified. Please try again or go back to the homepage.
+        Something went wrong. Please try again — if the problem persists, go back to the homepage.
       </p>
 
       {error.digest && (

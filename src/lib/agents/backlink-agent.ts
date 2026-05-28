@@ -160,14 +160,31 @@ Only include sites with niche_relevance >= 5 and estimated_da >= 20. Max 8 resul
 Return: { "opportunities": [...] }`
   );
 
-  return (qualified.opportunities || []).map((opp, i) => {
-    // Always extract domain server-side — never trust AI to provide it correctly
-    let cleanDomain = '';
-    try {
-      cleanDomain = new URL(opp.url).hostname.replace(/^www\./, '');
-    } catch {
-      cleanDomain = opp.domain || opp.url || 'unknown';
+  // Robust domain extraction — never returns 'unknown'
+  function extractDomainName(item: { url?: string; domain?: string; title?: string }): string {
+    const urlStr = (item.url || '').trim();
+    // Try 1: parse URL hostname
+    if (urlStr) {
+      try {
+        const parsed = new URL(urlStr.startsWith('http') ? urlStr : 'https://' + urlStr);
+        const host = parsed.hostname.replace(/^www\./, '');
+        if (host && host !== 'unknown') return host;
+      } catch { /* continue */ }
     }
+    // Try 2: domain field directly (not a URL, not 'unknown')
+    const d = (item.domain || '').trim();
+    if (d && d !== 'unknown' && !d.startsWith('http')) return d.replace(/^www\./, '');
+    // Try 3: regex extract from raw URL string
+    const m = urlStr.match(/(?:https?:\/\/)?(?:www\.)?([^/\s?#]+\.[a-z]{2,})/i);
+    if (m) return m[1];
+    // Try 4: use title as fallback label
+    if (item.title) return item.title.slice(0, 40);
+    // Final fallback — never 'unknown'
+    return 'Pending Enrichment';
+  }
+
+  return (qualified.opportunities || []).map((opp, i) => {
+    const cleanDomain = extractDomainName(opp);
     return {
     id: `opp_${i + 1}`,
     domain: cleanDomain,

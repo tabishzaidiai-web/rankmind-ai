@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Send, Lock, TrendingUp, Link2, Globe, Zap, CheckCircle, AlertCircle, Clock, Shield, Smartphone, FileText, Code } from 'lucide-react';
+import { Send, Lock, TrendingUp, Link2, Globe, Zap, CheckCircle, AlertCircle, Clock, Shield, Smartphone, FileText, Code, ArrowRight } from 'lucide-react';
 
 interface VisibleMetric { score: number; label: string; detail: string; }
 interface Issue { severity: string; issue: string; detail: string; fix: string; }
@@ -140,6 +140,16 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
 
   const signupUrl = `/signup?url=${encodeURIComponent(url)}`;
 
+  // Navigate to dashboard if logged in, else to signup
+  const handleViewFullAudit = () => {
+    const hasSession = typeof document !== 'undefined' &&
+      (document.cookie.includes('sb-') || document.cookie.includes('supabase-auth'));
+    const dest = hasSession
+      ? `/dashboard/seo-audit?url=${encodeURIComponent(url)}`
+      : `/signup?url=${encodeURIComponent(url)}`;
+    window.location.href = dest;
+  };
+
   return (
     <div ref={sectionRef} id="agent-demo" className="w-full">
       {!started && (
@@ -276,6 +286,17 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
                       ))}
                     </div>
                   )}
+                  {/* Dashboard CTA — appears immediately after audit result loads */}
+                  <div className="mt-4 p-4 bg-gradient-to-r from-violet-600/20 to-cyan-600/20 border border-violet-500/30 rounded-xl">
+                    <p className="text-xs text-white/60 mb-2">Want the full 10-factor audit, keyword tracking &amp; PDF report?</p>
+                    <button
+                      onClick={handleViewFullAudit}
+                      className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm"
+                    >
+                      View Full Audit in Dashboard
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ) : <p className="text-white/40 text-sm">Crawling your site...</p>}
             </div>
