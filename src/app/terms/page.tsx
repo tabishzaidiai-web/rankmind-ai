@@ -67,6 +67,12 @@ export default function TermsPage() {
               <li>Downgrading your plan takes effect at the end of the current billing period.</li>
               <li>We reserve the right to change pricing with 30 days&apos; notice.</li>
             </ul>
+            <div className="mt-5 bg-white/5 border border-white/10 rounded-xl p-4 text-sm space-y-1.5">
+              <p>RankMind AI is marketed and operated by <strong className="text-white">Jeem &amp; Co FZE LLC</strong>, Dubai, UAE.</p>
+              <p>Research and development is conducted by <strong className="text-white">Arabian AI Lab</strong>, Dubai, UAE.</p>
+              <p>All subscription payments are processed by Jeem &amp; Co FZE LLC.</p>
+              <p>The charge on your bank statement will appear as <strong className="text-white">&ldquo;JEEM AND CO FZE LLC&rdquo;</strong>.</p>
+            </div>
           </section>
 
           <section>

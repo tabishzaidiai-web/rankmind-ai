@@ -175,6 +175,7 @@ function PricingButton({ planKey, cta, className }: { planKey: string; cta: stri
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -203,6 +204,7 @@ export default function HomePage() {
             <Image src="/logo-icon-v2.png" alt="RankMind AI" width={36} height={36} className="rounded-xl" />
             <span className="font-bold text-xl">RankMind AI</span>
           </Link>
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
@@ -210,12 +212,41 @@ export default function HomePage() {
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
-            <Link href="/signup" className="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all">
+            <Link href="/login" className="hidden md:block text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
+            <Link href="/signup" className="hidden md:block bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all">
               Get Started Free
             </Link>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+              className="md:hidden flex items-center justify-center w-9 h-9 text-white/70 hover:text-white transition-colors text-xl"
+            >
+              {mobileOpen ? '✕' : '☰'}
+            </button>
           </div>
         </div>
+        {/* Mobile dropdown */}
+        {mobileOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-[#0a0a0f]/98 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-col gap-4 z-50">
+            {[['Features', '#features'], ['How It Works', '#how-it-works'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([label, href]) => (
+              <a
+                key={label}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className="text-white/70 hover:text-white text-base font-medium transition-colors"
+              >
+                {label}
+              </a>
+            ))}
+            <div className="border-t border-white/10 pt-4 flex flex-col gap-3">
+              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-white/70 hover:text-white text-sm transition-colors">Sign In</Link>
+              <Link href="/signup" onClick={() => setMobileOpen(false)} className="bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg text-center">
+                Get Started Free
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
@@ -416,6 +447,45 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Founder Section */}
+      <section className="py-20 px-6 bg-white/[0.015]">
+        <div className="max-w-3xl mx-auto text-center">
+          <FadeSection>
+            <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-5">THE PIONEER BEHIND RANKMIND</p>
+            <h2 className="text-4xl font-bold mb-3">TABISH BABAR</h2>
+            <p className="text-sm text-white/50 mb-6 tracking-widest uppercase">
+              Founder, Arabian AI Lab &nbsp;&middot;&nbsp; Digital Architect &nbsp;&middot;&nbsp; Dubai, UAE
+            </p>
+            <p className="text-base text-white/80 max-w-xl mx-auto mb-5 leading-relaxed">
+              A pioneer in the practical application of AI, bridging the speed of Silicon Valley with the luxury craftsmanship of Dubai.
+              Making knowledge borderless and opportunity limitless.
+            </p>
+            <p className="text-base text-white/55 max-w-xl mx-auto mb-8 leading-relaxed italic">
+              &ldquo;I built RankMind AI because every business deserves enterprise-grade SEO — not just Fortune 500 companies.
+              rank-mind.com runs on its own agents. If it works for us, it will work for you.&rdquo;
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <a
+                href="https://arabianailab.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Arabian AI Lab &rarr;
+              </a>
+              <a
+                href="https://tabishzaidi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-2.5 border border-violet-500 text-violet-400 hover:bg-violet-500/10 rounded-lg text-sm font-medium transition-colors"
+              >
+                About Tabish &rarr;
+              </a>
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-5xl mx-auto">
@@ -423,6 +493,7 @@ export default function HomePage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
               <p className="text-white/60 text-lg">Flash Sale — lock in your rate before it goes up.</p>
+              <p className="text-amber-400 text-sm font-medium mt-2">⏰ Flash Sale pricing expires June 30, 2026 — lock in your rate today</p>
             </div>
           </FadeSection>
           <div className="grid md:grid-cols-3 gap-8">
@@ -542,8 +613,9 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <div className="text-white/60 font-medium mb-3">Support</div>
+                <div className="text-white/60 font-medium mb-3">Company</div>
                 <div className="space-y-2">
+                  <Link href="/about" className="block text-white/40 hover:text-white transition-colors">About</Link>
                   <a href="mailto:support@rankmind.ai" className="block text-white/40 hover:text-white transition-colors">Email Support</a>
                   <Link href="/login" className="block text-white/40 hover:text-white transition-colors">Sign In</Link>
                   <Link href="/signup" className="block text-white/40 hover:text-white transition-colors">Get Started</Link>
@@ -551,9 +623,15 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-2">
-            <p className="text-white/30 text-sm">&copy; 2026 RankMind AI. All rights reserved.</p>
-            <p className="text-white/20 text-xs">Built with Next.js · Hosted on Vercel · Powered by OpenAI</p>
+          <div className="border-t border-white/10 pt-6 text-center">
+            <p className="text-white/30 text-sm mb-1">&copy; 2026 RankMind AI. All rights reserved.</p>
+            <p className="text-white/35 text-xs mb-1.5">
+              Researched &amp; Developed by{' '}
+              <a href="https://arabianailab.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white font-medium transition-colors">
+                Arabian AI Lab
+              </a>
+            </p>
+            <p className="text-white/25 text-xs">Marketed &amp; Operated by Jeem &amp; Co FZE LLC, Dubai, UAE</p>
           </div>
         </div>
       </footer>
