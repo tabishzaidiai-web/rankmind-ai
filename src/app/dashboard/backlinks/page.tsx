@@ -90,6 +90,8 @@ export default function BacklinksPage() {
   const [contacted, setContacted] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const [generatingEmail, setGeneratingEmail] = useState(false);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichMsg, setEnrichMsg] = useState('');
 
   const isConfigError = error.includes('not configured') || error.includes('SERPER_API_KEY');
 
@@ -180,6 +182,29 @@ export default function BacklinksPage() {
       }
     } catch { /* silently fail */ }
     finally { setGeneratingEmail(false); }
+  };
+
+  const handleEnrich = async () => {
+    setEnriching(true);
+    setEnrichMsg('');
+    try {
+      const res = await fetch('/api/backlinks/enrich', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche: niche || 'SEO' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEnrichMsg(`✓ Enriched ${data.enriched} pending rows with real domain data`);
+      } else {
+        setEnrichMsg(data.message || data.error || 'Enrichment complete');
+      }
+    } catch (err) {
+      console.error('Enrichment failed:', err);
+      setEnrichMsg('Enrichment failed — check console for details');
+    } finally {
+      setEnriching(false);
+    }
   };
 
   const daColor = (da: number) => da >= 60 ? 'text-emerald-400' : da >= 40 ? 'text-amber-400' : 'text-white/60';
@@ -311,9 +336,20 @@ export default function BacklinksPage() {
           {/* Opportunities Table */}
           {result.opportunities && result.opportunities.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="p-5 border-b border-white/10">
-                <h2 className="font-semibold text-white">Backlink Opportunities</h2>
-                <p className="text-sm text-white/40 mt-0.5">Click any row to view and edit the outreach email draft</p>
+              <div className="p-5 border-b border-white/10 flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h2 className="font-semibold text-white">Backlink Opportunities</h2>
+                  <p className="text-sm text-white/40 mt-0.5">Click any row to view and edit the outreach email draft</p>
+                  {enrichMsg && <p className="text-xs text-teal-400 mt-1">{enrichMsg}</p>}
+                </div>
+                <button
+                  onClick={handleEnrich}
+                  disabled={enriching}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl transition-all flex-shrink-0"
+                >
+                  {enriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                  {enriching ? 'Enriching...' : 'Enrich Pending Links'}
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
