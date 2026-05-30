@@ -197,3 +197,72 @@ function classifySiteType(
   if (text.includes('medium') || text.includes('blogger') || text.includes('web 2')) return 'web2';
   return 'guest_post';
 }
+
+/**
+ * Enrich a backlink opportunity with a real contact email.
+ *
+ * Strategy:
+ * 1. Use SERPER to find the site's contact / write-for-us page
+ * 2. Fetch that page and regex-extract email addresses
+ * 3. Prefer editorial/outreach emails over generic ones
+ *
+ * Returns null if no email is found or any step fails.
+ */
+export async function enrichContactEmail(
+  domain: string,
+  siteUrl: string
+): Promise<string | null> {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    // Step 1: Search for the contact / write-for-us page on this domain
+    const contactSearch = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: `site:${domain} contact OR "write for us" OR submit OR contribute`,
+        num: 5,
+      }),
+    });
+
+    if (!contactSearch.ok) return null;
+
+    const searchData = await contactSearch.json();
+    const contactPageUrl =
+      searchData.organic?.[0]?.link ||
+      searchData.organic?.[1]?.link ||
+      null;
+
+    if (!contactPageUrl) return null;
+
+    // Step 2: Fetch the contact page and extract emails
+    const pageRes = await fetch(contactPageUrl, {
+      headers: { 'User-Agent': 'RankMind-Bot/1.0 (+https://rank-mind.com)' },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!pageRes.ok) return null;
+    const html = await pageRes.text();
+
+    // Extract all email addresses from the HTML
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+    const emails = html.match(emailRegex) || [];
+
+    // Prefer editorial/outreach emails; filter out noreply/example/test
+    const preferred = emails.find((e) =>
+      /editor|outreach|submit|guest|contribut|write/i.test(e)
+    );
+    const fallback = emails.find((e) =>
+      !/noreply|no-reply|example\.com|test@/i.test(e)
+    );
+
+    return preferred || fallback || null;
+  } catch (error) {
+    console.error('[EnrichContact] Error for domain:', domain, error);
+    return null;
+  }
+}

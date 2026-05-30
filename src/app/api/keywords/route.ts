@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getUserPlanFromUser } from '@/lib/plan-middleware';
 
 const DFS_LOGIN = process.env.DATAFORSEO_LOGIN || '';
 const DFS_PASSWORD = process.env.DATAFORSEO_PASSWORD || '';
@@ -23,6 +24,19 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // ── Plan check: keywords limit ──
+    const userPlan = getUserPlanFromUser(user);
+    if (userPlan.limits.keywordsLimit === 0) {
+      return NextResponse.json(
+        {
+          error: 'Keyword tracking requires the Starter plan or above.',
+          upgradeRequired: true,
+          currentPlan: userPlan.plan,
+        },
+        { status: 403 }
+      );
+    }
 
     const { websiteId, seeds, targetCountry = 'US', language = 'en' } = await req.json();
     if (!seeds || seeds.length === 0) {

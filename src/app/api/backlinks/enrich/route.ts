@@ -5,41 +5,58 @@
  * domain_name = null or "Pending Enrichment" by fetching fresh
  * data from the SERPER API.
  *
+ * Requires authentication + Growth plan or above.
  * Body: { niche: string }
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { searchBacklinkOpportunities } from '@/lib/serper';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { getUserPlanFromUser } from '@/lib/plan-middleware';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    // Use service-role key so we can update any user's rows
-    const supabase = createClient(
+    // ── Auth check ──
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // ── Plan check: Growth+ only ──
+    const userPlan = getUserPlanFromUser(user);
+    if (!userPlan.limits.backlinkBuilderAccess) {
+      return NextResponse.json(
+        {
+          error: 'Backlink enrichment requires the Growth plan or above.',
+          upgradeRequired: true,
+          currentPlan: userPlan.plan,
+        },
+        { status: 403 }
+      );
+    }
+
+    const serviceClient = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     const body = await request.json();
-    const { niche, userId } = body;
+    const { niche } = body;
 
     if (!niche) {
       return NextResponse.json({ error: 'niche is required' }, { status: 400 });
     }
 
-    // Build the filter: rows that are pending enrichment
-    let query = supabase
+    // Scope to the authenticated user's rows only
+    const { data: pendingRows, error: fetchError } = await serviceClient
       .from('backlink_opportunities')
       .select('*')
+      .eq('user_id', user.id)
       .or('domain_name.is.null,domain_name.eq.Pending Enrichment,domain_name.eq.unknown');
-
-    // Scope to a specific user if provided
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-
-    const { data: pendingRows, error: fetchError } = await query;
 
     if (fetchError) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
@@ -51,7 +68,6 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Enrich] Found ${pendingRows.length} pending rows for niche: "${niche}"`);
 
-    // Fetch fresh SERPER data
     const opportunities = await searchBacklinkOpportunities(niche);
 
     if (opportunities.length === 0) {
@@ -65,11 +81,10 @@ export async function POST(request: NextRequest) {
 
     for (let i = 0; i < pendingRows.length; i++) {
       const row = pendingRows[i];
-      // Cycle through available SERPER results
       const match = opportunities[i % opportunities.length];
       if (!match) continue;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await serviceClient
         .from('backlink_opportunities')
         .update({
           domain_name: match.domain_name,

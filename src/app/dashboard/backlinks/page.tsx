@@ -92,6 +92,9 @@ export default function BacklinksPage() {
   const [generatingEmail, setGeneratingEmail] = useState(false);
   const [enriching, setEnriching] = useState(false);
   const [enrichMsg, setEnrichMsg] = useState('');
+  const [enrichingEmails, setEnrichingEmails] = useState(false);
+  const [enrichEmailMsg, setEnrichEmailMsg] = useState('');
+  const [outreachSending, setOutreachSending] = useState<string | null>(null);
 
   const isConfigError = error.includes('not configured') || error.includes('SERPER_API_KEY');
 
@@ -182,6 +185,57 @@ export default function BacklinksPage() {
       }
     } catch { /* silently fail */ }
     finally { setGeneratingEmail(false); }
+  };
+
+  const handleEnrichEmails = async () => {
+    setEnrichingEmails(true);
+    setEnrichEmailMsg('');
+    try {
+      const res = await fetch('/api/backlinks/enrich-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEnrichEmailMsg(`✓ Found emails for ${data.enriched} of ${data.total} prospects`);
+      } else {
+        setEnrichEmailMsg(data.message || data.error || 'Enrichment complete');
+      }
+    } catch (err) {
+      console.error('Email enrichment failed:', err);
+      setEnrichEmailMsg('Email enrichment failed — check console');
+    } finally {
+      setEnrichingEmails(false);
+    }
+  };
+
+  const handleOutreach = async (oppId: string | undefined, contactEmail: string) => {
+    if (!oppId) {
+      // No DB id — open mailto directly
+      window.open(`mailto:${contactEmail}`, '_blank');
+      return;
+    }
+    setOutreachSending(oppId);
+    try {
+      const res = await fetch('/api/backlinks/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backlinkId: oppId }),
+      });
+      const data = await res.json();
+      if (data.method === 'mailto' && data.mailtoLink) {
+        window.open(data.mailtoLink, '_blank');
+      } else if (data.upgradeRequired) {
+        alert('Outreach emails require the Growth plan. Upgrade at rank-mind.com/pricing.');
+      } else if (!data.success) {
+        alert(data.error || 'Failed to send outreach email');
+      }
+    } catch (err) {
+      console.error('Outreach failed:', err);
+      alert('Outreach failed — please try again');
+    } finally {
+      setOutreachSending(null);
+    }
   };
 
   const handleEnrich = async () => {
@@ -341,14 +395,25 @@ export default function BacklinksPage() {
                   <h2 className="font-semibold text-white">Backlink Opportunities</h2>
                   <p className="text-sm text-white/40 mt-0.5">Click any row to view and edit the outreach email draft</p>
                   {enrichMsg && <p className="text-xs text-teal-400 mt-1">{enrichMsg}</p>}
+                  {enrichEmailMsg && <p className="text-xs text-violet-400 mt-1">{enrichEmailMsg}</p>}
                 </div>
                 <button
+                  type="button"
                   onClick={handleEnrich}
                   disabled={enriching}
                   className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl transition-all flex-shrink-0"
                 >
                   {enriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
                   {enriching ? 'Enriching...' : 'Enrich Pending Links'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEnrichEmails}
+                  disabled={enrichingEmails}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl transition-all flex-shrink-0"
+                >
+                  {enrichingEmails ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                  {enrichingEmails ? 'Finding Emails...' : 'Find Contact Emails'}
                 </button>
               </div>
               <div className="overflow-x-auto">
@@ -360,6 +425,7 @@ export default function BacklinksPage() {
                       <th className="text-center px-5 py-3 text-white/40 font-medium">DA</th>
                       <th className="text-center px-5 py-3 text-white/40 font-medium">Relevance</th>
                       <th className="text-center px-5 py-3 text-white/40 font-medium">Email</th>
+                      <th className="text-center px-5 py-3 text-white/40 font-medium">Outreach</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -399,8 +465,24 @@ export default function BacklinksPage() {
                             </div>
                           </td>
                           <td className="px-5 py-3 text-center">
-                            {opp.outreach_email ? (
+                            {opp.contact_email ? (
+                              <span className="text-xs text-teal-400 font-medium">{opp.contact_email.slice(0, 18)}{opp.contact_email.length > 18 ? '…' : ''}</span>
+                            ) : opp.outreach_email ? (
                               <CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" />
+                            ) : (
+                              <span className="text-white/20 text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                            {opp.contact_email ? (
+                              <button
+                                type="button"
+                                onClick={() => handleOutreach(opp.id, opp.contact_email!)}
+                                disabled={outreachSending === opp.id}
+                                className="text-xs text-violet-400 hover:text-violet-300 disabled:opacity-50 font-medium transition-colors"
+                              >
+                                {outreachSending === opp.id ? 'Sending…' : 'Send Email'}
+                              </button>
                             ) : (
                               <span className="text-white/20 text-xs">—</span>
                             )}

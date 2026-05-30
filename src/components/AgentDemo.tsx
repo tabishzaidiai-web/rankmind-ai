@@ -160,7 +160,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
               placeholder="Enter your website URL — e.g. yoursite.com"
               className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:border-violet-500 focus:bg-white/15 text-base transition-all" />
           </div>
-          <button onClick={() => handleStart()} disabled={loading}
+          <button type="button" onClick={() => handleStart()} disabled={loading}
             className="px-6 py-4 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold rounded-2xl transition-all whitespace-nowrap disabled:opacity-60 text-base">
             {loading ? 'Analysing...' : 'Analyse My Site Free →'}
           </button>
@@ -181,7 +181,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
             <a href={signupUrl} className="px-8 py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold rounded-xl transition-all text-sm">
               Start Free — No Credit Card →
             </a>
-            <button onClick={() => { setStarted(false); setRateLimited(false); setUrl(''); }} className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all text-sm">
+            <button type="button" onClick={() => { setStarted(false); setRateLimited(false); setUrl(''); }} className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all text-sm">
               Try a different URL
             </button>
           </div>
@@ -193,7 +193,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
         <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mt-4 max-w-2xl mx-auto">
           <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-300">{error}</p>
-          {started && <button onClick={() => { setStarted(false); setError(''); }} className="ml-auto text-xs text-white/50 hover:text-white underline">Try again</button>}
+          {started && <button type="button" onClick={() => { setStarted(false); setError(''); }} className="ml-auto text-xs text-white/50 hover:text-white underline">Try again</button>}
         </div>
       )}
 
@@ -204,7 +204,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
             <div className="p-4 border-b border-white/10 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-cyan-600 flex items-center justify-center text-sm font-bold text-white">R</div>
               <div><p className="text-sm font-semibold text-white">RankBot</p><p className="text-xs text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block animate-pulse" />Analysing your site...</p></div>
-              <button onClick={() => { setStarted(false); setAuditResult(null); setUrl(''); }} className="ml-auto text-xs text-white/30 hover:text-white/60 transition-colors">✕ New audit</button>
+              <button type="button" onClick={() => { setStarted(false); setAuditResult(null); setUrl(''); }} className="ml-auto text-xs text-white/30 hover:text-white/60 transition-colors">✕ New audit</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.map(msg => (
@@ -220,7 +220,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
                     {msg.quickReplies && !msg.isTyping && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {msg.quickReplies.map(r => (
-                          <button key={r} onClick={() => handleQuickReply(r)} className="text-xs bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-3 py-1 transition-colors text-white/80">{r}</button>
+                          <button type="button" key={r} onClick={() => handleQuickReply(r)} className="text-xs bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-3 py-1 transition-colors text-white/80">{r}</button>
                         ))}
                       </div>
                     )}
@@ -238,7 +238,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
               <div className="flex gap-2">
                 <input type="text" value={inputText} onChange={e => setInputText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Type a reply or pick an option above..." className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-violet-500 transition-all" />
-                <button onClick={handleSendMessage} className="w-10 h-10 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity flex-shrink-0">
+                <button type="button" onClick={handleSendMessage} className="w-10 h-10 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity flex-shrink-0">
                   <Send className="w-4 h-4 text-white" />
                 </button>
               </div>
@@ -290,6 +290,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
                   <div className="mt-4 p-4 bg-gradient-to-r from-violet-600/20 to-cyan-600/20 border border-violet-500/30 rounded-xl">
                     <p className="text-xs text-white/60 mb-2">Want the full 10-factor audit, keyword tracking &amp; PDF report?</p>
                     <button
+                      type="button"
                       onClick={handleViewFullAudit}
                       className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm"
                     >

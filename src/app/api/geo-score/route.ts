@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runGEOAnalysis } from '@/lib/agents/geo-content-agent';
 import { createClient } from '@/lib/supabase/server';
+import { getUserPlanFromUser } from '@/lib/plan-middleware';
 
 export const maxDuration = 60;
 
@@ -11,6 +12,20 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+
+    // ── Plan check: Enterprise only ──
+    const userPlan = getUserPlanFromUser(user);
+    if (!userPlan.limits.geoAccess) {
+      return NextResponse.json(
+        {
+          error: 'GEO Optimizer requires the Enterprise plan.',
+          upgradeRequired: true,
+          currentPlan: userPlan.plan,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { url } = body;
     if (!url) {

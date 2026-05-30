@@ -111,6 +111,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div className="border border-white/10 rounded-xl overflow-hidden">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-white/5 transition-colors"
       >
@@ -164,6 +165,7 @@ function PricingButton({ planKey, cta, className }: { planKey: string; cta: stri
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={loading}
       className={`${className} disabled:opacity-70 disabled:cursor-wait`}
@@ -218,6 +220,7 @@ export default function HomePage() {
             </Link>
             {/* Mobile hamburger */}
             <button
+              type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
               className="md:hidden flex items-center justify-center w-9 h-9 text-white/70 hover:text-white transition-colors text-xl"

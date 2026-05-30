@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { agentWrite, agentReason, fetchPageContent, sendEmail } from '@/lib/agents/core';
+import { getUserPlanFromUser } from '@/lib/plan-middleware';
 
 export const maxDuration = 60;
 
@@ -47,6 +48,19 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // ── Plan check: Enterprise only ──
+    const userPlan = getUserPlanFromUser(user);
+    if (!userPlan.limits.contentWriterAccess) {
+      return NextResponse.json(
+        {
+          error: 'Content Writer requires the Enterprise plan.',
+          upgradeRequired: true,
+          currentPlan: userPlan.plan,
+        },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
