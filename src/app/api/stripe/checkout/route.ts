@@ -115,6 +115,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const plan = searchParams.get('plan') || 'starter';
 
+  const VALID_PLANS = ['starter', 'growth', 'enterprise'];
+  if (!VALID_PLANS.includes(plan)) {
+    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
+  }
+
   const PLAN_PRICE_MAP: Record<string, string> = {
     starter: process.env.STRIPE_STARTER_PRICE_ID!,
     growth: process.env.STRIPE_GROWTH_PRICE_ID ?? process.env.STRIPE_PRO_PRICE_ID!,

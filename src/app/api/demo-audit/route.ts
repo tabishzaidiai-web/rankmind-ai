@@ -233,15 +233,18 @@ Keep it under 80 words.`;
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+  const vercelForwarded = request.headers.get('x-vercel-forwarded-for');
+  const ip = vercelForwarded
+    ? vercelForwarded.split(',').pop()?.trim() ?? 'unknown'
+    : request.headers.get('x-forwarded-for') || 'unknown';
   const { allowed, remaining } = checkRateLimit(ip);
 
   if (!allowed) {
     return NextResponse.json({
       rateLimited: true,
       signupUrl: '/signup',
-      message: "You've used all 3 free audits for today. Sign up free to run unlimited audits.",
-    }, { status: 200 });
+      message: "You've used all 3 free audits today. Sign up free to continue.",
+    }, { status: 429 });
   }
 
   let body: { url?: string };

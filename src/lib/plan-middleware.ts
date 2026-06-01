@@ -24,7 +24,7 @@ export interface PlanLimits {
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free: {
-    auditsPerMonth: 3,
+    auditsPerMonth: 10,
     keywordsLimit: 0,
     websitesLimit: 0,
     backlinksPerWeek: 0,
@@ -51,8 +51,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     websitesLimit: 5,
     backlinksPerWeek: 10,
     outreachEmailsPerWeek: 20,
-    geoAccess: false,
-    contentWriterAccess: false,
+    geoAccess: true,
+    contentWriterAccess: true,
     backlinkBuilderAccess: true,
     customAgentInstructions: false,
   },
