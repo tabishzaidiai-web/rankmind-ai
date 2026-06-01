@@ -175,7 +175,7 @@ export default function AgentDemo({ initialUrl = '' }: { initialUrl?: string }) 
           <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">You&apos;ve used your 3 free audits today</h3>
+          <h3 className="text-xl font-bold text-white mb-2">You&apos;ve used your 3 free demo audits today</h3>
           <p className="text-white/60 text-sm mb-6 max-w-sm mx-auto">Sign up free to run unlimited audits, track your score over time, and get weekly automated reports.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href={signupUrl} className="px-8 py-3 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold rounded-xl transition-all text-sm">

@@ -41,12 +41,12 @@ export default function CookieBanner() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[9999] p-4 sm:p-6"
+      className="fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5 pb-[env(safe-area-inset-bottom,12px)] sm:pb-5"
       role="dialog"
       aria-label="Cookie consent"
       aria-live="polite"
     >
-      <div className="max-w-4xl mx-auto bg-[#13131a] border border-white/15 rounded-2xl shadow-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="max-w-4xl mx-auto bg-[#13131a]/98 backdrop-blur-md border border-white/15 rounded-2xl shadow-2xl shadow-black/40 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
           <Cookie className="w-5 h-5 text-violet-400" />
         </div>
@@ -62,6 +62,7 @@ export default function CookieBanner() {
 
         <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
           <button
+            type="button"
             onClick={decline}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-white/15 text-white/60 hover:text-white hover:border-white/30 text-sm transition-all"
           >
@@ -69,6 +70,7 @@ export default function CookieBanner() {
             Decline
           </button>
           <button
+            type="button"
             onClick={accept}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-all"
           >

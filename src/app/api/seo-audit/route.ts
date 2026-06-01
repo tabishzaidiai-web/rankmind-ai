@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     // ── Auth enforcement — seo-audit requires a logged-in account ──
     if (!user) {
       return NextResponse.json(
-        { error: 'Authentication required. Sign up for a free account to run audits.' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
