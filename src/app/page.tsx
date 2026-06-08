@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import AgentDemo from '@/components/AgentDemo';
 import RankEverywhere from '@/components/RankEverywhere';
+import ProductScreenshots from '@/components/ProductScreenshots';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, Star, Zap, ChevronDown, MessageCircle } from 'lucide-react';
@@ -314,6 +315,16 @@ export default function HomePage() {
             <AgentDemo />
           </div>
           <p className="mt-6 text-sm text-white/30">No credit card required. Free SEO audit included.</p>
+          {/* Guest-mode quick audit CTA */}
+          <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
+            <a
+              href="/free-audit"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 bg-violet-500/10 hover:bg-violet-500/15 px-5 py-2.5 rounded-xl transition-all"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              Get Your Free SEO Score — No Account Needed
+            </a>
+          </div>
         </div>
       </section>
 
@@ -415,6 +426,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* See RankMind In Action — product screenshots */}
+      <ProductScreenshots />
 
       {/* Early Adopter Program — replaces fake testimonials */}
       <section className="py-24 px-6">
