@@ -189,21 +189,16 @@ export default function ProductScreenshots() {
             >
               ✕
             </button>
-            {/* Placeholder — replace src with your Loom/YouTube embed URL */}
-            <div className="aspect-video bg-gradient-to-br from-violet-900/40 to-cyan-900/40 flex flex-col items-center justify-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center">
-                <Play className="w-7 h-7 text-white fill-white ml-1" />
-              </div>
-              <p className="text-white/60 text-sm">Demo video coming soon</p>
-              <p className="text-white/30 text-xs">Replace this with your Loom or YouTube embed</p>
-              {/* Uncomment and replace URL when ready:
+            <div className="relative aspect-video bg-black">
               <iframe
-                src="https://www.loom.com/embed/YOUR_LOOM_ID"
+                src="https://www.youtube.com/embed/OJ3mUruawVA?si=_Qe2g7LpbaYsIgXD&autoplay=1"
+                title="RankMind AI — 60-Second Demo"
                 className="absolute inset-0 w-full h-full"
                 frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
-              */}
             </div>
           </div>
         </div>
