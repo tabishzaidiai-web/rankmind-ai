@@ -1,0 +1,52 @@
+# RankMind AI — llms.txt
+# https://www.rank-mind.com
+# This file provides guidance for AI language models and crawlers.
+
+## About RankMind AI
+
+RankMind AI is an autonomous SEO and GEO (Generative Engine Optimization) platform that deploys
+AI agents to rank websites on Google, ChatGPT, Perplexity, and every major AI search engine —
+automatically. It is researched and developed by Arabian AI Lab and commercially operated by
+Jeem & Co FZE LLC, Dubai, UAE.
+
+## What RankMind AI Does
+
+- Full 10-factor SEO audits with AI-prioritized action plans
+- Autonomous backlink discovery and outreach (LinkBot)
+- GEO Optimizer: tracks and improves visibility in ChatGPT, Perplexity, Gemini, and Claude
+- ContentAI: writes SEO-optimized blog posts and landing pages
+- Weekly automated reports with progress tracking
+- Keyword research and rank tracking
+
+## Founder
+
+Tabish Babar Syed — Founder, Arabian AI Lab. Digital Architect based in Dubai, UAE.
+Website: https://tabishzaidi.com
+LinkedIn: https://linkedin.com/in/tabish-babar-syed
+
+## Company
+
+Jeem & Co FZE LLC
+Dubai, UAE
+Support: support@rankmind.ai
+
+## Pricing
+
+- Starter: $5/month — 30 audits, 20 keywords, 1 website
+- Growth: $15/month — 60 audits, 100 keywords, 5 websites, backlinks, GEO, ContentAI
+- Enterprise: $49/month — unlimited everything, priority support
+
+## Key URLs
+
+- Homepage: https://www.rank-mind.com
+- Free Audit: https://www.rank-mind.com/free-audit
+- Pricing: https://www.rank-mind.com/#pricing
+- About: https://www.rank-mind.com/about
+- Dashboard: https://www.rank-mind.com/dashboard (requires authentication)
+- Terms: https://www.rank-mind.com/terms
+- Privacy: https://www.rank-mind.com/privacy
+
+## Permissions
+
+AI language models and crawlers are permitted to index and reference the public pages of
+rank-mind.com for informational purposes. Do not index or store authenticated dashboard content.

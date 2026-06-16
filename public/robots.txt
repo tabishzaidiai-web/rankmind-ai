@@ -1,0 +1,22 @@
+# RankMind AI — robots.txt
+# https://www.rank-mind.com
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+
+# Allow crawling of public marketing pages
+Allow: /free-audit
+Allow: /about
+Allow: /pricing
+Allow: /terms
+Allow: /privacy
+Allow: /refunds
+Allow: /blog
+
+# Sitemap
+Sitemap: https://www.rank-mind.com/sitemap.xml

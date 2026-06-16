@@ -3,17 +3,40 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'About RankMind AI — Arabian AI Lab',
-  description: 'RankMind AI is researched and developed by Arabian AI Lab and marketed by Jeem & Co FZE LLC, Dubai, UAE.',
+  description: 'RankMind AI is an autonomous SEO and GEO platform researched by Arabian AI Lab and operated by Jeem & Co FZE LLC, Dubai, UAE. Meet the founder and learn our mission.',
   alternates: {
     canonical: 'https://www.rank-mind.com/about',
   },
   openGraph: {
     url: 'https://www.rank-mind.com/about',
     title: 'About RankMind AI — Arabian AI Lab',
-    description: 'RankMind AI is researched and developed by Arabian AI Lab and marketed by Jeem & Co FZE LLC, Dubai, UAE.',
+    description: 'RankMind AI is an autonomous SEO and GEO platform researched by Arabian AI Lab and operated by Jeem & Co FZE LLC, Dubai, UAE.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
   },
 };
+
+const beliefs = [
+  {
+    icon: '🤖',
+    title: 'AI should do the work, not just advise',
+    body: 'Most SEO tools give you a list of recommendations and leave you to do the work. RankMind AI executes — it builds backlinks, writes content, and optimizes your GEO presence autonomously.',
+  },
+  {
+    icon: '🌍',
+    title: 'Great SEO should be accessible to everyone',
+    body: 'Enterprise-grade SEO has always been locked behind expensive agencies and complex tools. We built RankMind AI so that a solo founder in Dubai can compete with a Fortune 500 marketing team.',
+  },
+  {
+    icon: '🔍',
+    title: 'The future of search is AI-generated answers',
+    body: 'Google is no longer the only search engine that matters. ChatGPT, Perplexity, and Gemini are answering millions of queries daily. GEO optimization is not optional — it is the next frontier.',
+  },
+  {
+    icon: '⚡',
+    title: 'Speed compounds',
+    body: 'Every week you delay SEO is a week your competitors gain ground. Autonomous agents that work 24/7 compound your ranking advantage faster than any human team can match.',
+  },
+];
 
 export default function AboutPage() {
   return (
@@ -41,7 +64,25 @@ export default function AboutPage() {
           </p>
         </section>
 
-        {/* Section 2 — The Research */}
+        {/* Section 2 — What We Believe */}
+        <section className="border-t border-white/10 pt-16">
+          <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">WHAT WE BELIEVE</p>
+          <h2 className="text-3xl font-bold mb-10">Our Core Beliefs</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {beliefs.map((b) => (
+              <div
+                key={b.title}
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-violet-500/40 hover:bg-white/[0.07] transition-all"
+              >
+                <div className="text-3xl mb-3">{b.icon}</div>
+                <h3 className="font-semibold text-white mb-2">{b.title}</h3>
+                <p className="text-white/60 text-sm leading-relaxed">{b.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section 3 — The Research */}
         <section className="border-t border-white/10 pt-16">
           <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">THE RESEARCH</p>
           <h2 className="text-3xl font-bold mb-6">Researched &amp; Developed by Arabian AI Lab</h2>
@@ -127,6 +168,28 @@ export default function AboutPage() {
               <span className="text-white/40">Support:</span>{' '}
               <a href="mailto:support@rankmind.ai" className="text-violet-400 hover:underline">support@rankmind.ai</a>
             </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="border-t border-white/10 pt-16 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to rank your website?</h2>
+          <p className="text-white/60 mb-8 max-w-lg mx-auto">
+            Join hundreds of founders using RankMind AI to automate their SEO and appear in AI search results — no agency required.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/signup"
+              className="px-8 py-4 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold rounded-xl transition-all text-lg"
+            >
+              Start Free — No Card Required
+            </Link>
+            <Link
+              href="/free-audit"
+              className="px-8 py-4 bg-white/5 border border-white/10 hover:border-violet-500/40 hover:bg-white/10 text-white font-semibold rounded-xl transition-all text-lg"
+            >
+              Get Free SEO Score →
+            </Link>
           </div>
         </section>
 
