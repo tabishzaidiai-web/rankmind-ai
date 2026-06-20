@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LayoutDashboard, Settings, LogOut, Brain, Code2, RefreshCw, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, Brain, Code2, RefreshCw, Sparkles, ShieldCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 
 const coreAgents = [
@@ -28,6 +29,22 @@ const aiEraTools = [
 export default function Sidebar({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [guardrailMode, setGuardrailMode] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('rm_guardrail_mode');
+    if (saved !== null) {
+      setGuardrailMode(saved === 'true');
+    }
+  }, []);
+
+  const toggleGuardrail = () => {
+    const newValue = !guardrailMode;
+    setGuardrailMode(newValue);
+    localStorage.setItem('rm_guardrail_mode', String(newValue));
+    // Optional: Dispatch event for other components to listen
+    window.dispatchEvent(new CustomEvent('guardrail-mode-change', { detail: newValue }));
+  };
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -180,6 +197,27 @@ export default function Sidebar({ user }: { user: User }) {
           <Settings className="w-4 h-4 flex-shrink-0" />
           Settings
         </Link>
+
+        {/* Guardrail Mode Toggle */}
+        <div className="px-3 py-4 mt-4 border-t border-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className={`w-4 h-4 ${guardrailMode ? 'text-emerald-400' : 'text-white/20'}`} />
+              <span className="text-xs font-bold text-white/70 uppercase tracking-wider">Guardrail Mode</span>
+            </div>
+            <button 
+              onClick={toggleGuardrail}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${guardrailMode ? 'bg-emerald-600' : 'bg-white/10'}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${guardrailMode ? 'translate-x-5' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          <p className="text-[10px] text-white/30 leading-relaxed">
+            {guardrailMode 
+              ? 'Agents will pause for your approval before sending emails or publishing content.' 
+              : 'Agents will run autonomously in the background for maximum speed.'}
+          </p>
+        </div>
       </nav>
 
       {/* User */}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Zap, CheckCircle2, Circle, X, Globe, BarChart3, Link2, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import ActivityFeed from './ActivityFeed';
 
 const AGENTS = [
   {
@@ -242,10 +243,14 @@ export default function DashboardOverviewClient({ plan, isActive, isAdmin = fals
         ))}
       </div>
 
-      {/* Large Agent Cards */}
-      <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Your AI Agents</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Live Activity Feed & Agent Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+          <ActivityFeed />
+        </div>
+        <div className="lg:col-span-2">
+          <h2 className="text-lg font-semibold text-white mb-4">Your AI Agents</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {AGENTS.map((agent, i) => (
             <div
               key={agent.name}
@@ -276,7 +281,7 @@ export default function DashboardOverviewClient({ plan, isActive, isAdmin = fals
                 </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
