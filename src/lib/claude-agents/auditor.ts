@@ -76,7 +76,7 @@ export async function runClaudeDeepAudit(url: string): Promise<ClaudeAuditResult
       url,
       overall_score: 0,
       grade: 'F',
-      summary: 'Audit service is not configured. Please contact support@rankmind.ai',
+      summary: 'Audit service is not configured. Please contact info@rank-mind.com',
       issues: [],
       wins: [],
       scores: {},

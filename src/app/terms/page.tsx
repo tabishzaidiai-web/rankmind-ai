@@ -145,7 +145,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mb-3">14. Contact</h2>
             <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-1 text-sm">
               <div><span className="text-white/40">Legal inquiries:</span> <a href="mailto:legal@rankmind.ai" className="text-violet-400 hover:underline">legal@rankmind.ai</a></div>
-              <div><span className="text-white/40">Support:</span> <a href="mailto:support@rankmind.ai" className="text-violet-400 hover:underline">support@rankmind.ai</a></div>
+              <div><span className="text-white/40">Support:</span> <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">info@rank-mind.com</a></div>
             </div>
           </section>
         </div>

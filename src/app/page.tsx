@@ -731,7 +731,7 @@ export default function HomePage() {
                 <div className="text-white/60 font-medium mb-3">Company</div>
                 <div className="space-y-2">
                   <Link href="/about" className="block text-white/40 hover:text-white transition-colors">About</Link>
-                  <a href="mailto:support@rankmind.ai" className="block text-white/40 hover:text-white transition-colors">Email Support</a>
+                  <a href="mailto:info@rank-mind.com" className="block text-white/40 hover:text-white transition-colors">Email Support</a>
                   <Link href="/login" className="block text-white/40 hover:text-white transition-colors">Sign In</Link>
                   <Link href="/signup" className="block text-white/40 hover:text-white transition-colors">Get Started</Link>
                 </div>
@@ -761,7 +761,7 @@ export default function HomePage() {
 
       {/* Support Chat Widget */}
       <a
-        href="mailto:support@rankmind.ai"
+        href="mailto:info@rank-mind.com"
         className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/30 hover:scale-110 transition-transform"
         title="Contact Support"
       >

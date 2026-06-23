@@ -102,7 +102,7 @@ export default function VerifyEmailPage() {
 
         <p className="text-center text-white/30 text-xs mt-6">
           Having trouble?{' '}
-          <a href="mailto:support@rankmind.ai" className="text-violet-400 hover:underline">
+          <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">
             Contact support
           </a>
         </p>

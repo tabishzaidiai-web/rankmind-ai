@@ -122,7 +122,7 @@ const schemaOrg = {
       },
       contactPoint: {
         '@type': 'ContactPoint',
-        email: 'support@rankmind.ai',
+        email: 'info@rank-mind.com',
         contactType: 'customer support',
       },
       sameAs: [

@@ -177,7 +177,7 @@ export default function PrivacyPage() {
             <p>For privacy-related inquiries or to exercise your rights:</p>
             <div className="mt-3 bg-white/5 rounded-xl p-4 border border-white/10 space-y-1 text-sm">
               <div><span className="text-white/40">Email:</span> <a href="mailto:privacy@rankmind.ai" className="text-violet-400 hover:underline">privacy@rankmind.ai</a></div>
-              <div><span className="text-white/40">Support:</span> <a href="mailto:support@rankmind.ai" className="text-violet-400 hover:underline">support@rankmind.ai</a></div>
+              <div><span className="text-white/40">Support:</span> <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">info@rank-mind.com</a></div>
             </div>
           </section>
         </div>

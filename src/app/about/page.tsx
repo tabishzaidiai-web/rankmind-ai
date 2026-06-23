@@ -166,7 +166,7 @@ export default function AboutPage() {
             <div><span className="text-white/40">Location:</span> Dubai, UAE</div>
             <div>
               <span className="text-white/40">Support:</span>{' '}
-              <a href="mailto:support@rankmind.ai" className="text-violet-400 hover:underline">support@rankmind.ai</a>
+              <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">info@rank-mind.com</a>
             </div>
           </div>
         </section>
