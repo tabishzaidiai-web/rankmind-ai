@@ -32,7 +32,7 @@ function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) {
         const newAttempts = failedAttempts + 1;
@@ -62,7 +62,7 @@ function LoginForm() {
     setGoogleLoading(true);
     setError('');
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin + '/auth/callback' },

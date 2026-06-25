@@ -237,7 +237,7 @@ export default function SEOAuditPage() {
           return;
         }
         // 3. Fallback: user's saved website
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data: website } = await supabase
@@ -257,7 +257,7 @@ export default function SEOAuditPage() {
   useEffect(() => {
     const fetchTier = async () => {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data } = await supabase
@@ -278,7 +278,7 @@ export default function SEOAuditPage() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data } = await supabase
           .from('audits')
           .select('id, url, score, grade, created_at')

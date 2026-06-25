@@ -85,7 +85,7 @@ export default function ContentPage() {
   const [previewItem, setPreviewItem] = useState<{ id: string; title: string; target_keyword: string; word_count: number; status: string; created_at: string; content?: string } | null>(null);
 
   const loadWebsiteAndQueue = useCallback(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const { data: ws } = await supabase.from('websites').select('id, domain, url').order('created_at', { ascending: true }).limit(1).single();
     if (ws) {

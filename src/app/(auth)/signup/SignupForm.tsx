@@ -52,7 +52,7 @@ export default function SignupForm() {
     if (isWeak) return;
     setLoading(true);
     setError('');
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error: signupError } = await supabase.auth.signUp({
       email,
       password,
@@ -74,7 +74,7 @@ export default function SignupForm() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     if (plan) sessionStorage.setItem('rankmind_selected_plan', plan);
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },

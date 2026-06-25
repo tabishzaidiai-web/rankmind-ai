@@ -52,7 +52,7 @@ export default function OnboardingPage() {
   const handleComplete = async () => {
     setSaving(true);
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/login'); return; }
       const domain = new URL(websiteUrl).hostname.replace('www.','');

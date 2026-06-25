@@ -103,7 +103,7 @@ export default function BacklinksPage() {
     const prefill = async () => {
       try {
         const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data: website } = await supabase

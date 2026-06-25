@@ -15,7 +15,7 @@ export default function VerifyEmailPage() {
     setResending(true);
     setError('');
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) throw new Error('No email found. Please sign up again.');
       const { error: resendError } = await supabase.auth.resend({
