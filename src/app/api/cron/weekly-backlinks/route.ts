@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { runBacklinkCampaign } from '@/lib/agents/backlink-agent';
+import { isGuardrailEnabled } from '@/lib/guardrails';
 
 // Vercel Cron: runs every Wednesday at 9am UTC
 // Schedule: 0 9 * * 3
@@ -41,6 +42,10 @@ export async function GET(request: NextRequest) {
 
     for (const user of users) {
       try {
+        if (await isGuardrailEnabled(user.id)) {
+          results.push({ userId: user.id, url: user.website_url, status: 'awaiting_approval', prospectsFound: 0 });
+          continue;
+        }
         const backlinkResult = await runBacklinkCampaign(user.website_url, user.email);
 
         results.push({

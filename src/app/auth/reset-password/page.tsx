@@ -20,17 +20,25 @@ export default function ResetPasswordPage() {
   // Supabase sends the user back with a session via the URL hash
   // We need to wait for the auth state to be ready before allowing password update
   useEffect(() => {
-    const supabase = await createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setSessionReady(true);
-      }
-    });
-    // Also check if already in a valid session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
-    });
-    return () => subscription.unsubscribe();
+    let subscription: { unsubscribe: () => void } | null = null;
+    let cancelled = false;
+    void (async () => {
+      const supabase = await createClient();
+      if (cancelled) return;
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setSessionReady(true);
+        }
+      });
+      subscription = data.subscription;
+      // Also check if already in a valid session
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) setSessionReady(true);
+    })();
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

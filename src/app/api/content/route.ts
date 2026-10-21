@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { agentWrite, agentReason, fetchPageContent, sendEmail } from '@/lib/agents/core';
 import { getUserPlanFromUser } from '@/lib/plan-middleware';
+import { isGuardrailEnabled } from '@/lib/guardrails';
 
 export const maxDuration = 60;
 
@@ -169,13 +170,16 @@ Write the complete article now in Markdown format. Remember: this is for a ${eff
       site_url: url || '',
     } as Record<string, unknown>;
 
-    // Step 5: Email the content to the user
-    if (user.email) {
+    // Step 5: Defer automated notifications while Guardrail Mode is enabled.
+    const guardrailEnabled = await isGuardrailEnabled(user.id);
+    if (user.email && !guardrailEnabled) {
       await sendEmail({
         to: user.email,
         subject: `Content Ready: "${outline.title}" — ${result.word_count} words`,
         html: generateContentEmailHTML(result as Parameters<typeof generateContentEmailHTML>[0]),
       });
+    } else if (guardrailEnabled) {
+      result = { ...result, email_deferred: true };
     }
 
     // Save to content queue

@@ -32,18 +32,30 @@ export default function Sidebar({ user }: { user: User }) {
   const [guardrailMode, setGuardrailMode] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('rm_guardrail_mode');
-    if (saved !== null) {
-      setGuardrailMode(saved === 'true');
-    }
+    fetch('/api/settings/guardrail')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (data && typeof data.enabled === 'boolean') setGuardrailMode(data.enabled);
+      })
+      .catch(() => undefined);
   }, []);
 
-  const toggleGuardrail = () => {
+  const toggleGuardrail = async () => {
     const newValue = !guardrailMode;
+    const previousValue = guardrailMode;
     setGuardrailMode(newValue);
-    localStorage.setItem('rm_guardrail_mode', String(newValue));
-    // Optional: Dispatch event for other components to listen
     window.dispatchEvent(new CustomEvent('guardrail-mode-change', { detail: newValue }));
+    try {
+      const response = await fetch('/api/settings/guardrail', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: newValue }),
+      });
+      if (!response.ok) throw new Error('save failed');
+    } catch {
+      setGuardrailMode(previousValue);
+      window.dispatchEvent(new CustomEvent('guardrail-mode-change', { detail: previousValue }));
+    }
   };
 
   const handleSignOut = async () => {
@@ -207,6 +219,9 @@ export default function Sidebar({ user }: { user: User }) {
             </div>
             <button 
               onClick={toggleGuardrail}
+              type="button"
+              aria-label={`${guardrailMode ? 'Disable' : 'Enable'} Guardrail Mode`}
+              aria-pressed={guardrailMode}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${guardrailMode ? 'bg-emerald-600' : 'bg-white/10'}`}
             >
               <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${guardrailMode ? 'translate-x-5' : 'translate-x-1'}`} />

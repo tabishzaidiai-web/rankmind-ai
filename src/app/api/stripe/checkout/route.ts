@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import stripe from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
+  const stripe = getStripe();
   console.log('[Stripe Checkout] ENV CHECK:', {
     hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
     secretKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8),
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
 
 
 export async function GET(request: NextRequest) {
+  const stripe = getStripe();
   const { searchParams } = new URL(request.url);
   const plan = searchParams.get('plan') || 'starter';
 
