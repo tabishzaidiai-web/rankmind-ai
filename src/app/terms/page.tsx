@@ -32,7 +32,7 @@ export default function TermsPage() {
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
         <p className="text-white/40 text-sm mb-3">Last updated: {LAST_UPDATED}</p>
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-10 text-sm text-amber-200">
-          Current subscription prices reflect flash sale promotional pricing. See{' '}
+          Current subscription prices are Starter $29/month, Growth $79/month, and Enterprise $149/month. See{' '}
           <a href="https://www.rank-mind.com/#pricing" className="underline hover:text-amber-100">rank-mind.com/#pricing</a>{' '}
           for current rates.
         </div>
@@ -63,12 +63,12 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. Subscription Plans and Billing</h2>
-            <p>RankMind AI offers the following subscription tiers: Free, Starter ($5/mo), Growth ($15/mo), and Enterprise ($49/mo) during the current flash sale promotional period. Promotional pricing is subject to change with 30 days&apos; notice. Current pricing is always displayed at <a href="https://www.rank-mind.com/#pricing" className="text-violet-400 hover:text-violet-300 underline">rank-mind.com/#pricing</a>. By subscribing to a paid plan, you agree that:</p>
+            <p>RankMind AI offers the following subscription tiers: Free, Starter ($29/month), Growth ($79/month), and Enterprise ($149/month). Current pricing is always displayed at <a href="https://www.rank-mind.com/#pricing" className="text-violet-400 hover:text-violet-300 underline">rank-mind.com/#pricing</a>. By subscribing to a paid plan, you agree that:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>Subscription fees are billed in advance on a monthly or annual basis.</li>
+              <li>Subscription fees are billed in advance on a monthly basis.</li>
               <li>All payments are processed securely by Stripe.</li>
               <li>Subscriptions automatically renew unless cancelled before the renewal date.</li>
-              <li>Refunds are issued at our discretion within 7 days of the initial purchase for first-time subscribers.</li>
+              <li>First-time subscribers are covered by a 7-day money-back guarantee: a full refund of the initial subscription payment may be requested within 7 days of the initial charge. See the Refund Policy for details and processing times.</li>
               <li>Downgrading your plan takes effect at the end of the current billing period.</li>
               <li>We reserve the right to change pricing with 30 days&apos; notice.</li>
             </ul>
