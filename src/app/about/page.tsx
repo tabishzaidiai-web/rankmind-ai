@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About RankMind AI — Arabian AI Lab',
-  description: 'RankMind AI is an autonomous SEO and GEO platform researched by Arabian AI Lab and operated by Jeem & Co FZE LLC, Dubai, UAE. Meet the founder and learn our mission.',
+  title: 'About RankMind AI — Built by Arabian AI Lab, Dubai',
+  description: 'RankMind AI is researched and developed by Arabian AI Lab, Dubai. Founder Tabish Zaidi built four SEO and GEO agents so small businesses can run weekly search-visibility work without an agency retainer.',
   alternates: {
     canonical: 'https://www.rank-mind.com/about',
   },
@@ -57,10 +57,7 @@ export default function AboutPage() {
           <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">THE PRODUCT</p>
           <h1 className="text-4xl font-bold mb-6">About RankMind AI</h1>
           <p className="text-white/70 text-lg leading-relaxed">
-            RankMind AI is an autonomous SEO and GEO platform that deploys AI agents to rank your website on Google,
-            ChatGPT, Perplexity, and every major AI search engine — automatically. From technical audits and backlink
-            building to AI-optimized content and schema generation, RankMind AI handles the full SEO stack so you can
-            focus on growing your business.
+            RankMind AI is an SEO and GEO platform with four AI agents that audit websites, find relevant backlink prospects, prepare content for AI answer engines, and draft SEO content. You approve every outreach pitch and every publish.
           </p>
         </section>
 
@@ -104,14 +101,9 @@ export default function AboutPage() {
         {/* Section 3 — The Founder */}
         <section className="border-t border-white/10 pt-16">
           <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">THE FOUNDER</p>
-          <h2 className="text-3xl font-bold mb-2">TABISH BABAR</h2>
-          <p className="text-sm text-white/50 mb-6 tracking-widest uppercase">
-            Founder, Arabian AI Lab &nbsp;&middot;&nbsp; Digital Architect &nbsp;&middot;&nbsp; Dubai, UAE
-          </p>
-          <p className="text-white/70 text-lg leading-relaxed mb-8">
-            A pioneer in the practical application of AI, bridging the speed of Silicon Valley with the luxury
-            craftsmanship of Dubai. Making knowledge borderless and opportunity limitless.
-          </p>
+          <h2 className="text-3xl font-bold mb-2">Tabish Zaidi</h2>
+          <p className="text-sm text-white/50 mb-6 tracking-widest uppercase">Founder, Arabian AI Lab &nbsp;&middot;&nbsp; Dubai, UAE</p>
+          <p className="text-white/70 text-lg leading-relaxed mb-8">Tabish founded Arabian AI Lab in Dubai and has spent 20+ years in enterprise technology across the Middle East and Africa. He holds an Oxford Saïd–UNESCO certification in AI and Digital Transformation in Government and teaches AI to entrepreneurs in Dubai. He built RankMind AI so solo founders and small businesses could run weekly SEO and AI-visibility work without an agency retainer — with every outreach pitch approved by the owner first.</p>
           <div className="flex gap-4 flex-wrap">
             <a
               href="https://arabianailab.com"
@@ -130,7 +122,7 @@ export default function AboutPage() {
               tabishzaidi.com →
             </a>
             <a
-              href="https://linkedin.com/in/tabish-babar-syed"
+              href="https://linkedin.com/in/syed-tabish-41668a"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 rounded-lg text-sm font-medium transition-colors"
@@ -175,7 +167,7 @@ export default function AboutPage() {
         <section className="border-t border-white/10 pt-16 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to rank your website?</h2>
           <p className="text-white/60 mb-8 max-w-lg mx-auto">
-            Join hundreds of founders using RankMind AI to automate their SEO and appear in AI search results — no agency required.
+            Run the free 4-factor audit on your own site with no sign-up. You approve every outreach pitch and every publish.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

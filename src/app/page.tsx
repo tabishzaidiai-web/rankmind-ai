@@ -28,7 +28,7 @@ const AGENTS = [
     avatar: '/agent-linkbot-transparent.png',
     name: 'LinkBot',
     title: 'Backlink Builder',
-    description: 'Finds real high-authority websites in your niche, writes guest posts, sends outreach emails, and tracks results.',
+    description: 'Finds relevant websites in your niche, drafts personalised outreach, and tracks responses. You approve every pitch.',
     href: '/signup',
     glow: 'rgba(20,184,166,0.4)',
     border: 'border-teal-500/40',
@@ -56,7 +56,7 @@ const AGENTS = [
     avatar: '/agent-contentai-transparent.png',
     name: 'ContentAI',
     title: 'Content Writer',
-    description: 'Generates SEO-optimized blog posts, landing pages, and meta content that ranks and converts.',
+    description: 'Drafts SEO blog posts, landing pages, and meta content for your review before publishing.',
     href: '/signup',
     glow: 'rgba(245,158,11,0.4)',
     border: 'border-amber-500/40',
@@ -68,18 +68,15 @@ const AGENTS = [
   },
 ];
 
-// Section 11 — flash sale FAQ prepended as first item
 const FAQS = [
-  {
-    q: 'What happens to my price after the flash sale ends on June 30?',
-    a: 'Nothing changes for you. If you sign up before June 30, your flash sale rate is locked in for life — even after we raise prices. Founding members keep their rate as long as they remain subscribed. After June 30, new signups will pay the standard rates: $29/mo (Starter), $79/mo (Growth), $149/mo (Enterprise).',
-  },
-  { q: 'Do the agents actually build real backlinks?', a: 'Yes. LinkBot uses Google Search API to find real websites in your niche that accept guest posts, qualifies them by domain authority, and generates personalized outreach emails. You receive the full prospect list with outreach templates via email.' },
-  { q: 'How does the GEO Optimizer work?', a: 'GEO-G queries AI models to simulate how ChatGPT, Claude, Perplexity, and Grok answer questions in your niche. It checks if your brand appears in those answers, scores your AI visibility (0–100), and gives you specific recommendations to appear in AI search results.' },
-  { q: 'Is there a free trial?', a: 'Yes — every account starts with a free SEO audit. No credit card required. You can run a full 10-factor audit on your website immediately after signing up.' },
-  { q: 'Can I use this for client websites?', a: 'Absolutely. The Growth and Enterprise plans support multiple websites. Many agencies use RankMind AI to automate SEO work across all their client accounts.' },
-  { q: 'How are reports delivered?', a: 'After each agent run, a full HTML report is emailed to your registered email address. Results are also shown live in your dashboard immediately.' },
-  { q: 'What happens if I cancel my subscription?', a: 'You keep access until the end of your billing period. Your data and reports remain accessible for 30 days after cancellation.' },
+  { q: 'What is RankMind AI?', a: 'RankMind AI is an SEO and GEO (Generative Engine Optimization) platform. Four AI agents — RankBot, LinkBot, GEO-G and ContentAI — audit your website, find relevant backlink prospects, prepare content for AI search engines, and draft SEO content. You approve every outreach pitch and every publish.' },
+  { q: 'Do I need technical knowledge to use RankMind AI?', a: 'No. Enter your website URL and target keywords. RankBot scores 10 technical SEO factors and gives a prioritised action plan in plain language. You approve outreach pitches and content before anything is sent or published.' },
+  { q: 'What is GEO optimisation?', a: 'GEO (Generative Engine Optimization) means structuring and writing content so AI answer engines — ChatGPT, Perplexity, Google AI Overviews, Gemini, Copilot and Claude — can find, understand and cite it. GEO-G prepares that content; it cannot guarantee that any engine will mention or cite your site.' },
+  { q: 'What does the free audit check?', a: 'The free audit at rank-mind.com/free-audit checks 4 factors with no sign-up: meta title, meta description, H1 heading, and page speed. A free account gives the full 10-factor RankBot audit.' },
+  { q: 'How much does RankMind AI cost?', a: 'Starter is $29/month, Growth is $79/month, and Enterprise is $149/month. Plans are billed monthly, can be cancelled anytime, and first-time subscribers have a 7-day money-back guarantee.' },
+  { q: 'Is there a free trial?', a: 'There is a free 4-factor audit with no sign-up. There is no separate time-limited free trial.' },
+  { q: 'Do you guarantee rankings or a number of backlinks?', a: 'No. We report audits run, prospects found, pitches you approved, replies tracked, and weekly activity. Rankings and backlinks depend on your site, your niche, third-party publishers and search engines, and are not guaranteed.' },
+  { q: 'What do I approve, and what runs automatically?', a: 'Audits, keyword tracking, reports, prospect research and drafts run automatically. Every outreach email, guest-post pitch and piece of content needs your approval before it is sent or published.' },
 ];
 
 function useScrollFade() {
@@ -167,7 +164,6 @@ export default function HomePage() {
   // Section 1 — hero URL form state
   const [heroUrl, setHeroUrl] = useState('');
   // Section 8 — billing toggle state
-  const [annual, setAnnual] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -188,9 +184,6 @@ export default function HomePage() {
     {
       name: 'Starter',
       price: '$29',
-      annualPrice: '$22',
-      launchPrice: '$5',
-      annualLaunchPrice: '$4',
       planKey: 'starter',
       desc: 'Perfect for individual websites',
       features: ['Full SEO Audit (10 key factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
@@ -200,21 +193,15 @@ export default function HomePage() {
     {
       name: 'Growth',
       price: '$79',
-      annualPrice: '$59',
-      launchPrice: '$15',
-      annualLaunchPrice: '$11',
       planKey: 'growth',
       desc: 'For agencies and growing businesses',
-      features: ['Everything in Starter', 'Backlink Builder Agent', '10 backlinks/week guaranteed', 'Outreach email automation', 'Google Sheets tracking', '5 websites'],
+      features: ['Everything in Starter', 'LinkBot backlink prospecting', 'Personalised outreach campaigns — you approve every pitch', 'Outreach automation', 'Google Sheets tracking', '5 websites'],
       cta: 'Start Building Backlinks',
       popular: true,
     },
     {
       name: 'Enterprise',
       price: '$149',
-      annualPrice: '$112',
-      launchPrice: '$49',
-      annualLaunchPrice: '$37',
       planKey: 'enterprise',
       desc: 'Full SEO machine for agencies',
       features: ['Everything in Growth', 'GEO Optimizer Agent', 'AI Content Writer Agent', 'ChatGPT/Perplexity visibility', 'Custom agent instructions', 'Unlimited websites', 'Priority support'],
@@ -295,16 +282,13 @@ export default function HomePage() {
             Real AI Agents. Real SEO Results.
           </div>
           <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-            Your Website{' '}
-            <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-              Ranks First
-            </span>
-            {' '}—<br />Automatically
+            AI agents that audit, fix and grow your search and AI visibility — every week.
           </h1>
           {/* Section 3 — "your clients" → "your website" */}
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10">
-            RankMind AI deploys autonomous SEO agents that build real backlinks, optimize for AI search engines,
-            write SEO content, and get your website measurable results — 100% automated.
+            RankBot audits your site, LinkBot finds relevant outreach prospects, GEO-G prepares content for ChatGPT,
+            Perplexity, Google AI Overviews, Gemini, Copilot and Claude, and ContentAI drafts SEO content.
+            You approve every pitch and every publish. Weekly reports show exactly what was done.
           </p>
 
           {/* Section 1 — Inline URL audit form (replaces agent avatar links) */}
@@ -334,8 +318,7 @@ export default function HomePage() {
             </div>
           </form>
           <p className="text-sm text-white/30">No credit card required. Free SEO audit included.</p>
-          {/* Section 1 — social proof line */}
-          <p className="text-[13px] text-white/35 mt-2">★★★★★&nbsp; Trusted by founders across 12 countries</p>
+          <p className="text-sm text-white/40 mt-2">Free 4-factor audit, no sign-up. Full 10-factor audit when you create a free account. You approve every outreach pitch.</p>
 
           {/* Live Demo — working inline demo, no signup required */}
           <div className="w-full max-w-3xl mx-auto mt-8">
@@ -349,23 +332,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 4 — Updated stats: 500+ Websites Audited, 12 Countries Reached, 4.9★ Avg Rating */}
       <section className="py-12 px-6 border-y border-white/5">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { value: '500+', label: 'Websites Audited' },
-            { value: '12', label: 'Countries Reached' },
-            { value: '4.9★', label: 'Avg. User Rating' },
-            { value: 'Flash', label: 'Sale — From $5/mo' },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">{stat.value}</div>
-              <div className="text-sm text-white/50 mt-1">{stat.label}</div>
-            </div>
-          ))}
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-white/70 text-lg">See it on a real site — including ours.</p>
+          <p className="text-white/45 text-sm mt-2">Run the free audit on your own site with no sign-up. We publish no customer testimonials or performance statistics without permission and evidence.</p>
         </div>
-        {/* Section 5 — Flash sale clarification line */}
-        <p className="text-center text-white/25 text-xs mt-4">Founding members keep this rate for life — renews at $29/mo after June 30</p>
       </section>
 
       {/* Agent Cards — Section 2: href → /signup, text → Try Free */}
@@ -427,9 +398,9 @@ export default function HomePage() {
             <div className="space-y-8">
               {[
                 { step: '01', title: 'Add Your Website', desc: "Enter your website URL and target keywords. Our agents analyze the site and ask clarifying questions to understand your goals." },
-                { step: '02', title: 'Agents Get to Work', desc: 'The SEO Audit Agent scores your site, the Backlink Builder finds opportunities, the GEO Optimizer prepares AI-search content.' },
-                { step: '03', title: 'Real Actions Taken', desc: 'Agents write real outreach emails, submit guest posts, create content, and track everything in your dashboard.' },
-                { step: '04', title: 'You See Results', desc: 'Weekly reports show new backlinks earned, ranking improvements, and GEO visibility scores — all real, measurable results.' },
+                { step: '02', title: 'Agents Get to Work', desc: 'RankBot audits your site, LinkBot finds relevant prospects, GEO-G prepares AI-search content, and ContentAI drafts SEO content.' },
+                { step: '03', title: 'You Approve, Agents Act', desc: 'LinkBot drafts personalised outreach and ContentAI drafts content. Nothing is sent or published without your approval.' },
+                { step: '04', title: 'You See What Happened', desc: 'Weekly reports show audits run, prospects contacted, replies received, content drafted, and links earned — with dates.' },
               ].map((item, i) => (
                 <FadeSection key={item.step} delay={i * 100}>
                   <div className="flex gap-6 items-start">
@@ -448,122 +419,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 7 — Testimonials: between How It Works and Product Tour */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <FadeSection>
-            <div className="text-center mb-14">
-              <h2 className="text-4xl font-bold mb-3">What Early Adopters Are Saying</h2>
-              <p className="text-white/60 text-lg">Real feedback from our founding members.</p>
-            </div>
-          </FadeSection>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                stars: 5,
-                quote: 'RankBot found 9 technical issues on my site in under 5 minutes. Fixed them all that afternoon. First time my SEO score actually made sense.',
-                name: 'Ahmed K.',
-                title: 'SaaS Founder',
-                location: 'Dubai, UAE',
-                initials: 'AK',
-                avatarBg: 'bg-teal-600',
-              },
-              {
-                stars: 5,
-                quote: 'Finally an SEO tool that doesn\'t require an agency retainer. LinkBot reached out to 6 sites last week. Two came back positive already.',
-                name: 'Priya S.',
-                title: 'Digital Consultant',
-                location: 'Bangalore, India',
-                initials: 'PS',
-                avatarBg: 'bg-purple-600',
-              },
-              {
-                stars: 5,
-                quote: 'The GEO optimizer is genuinely different from anything I\'ve tried. My content is now showing up in Perplexity answers. Wild.',
-                name: 'Omar R.',
-                title: 'E-commerce Owner',
-                location: 'Riyadh, Saudi Arabia',
-                initials: 'OR',
-                avatarBg: 'bg-blue-600',
-              },
-            ].map((t, i) => (
-              <FadeSection key={t.name} delay={i * 80}>
-                <div className="bg-white/5 border border-white/[0.08] rounded-2xl p-5 h-full flex flex-col">
-                  <div className="flex gap-0.5 mb-3">
-                    {Array.from({ length: t.stars }).map((_, si) => (
-                      <span key={si} className="text-amber-400 text-sm">★</span>
-                    ))}
-                  </div>
-                  <p className="text-white/75 text-sm leading-relaxed mb-5 flex-1">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-full ${t.avatarBg} flex items-center justify-center text-white text-sm font-medium flex-shrink-0`}>
-                      {t.initials}
-                    </div>
-                    <div>
-                      <div className="text-white text-sm font-semibold">{t.name}</div>
-                      <div className="text-white/45 text-xs">{t.title} · {t.location}</div>
-                    </div>
-                  </div>
-                </div>
-              </FadeSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 6 — Product Tour with embedded YouTube video above tabs */}
       <ProductScreenshots />
-
-      {/* Early Adopter Program */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <FadeSection>
-            <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">EARLY ADOPTER PROGRAM</p>
-            <h2 className="text-4xl font-bold mb-5">Be Among the First to See Real Results</h2>
-            <p className="text-white/60 text-lg max-w-xl mx-auto mb-12 leading-relaxed">
-              RankMind AI launched in 2026. We are building our first case studies with early adopters right now. Join at flash sale pricing and become one of our first documented success stories.
-            </p>
-          </FadeSection>
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              { icon: '🔬', title: 'Real Audits, Real Data', desc: 'Our SEO audit crawls your actual live website and scores 10 technical factors in real time — not generated data.' },
-              { icon: '🤖', title: 'Autonomous Agents', desc: '4 specialist AI agents work on your website automatically every week — auditing, building backlinks, and optimizing for AI search.' },
-              { icon: '🔒', title: 'Flash Sale Pricing', desc: 'Lock in the lowest price we will ever offer. Early adopters keep their rate for life — even after we raise prices.' },
-            ].map((card, i) => (
-              <FadeSection key={card.title} delay={i * 80}>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-7 h-full flex flex-col text-left">
-                  <div className="text-3xl mb-4">{card.icon}</div>
-                  <div className="font-semibold text-base mb-2">{card.title}</div>
-                  <div className="text-white/55 text-sm leading-relaxed">{card.desc}</div>
-                </div>
-              </FadeSection>
-            ))}
-          </div>
-          <FadeSection>
-            <a href="/signup" className="inline-block bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all text-base">
-              Join as an Early Adopter &rarr;
-            </a>
-          </FadeSection>
-        </div>
-      </section>
 
       {/* Founder Section */}
       <section className="py-20 px-6 bg-white/[0.015]">
         <div className="max-w-3xl mx-auto text-center">
           <FadeSection>
-            <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-5">THE PIONEER BEHIND RANKMIND</p>
-            <h2 className="text-4xl font-bold mb-3">TABISH BABAR</h2>
-            <p className="text-sm text-white/50 mb-6 tracking-widest uppercase">
-              Founder, Arabian AI Lab &nbsp;&middot;&nbsp; Digital Architect &nbsp;&middot;&nbsp; Dubai, UAE
-            </p>
-            <p className="text-base text-white/80 max-w-xl mx-auto mb-5 leading-relaxed">
-              A pioneer in the practical application of AI, bridging the speed of Silicon Valley with the luxury craftsmanship of Dubai.
-              Making knowledge borderless and opportunity limitless.
-            </p>
-            <p className="text-base text-white/55 max-w-xl mx-auto mb-8 leading-relaxed italic">
-              &ldquo;I built RankMind AI because every business deserves enterprise-grade SEO — not just Fortune 500 companies.
-              rank-mind.com runs on its own agents. If it works for us, it will work for you.&rdquo;
-            </p>
+            <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-5">THE FOUNDER</p>
+            <h2 className="text-4xl font-bold mb-3">Tabish Zaidi</h2>
+            <p className="text-sm text-white/50 mb-6 tracking-widest uppercase">Founder, Arabian AI Lab &nbsp;&middot;&nbsp; Dubai, UAE</p>
+            <p className="text-base text-white/80 max-w-xl mx-auto mb-8 leading-relaxed">Tabish founded Arabian AI Lab in Dubai and has spent 20+ years in enterprise technology across the Middle East and Africa. He teaches AI to entrepreneurs in Dubai and built RankMind AI so small businesses can run weekly SEO and AI-visibility work without an agency retainer — with every outreach pitch approved by the owner first.</p>
             <div className="flex gap-4 justify-center flex-wrap">
               <a href="https://arabianailab.com" target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors">
                 Arabian AI Lab &rarr;
@@ -582,32 +447,9 @@ export default function HomePage() {
           <FadeSection>
             <div className="text-center mb-10">
               <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-              <p className="text-white/60 text-lg">Flash Sale — lock in your rate before it goes up.</p>
-              <p className="text-amber-400 text-sm font-medium mt-2">⏰ Flash Sale pricing expires June 30, 2026 — lock in your rate today</p>
+              <p className="text-white/60 text-lg">Billed monthly · cancel anytime · 7-day money-back guarantee for first-time subscribers.</p>
 
               {/* Section 8 — Monthly / Annual toggle */}
-              <div className="flex items-center justify-center gap-3 mt-8">
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1">
-                  <button
-                    type="button"
-                    onClick={() => setAnnual(false)}
-                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${!annual ? 'bg-gradient-to-r from-violet-600 to-cyan-600 text-white' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAnnual(true)}
-                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${annual ? 'bg-gradient-to-r from-violet-600 to-cyan-600 text-white' : 'text-white/50 hover:text-white'}`}
-                  >
-                    Annual
-                    <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">Save 25%</span>
-                  </button>
-                </div>
-              </div>
-              <p className="text-white/35 text-xs mt-2">
-                {annual ? 'Billed annually · cancel anytime' : 'Billed monthly · cancel anytime'}
-              </p>
             </div>
           </FadeSection>
 
@@ -621,17 +463,13 @@ export default function HomePage() {
                   <div className="mb-6">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-xl font-bold">{plan.name}</h3>
-                      <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">⚡ Flash Sale</span>
+
                     </div>
                     <p className="text-white/50 text-sm mb-4">{plan.desc}</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-bold">{annual ? plan.annualLaunchPrice : plan.launchPrice}</span>
+                      <span className="text-4xl font-bold">{plan.price}</span>
                       <span className="text-white/50">/month</span>
-                      <span className="text-white/40 line-through text-lg ml-1">{annual ? plan.annualPrice : plan.price}</span>
                     </div>
-                    <p className="text-amber-400/80 text-xs mt-1">
-                      Was {annual ? plan.annualPrice : plan.price}/mo — save {Math.round((1 - parseInt((annual ? plan.annualLaunchPrice : plan.launchPrice).replace('$', '')) / parseInt((annual ? plan.annualPrice : plan.price).replace('$', ''))) * 100)}% during flash sale
-                    </p>
                   </div>
                   <ul className="space-y-3 mb-8 flex-1">
                     {plan.features.map((f) => (
@@ -708,7 +546,7 @@ export default function HomePage() {
                 <Image src="/logo-icon-v2.png" alt="RankMind AI" width={28} height={28} className="rounded-lg" />
                 <span className="font-semibold">RankMind AI</span>
               </div>
-              <p className="text-white/40 text-sm max-w-xs">Autonomous AI agents that build real backlinks, optimize for AI search, and rank your website — automatically.</p>
+              <p className="text-white/40 text-sm max-w-xs">AI agents that audit, fix and grow your search and AI visibility — with your approval before outreach or publishing.</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
               <div>

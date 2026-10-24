@@ -7,11 +7,10 @@ export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mi
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'RankMind AI — Autonomous SEO & GEO Agents That Rank Your Website',
+    default: 'RankMind AI — AI SEO & GEO Agents for Small Businesses | rank-mind.com',
     template: '%s | RankMind AI',
   },
-  description: 'RankMind AI deploys autonomous AI agents that build real backlinks, optimize for ChatGPT & Perplexity AI search, write SEO content, and get your website to page 1 — automatically.',
-  keywords: ['SEO automation', 'AI SEO', 'backlink builder', 'GEO optimization', 'AI search optimization', 'ChatGPT SEO', 'Perplexity SEO', 'automated SEO', 'SEO agent', 'rank-mind', 'rankmind'],
+  description: 'RankBot audits your site across 10 technical SEO factors, LinkBot finds relevant outreach prospects, GEO-G prepares content for ChatGPT, Perplexity and Google AI Overviews, and ContentAI drafts SEO content. Free audit, no sign-up. You approve every pitch.',
   authors: [{ name: 'RankMind AI' }],
   creator: 'RankMind AI',
   publisher: 'RankMind AI',
@@ -25,8 +24,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: BASE_URL,
     siteName: 'RankMind AI',
-    title: 'RankMind AI — Autonomous SEO & GEO Agents That Rank Your Website',
-    description: 'Deploy AI agents that build real backlinks, optimize for AI search engines, write SEO content, and rank your website — 100% automated.',
+    title: 'RankMind AI — AI SEO & GEO Agents for Small Businesses | rank-mind.com',
+    description: 'AI agents that audit, fix and grow your search and AI visibility. Free audit, no sign-up. You approve every pitch.',
     images: [
       {
         url: '/og-image.png',
@@ -67,12 +66,12 @@ const schemaOrg = {
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
       description:
-        'Autonomous SEO and GEO platform that deploys AI agents to rank websites on Google, ChatGPT, Perplexity, and every major AI search engine — automatically.',
+        'SEO and GEO platform with four AI agents. You approve every outreach pitch and every publish.',
       offers: [
         {
           '@type': 'Offer',
           name: 'Starter',
-          price: '5.00',
+          price: '29.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
@@ -82,7 +81,7 @@ const schemaOrg = {
         {
           '@type': 'Offer',
           name: 'Growth',
-          price: '15.00',
+          price: '79.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
@@ -92,7 +91,7 @@ const schemaOrg = {
         {
           '@type': 'Offer',
           name: 'Enterprise',
-          price: '49.00',
+          price: '149.00',
           priceCurrency: 'USD',
           priceSpecification: {
             '@type': 'UnitPriceSpecification',
@@ -139,7 +138,7 @@ const schemaOrg = {
           name: 'What is RankMind AI?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'RankMind AI is an autonomous SEO and GEO platform that deploys AI agents to rank your website on Google, ChatGPT, Perplexity, and every major AI search engine — automatically.',
+            text: 'RankMind AI is an SEO and GEO platform with four AI agents. You approve every outreach pitch and every publish.',
           },
         },
         {
@@ -147,7 +146,7 @@ const schemaOrg = {
           name: 'Do I need technical knowledge to use RankMind AI?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'No. RankMind AI is designed for non-technical founders and marketers. You enter your website URL and the AI agents handle everything — audits, backlinks, content, and GEO optimization.',
+            text: 'No. Enter your website URL and target keywords. RankBot scores 10 technical SEO factors and gives a prioritised action plan in plain language. You approve outreach pitches and content before anything is sent or published.',
           },
         },
         {
@@ -163,7 +162,7 @@ const schemaOrg = {
           name: 'How much does RankMind AI cost?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'RankMind AI starts at $5/month (Starter), $15/month (Growth), and $49/month (Enterprise). All plans include a free tier with 10 audits per month.',
+            text: 'Starter is $29/month, Growth is $79/month, and Enterprise is $149/month. Plans are billed monthly and first-time subscribers have a 7-day money-back guarantee.',
           },
         },
         {
@@ -171,7 +170,7 @@ const schemaOrg = {
           name: 'Is there a free trial?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. You can run a free teaser audit at rank-mind.com/free-audit without creating an account. Free accounts also get 10 SEO audits per month.',
+            text: 'There is a free 4-factor audit at rank-mind.com/free-audit without creating an account. There is no separate time-limited free trial.',
           },
         },
       ],

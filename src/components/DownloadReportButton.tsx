@@ -194,12 +194,11 @@ export default function DownloadReportButton({
 
             {/* Pricing */}
             <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3 mb-4 text-center">
-              <p className="text-white/50 text-xs mb-0.5">Flash Sale — limited time</p>
+              <p className="text-white/50 text-xs mb-0.5">Starter plan</p>
               <p className="text-white font-bold text-lg">
-                From <span className="text-violet-400">$5/mo</span>
-                <span className="text-white/30 text-sm line-through ml-2">$29</span>
+                <span className="text-violet-400">$29/month</span>
               </p>
-              <p className="text-white/40 text-xs">Starter plan · Unlimited reports</p>
+              <p className="text-white/40 text-xs">Unlimited reports</p>
             </div>
 
             {/* CTA */}
