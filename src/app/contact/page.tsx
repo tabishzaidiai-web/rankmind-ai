@@ -64,7 +64,7 @@ export default function ContactPage() {
           <p className="text-white/60 leading-relaxed">
             Running the <Link href="/free-audit" className="text-violet-400 hover:underline">free 4-factor audit</Link> on
             your own site takes seconds and needs no sign-up. RankMind AI is researched and developed by Arabian AI Lab,
-            Dubai, and marketed and operated by Jeem &amp; Co FZE LLC, Dubai, UAE.
+            Dubai, and marketed and operated by Jeem &amp; Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE.
           </p>
         </section>
       </div>

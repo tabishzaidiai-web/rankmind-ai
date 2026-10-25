@@ -20,7 +20,7 @@ export default function RefundsPage() {
           <section>
             <h2 className="text-white font-semibold text-lg mb-3">1. Overview</h2>
             <p>
-              RankMind AI is operated by JEEM AND CO FZE LLC. We offer a 7-day money-back guarantee on all paid subscription plans. If you are not satisfied with your purchase for any reason, you may request a full refund within 7 days of your initial subscription payment.
+              RankMind AI is operated by JEEM AND CO FZC LLC. We offer a 7-day money-back guarantee on all paid subscription plans. If you are not satisfied with your purchase for any reason, you may request a full refund within 7 days of your initial subscription payment.
             </p>
           </section>
 

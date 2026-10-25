@@ -609,7 +609,7 @@ export default function HomePage() {
                 Arabian AI Lab
               </a>
             </p>
-            <p className="text-white/25 text-xs">Marketed &amp; Operated by Jeem &amp; Co FZE LLC, Dubai, UAE</p>
+            <p className="text-white/25 text-xs">Marketed &amp; Operated by Jeem &amp; Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE</p>
           </div>
         </div>
       </footer>

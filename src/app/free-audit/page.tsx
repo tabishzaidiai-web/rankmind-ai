@@ -434,7 +434,7 @@ export default function FreeAuditPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-6 text-center">
         <p className="text-xs text-white/20">
-          &copy; 2026 RankMind AI &bull; Jeem &amp; Co FZE LLC, Dubai, UAE &bull;{' '}
+          &copy; 2026 RankMind AI &bull; Jeem &amp; Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE &bull;{' '}
           <Link href="/privacy" className="hover:text-white/40 transition-colors">Privacy</Link>
         </p>
       </footer>
