@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact RankMind AI',
+  title: 'Contact Us',
   description:
     'Contact RankMind AI for support, billing questions or privacy requests. General support: info@rank-mind.com. Privacy requests: privacy@rankmind.ai.',
   alternates: {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: 'https://www.rank-mind.com/contact',
-    title: 'Contact RankMind AI',
+    title: 'Contact Us',
     description:
       'Contact RankMind AI for support, billing questions or privacy requests.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],

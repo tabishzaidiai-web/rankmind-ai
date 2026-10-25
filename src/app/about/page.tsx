@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'About RankMind AI — Built by Arabian AI Lab, Dubai',
-  description: 'RankMind AI is researched and developed by Arabian AI Lab, Dubai. Founder Tabish Zaidi built four SEO and GEO agents so small businesses can run weekly search-visibility work without an agency retainer.',
+  description: 'RankMind AI is researched and developed by Arabian AI Lab, Dubai. Four SEO and GEO agents for small businesses, without an agency retainer.',
   alternates: {
     canonical: 'https://www.rank-mind.com/about',
   },

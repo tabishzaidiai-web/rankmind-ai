@@ -2,14 +2,14 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — RankMind AI',
+  title: 'Privacy Policy',
   description: 'RankMind AI Privacy Policy. Learn how we collect, use, and protect your data.',
   alternates: {
     canonical: 'https://www.rank-mind.com/privacy',
   },
   openGraph: {
     url: 'https://www.rank-mind.com/privacy',
-    title: 'Privacy Policy — RankMind AI',
+    title: 'Privacy Policy',
     description: 'RankMind AI Privacy Policy. Learn how we collect, use, and protect your data.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
   },
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">5. Cookies and Tracking</h2>
+            <h2 id="cookies" className="text-xl font-semibold text-white mb-3">5. Cookies and Tracking</h2>
             <p>We use cookies and similar tracking technologies to operate and improve our service. Categories of cookies we use:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li><strong className="text-white">Strictly Necessary:</strong> Required for authentication, session management, and security. Cannot be disabled.</li>

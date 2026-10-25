@@ -2,15 +2,15 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Security & Data — RankMind AI',
+  title: 'Security & Data',
   description:
-    'How RankMind AI protects your data: TLS encryption in transit, AES-256 encryption at rest, bcrypt password hashing, Stripe payment processing with no full card numbers stored, and account deletion within 30 days.',
+    'How RankMind AI protects your data: TLS in transit, AES-256 at rest, bcrypt password hashing, Stripe payments, deletion within 30 days.',
   alternates: {
     canonical: 'https://www.rank-mind.com/security',
   },
   openGraph: {
     url: 'https://www.rank-mind.com/security',
-    title: 'Security & Data — RankMind AI',
+    title: 'Security & Data',
     description:
       'How RankMind AI protects your data: TLS in transit, AES-256 at rest, bcrypt password hashing, and Stripe payments with no full card numbers stored.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],

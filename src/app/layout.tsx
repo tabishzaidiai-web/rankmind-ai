@@ -7,10 +7,10 @@ export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mi
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'RankMind AI — AI SEO & GEO Agents for Small Businesses | rank-mind.com',
+    default: 'RankMind AI — AI SEO & GEO Agents for Small Business',
     template: '%s | RankMind AI',
   },
-  description: 'RankBot audits your site across 10 technical SEO factors, LinkBot finds relevant outreach prospects, GEO-G prepares content for ChatGPT, Perplexity and Google AI Overviews, and ContentAI drafts SEO content. Free audit, no sign-up. You approve every pitch.',
+  description: 'RankBot audits 10 factors, LinkBot finds outreach prospects, GEO-G prepares content for AI search, ContentAI drafts SEO content. Free audit, no sign-up.',
   authors: [{ name: 'RankMind AI' }],
   creator: 'RankMind AI',
   publisher: 'RankMind AI',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: BASE_URL,
     siteName: 'RankMind AI',
-    title: 'RankMind AI — AI SEO & GEO Agents for Small Businesses | rank-mind.com',
+    title: 'RankMind AI — AI SEO & GEO Agents for Small Business',
     description: 'AI agents that audit, fix and grow your search and AI visibility. Free audit, no sign-up. You approve every pitch.',
     images: [
       {
@@ -142,52 +142,6 @@ const schemaOrg = {
       },
       sameAs: [
         'https://linkedin.com/in/syed-tabish-41668a',
-      ],
-    },
-    {
-      '@type': 'FAQPage',
-      '@id': `${BASE_URL}/#faq`,
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is RankMind AI?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'RankMind AI is an SEO and GEO platform with four AI agents. You approve every outreach pitch and every publish.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Do I need technical knowledge to use RankMind AI?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'No. Enter your website URL and target keywords. RankBot scores 10 technical SEO factors and gives a prioritised action plan in plain language. You approve outreach pitches and content before anything is sent or published.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What is GEO optimization?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'GEO (Generative Engine Optimization) is the practice of optimizing your website to appear in AI-generated answers from ChatGPT, Perplexity, Google AI Overviews, and other AI search engines.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How much does RankMind AI cost?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Starter is $29/month, Growth is $79/month, and Enterprise is $149/month. Plans are billed monthly and first-time subscribers have a 7-day money-back guarantee.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Is there a free trial?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'There is a free 4-factor audit at rank-mind.com/free-audit without creating an account. There is no separate time-limited free trial.',
-          },
-        },
       ],
     },
   ],
