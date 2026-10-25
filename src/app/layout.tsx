@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'RankMind AI — Autonomous SEO & GEO Agents',
-    description: 'Deploy AI agents that build real backlinks, optimize for AI search, and rank your website automatically.',
+    description: 'AI agents that audit, fix and grow your search and AI visibility. Free audit, no sign-up. You approve every pitch.',
     images: ['/og-image.png'],
     creator: '@rankmindai',
   },
@@ -126,7 +126,22 @@ const schemaOrg = {
       },
       sameAs: [
         'https://x.com/rankmindai',
-        'https://linkedin.com/company/rankmindai',
+        'https://linkedin.com/company/rankmind-ai',
+      ],
+    },
+    {
+      '@type': 'Person',
+      '@id': `${BASE_URL}/#founder`,
+      name: 'Tabish Zaidi',
+      jobTitle: 'Founder, Arabian AI Lab',
+      url: 'https://tabishzaidi.com',
+      worksFor: {
+        '@type': 'Organization',
+        name: 'Arabian AI Lab',
+        url: 'https://arabianailab.com',
+      },
+      sameAs: [
+        'https://linkedin.com/in/syed-tabish-41668a',
       ],
     },
     {

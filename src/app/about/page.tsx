@@ -19,7 +19,7 @@ const beliefs = [
   {
     icon: '🤖',
     title: 'AI should do the work, not just advise',
-    body: 'Most SEO tools give you a list of recommendations and leave you to do the work. RankMind AI executes — it builds backlinks, writes content, and optimizes your GEO presence autonomously.',
+    body: 'Most SEO tools give you a list of recommendations and leave you to do the work. RankMind AI does the drafting and prospecting work — audits, outreach drafts and content drafts — and you approve before anything is sent or published.',
   },
   {
     icon: '🌍',
@@ -96,6 +96,34 @@ export default function AboutPage() {
           >
             Visit Arabian AI Lab →
           </a>
+        </section>
+
+
+        {/* Section — Sister products from Arabian AI Lab */}
+        <section className="border-t border-white/10 pt-16">
+          <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">FROM ARABIAN AI LAB</p>
+          <h2 className="text-3xl font-bold mb-6">More from the lab</h2>
+          <p className="text-white/70 text-lg leading-relaxed mb-8">
+            Arabian AI Lab also builds LEXA Translate, an agentic cultural-translation platform, and LexaOCR, a document engine.
+          </p>
+          <div className="flex gap-4 flex-wrap">
+            <a
+              href="https://lexatranslate.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              LEXA Translate →
+            </a>
+            <a
+              href="https://www.lexaocr.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-violet-500 text-violet-400 hover:bg-violet-500/10 rounded-lg text-sm font-medium transition-colors"
+            >
+              LexaOCR →
+            </a>
+          </div>
         </section>
 
         {/* Section 3 — The Founder */}
