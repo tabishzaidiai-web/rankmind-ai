@@ -346,7 +346,7 @@ export default function HomePage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4">Meet Your AI Agents</h2>
               <p className="text-white/60 text-lg max-w-2xl mx-auto">
-                Four powerful AI agents working 24/7 to dominate search rankings for your website.
+                Four AI agents working every week on your search and AI visibility.
               </p>
             </div>
           </FadeSection>
@@ -383,6 +383,23 @@ export default function HomePage() {
 
       {/* Rank Everywhere */}
       <RankEverywhere />
+
+      {/* Demo video */}
+      <section className="py-12 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Watch RankMind in action</h2>
+          <p className="text-white/60 mb-8">A short demo of RankMind AI.</p>
+          <div className="relative w-full overflow-hidden rounded-2xl border border-white/10" style={{ paddingTop: '56.25%' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/OJ3mUruawVA"
+              title="RankMind AI demo video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </section>
 
       {/* How It Works */}
       <section id="how-it-works" className="py-24 px-6 bg-white/[0.02]">
