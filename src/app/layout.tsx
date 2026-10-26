@@ -108,7 +108,7 @@ const schemaOrg = {
     {
       '@type': 'Organization',
       '@id': `${BASE_URL}/#organization`,
-      name: 'Jeem & Co FZE LLC',
+      name: 'Jeem & Co FZC LLC',
       url: BASE_URL,
       logo: {
         '@type': 'ImageObject',
@@ -116,7 +116,7 @@ const schemaOrg = {
       },
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Dubai',
+        addressLocality: 'Sharjah',
         addressCountry: 'AE',
       },
       contactPoint: {

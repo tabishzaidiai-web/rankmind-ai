@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     url: 'https://www.rank-mind.com/about',
     title: 'About RankMind AI — Arabian AI Lab',
-    description: 'RankMind AI is an autonomous SEO and GEO platform researched by Arabian AI Lab and operated by Jeem & Co FZE LLC, Dubai, UAE.',
+    description: 'RankMind AI is an autonomous SEO and GEO platform researched by Arabian AI Lab and operated by Jeem & Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
   },
 };
@@ -175,15 +175,15 @@ export default function AboutPage() {
         {/* Section 4 — The Company */}
         <section className="border-t border-white/10 pt-16">
           <p className="text-xs font-semibold tracking-[3px] uppercase text-violet-400 mb-4">THE COMPANY</p>
-          <h2 className="text-3xl font-bold mb-6">Marketed &amp; Operated by Jeem &amp; Co FZE LLC</h2>
+          <h2 className="text-3xl font-bold mb-6">Marketed &amp; Operated by Jeem &amp; Co FZC LLC</h2>
           <p className="text-white/70 text-lg leading-relaxed mb-6">
-            RankMind AI is commercially operated by Jeem &amp; Co FZE LLC, a registered company in Dubai, UAE.
-            All payments and billing are processed under Jeem &amp; Co FZE LLC. The charge on your bank statement
+            RankMind AI is commercially operated by Jeem &amp; Co FZC LLC, a free zone company registered in Sharjah Publishing City Free Zone, Sharjah, UAE.
+            All payments and billing are processed under Jeem &amp; Co FZC LLC. The charge on your bank statement
             will appear as <strong className="text-white">&ldquo;JEEM AND CO FZE LLC&rdquo;</strong>.
           </p>
           <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-sm text-white/60 space-y-2">
-            <div><span className="text-white/40">Company:</span> Jeem &amp; Co FZE LLC</div>
-            <div><span className="text-white/40">Location:</span> Dubai, UAE</div>
+            <div><span className="text-white/40">Company:</span> Jeem &amp; Co FZC LLC</div>
+            <div><span className="text-white/40">Location:</span> Sharjah Publishing City Free Zone, Sharjah, UAE</div>
             <div>
               <span className="text-white/40">Support:</span>{' '}
               <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">info@rank-mind.com</a>
