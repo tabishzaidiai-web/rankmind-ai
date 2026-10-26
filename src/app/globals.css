@@ -24,3 +24,8 @@ body {
     @apply hover:bg-white/10 transition-colors;
   }
 }
+
+:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}

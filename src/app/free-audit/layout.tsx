@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free SEO Audit — Check Your Site in Seconds | RankMind AI',
+  title: 'Free SEO Audit — Check Your Site in Seconds',
   description:
-    'Run a free 4-factor SEO audit on your website with no sign-up: meta title, meta description, H1 headings and page speed. RankBot scores 10 technical SEO factors in the full audit.',
+    'Run a free 4-factor SEO audit with no sign-up: meta title, meta description, H1 headings and page speed.',
   alternates: {
     canonical: 'https://www.rank-mind.com/free-audit',
   },

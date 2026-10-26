@@ -103,6 +103,7 @@ export default function FreeAuditPage() {
       inputRef.current?.focus();
       return;
     }
+    const normalised = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 
     setLoading(true);
     setError('');
@@ -124,7 +125,7 @@ export default function FreeAuditPage() {
       const res = await fetch('/api/free-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: trimmed }),
+        body: JSON.stringify({ url: normalised }),
       });
 
       clearInterval(stepInterval);
@@ -189,7 +190,7 @@ export default function FreeAuditPage() {
             Free Instant SEO Audit — No Sign-Up Required
           </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-5">
-            How Does Your{' '}
+            Free SEO Audit: How Does Your{' '}
             <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
               Website Score?
             </span>

@@ -2,14 +2,14 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — RankMind AI',
+  title: 'Terms of Service',
   description: 'RankMind AI Terms of Service. Read our terms before using the platform.',
   alternates: {
     canonical: 'https://www.rank-mind.com/terms',
   },
   openGraph: {
     url: 'https://www.rank-mind.com/terms',
-    title: 'Terms of Service — RankMind AI',
+    title: 'Terms of Service',
     description: 'RankMind AI Terms of Service. Read our terms before using the platform.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
   },

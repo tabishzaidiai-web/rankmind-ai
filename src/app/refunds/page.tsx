@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Refund Policy | RankMind AI',
+  title: 'Refund Policy',
   description: 'RankMind AI refund and cancellation policy.',
 };
 

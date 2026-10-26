@@ -79,6 +79,16 @@ const FAQS = [
   { q: 'What do I approve, and what runs automatically?', a: 'Audits, keyword tracking, reports, prospect research and drafts run automatically. Every outreach email, guest-post pitch and piece of content needs your approval before it is sent or published.' },
 ];
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((faq) => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+};
+
 function useScrollFade() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -174,8 +184,9 @@ export default function HomePage() {
   // Section 1 — hero form submit handler
   const handleHeroSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const url = heroUrl.trim();
-    if (!url) return;
+    const trimmed = heroUrl.trim();
+    if (!trimmed) return;
+    const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
     router.push(`/free-audit?url=${encodeURIComponent(url)}`);
   };
 
@@ -212,6 +223,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <style>{`
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
         @keyframes float2 { 0%,100%{transform:translateY(-6px)} 50%{transform:translateY(6px)} }
@@ -246,7 +261,7 @@ export default function HomePage() {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
-              className="md:hidden flex items-center justify-center w-9 h-9 text-white/70 hover:text-white transition-colors text-xl"
+              className="md:hidden flex items-center justify-center w-11 h-11 text-white/70 hover:text-white transition-colors text-xl"
             >
               {mobileOpen ? '✕' : '☰'}
             </button>
@@ -304,7 +319,7 @@ export default function HomePage() {
                 name="url"
                 value={heroUrl}
                 onChange={(e) => setHeroUrl(e.target.value)}
-                placeholder="Enter your website URL — e.g. yoursite.com"
+                placeholder="Enter your website URL — e.g. https://yoursite.com"
                 className="flex-1 bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all w-full"
                 style={{ fontSize: '16px' }}
                 autoComplete="url"
@@ -391,6 +406,7 @@ export default function HomePage() {
           <p className="text-white/60 mb-8">A short demo of RankMind AI.</p>
           <div className="relative w-full overflow-hidden rounded-2xl border border-white/10" style={{ paddingTop: '56.25%' }}>
             <iframe
+              loading="lazy"
               className="absolute inset-0 w-full h-full"
               src="https://www.youtube.com/embed/OJ3mUruawVA"
               title="RankMind AI demo video"
@@ -500,8 +516,6 @@ export default function HomePage() {
                     cta={plan.cta}
                     className={`w-full block text-center py-3 rounded-xl font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                   />
-                  {/* Section 9 — No credit card lock-in line */}
-                  <p className="text-[11px] text-white/35 text-center mt-1.5">No credit card lock-in</p>
                 </div>
               </FadeSection>
             ))}
@@ -514,8 +528,8 @@ export default function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <div>
-                <p className="text-white font-medium text-[15px]">7-day money-back guarantee — no questions asked</p>
-                <p className="text-white/45 text-[13px] mt-0.5">Try any plan risk-free. Not happy within 7 days, we refund you instantly. First-time subscribers only.</p>
+                <p className="text-white font-medium text-[15px]">7-day money-back guarantee for first-time subscribers</p>
+                <p className="text-white/60 text-[13px] mt-0.5">Not happy within 7 days of your first payment? Request a full refund — approved refunds are processed within 5–10 business days. See the Refund Policy for eligibility.</p>
               </div>
             </div>
           </FadeSection>
@@ -569,26 +583,27 @@ export default function HomePage() {
               <div>
                 <div className="text-white/60 font-medium mb-3">Product</div>
                 <div className="space-y-2">
-                  <a href="#features" className="block text-white/40 hover:text-white transition-colors">Features</a>
-                  <a href="#pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</a>
-                  <a href="#how-it-works" className="block text-white/40 hover:text-white transition-colors">How It Works</a>
-                  <a href="#faq" className="block text-white/40 hover:text-white transition-colors">FAQ</a>
+                  <a href="#features" className="block text-white/60 hover:text-white transition-colors">Features</a>
+                  <a href="#pricing" className="block text-white/60 hover:text-white transition-colors">Pricing</a>
+                  <a href="#how-it-works" className="block text-white/60 hover:text-white transition-colors">How It Works</a>
+                  <a href="#faq" className="block text-white/60 hover:text-white transition-colors">FAQ</a>
                 </div>
               </div>
               <div>
                 <div className="text-white/60 font-medium mb-3">Legal</div>
                 <div className="space-y-2">
-                  <Link href="/privacy" className="block text-white/40 hover:text-white transition-colors">Privacy Policy</Link>
-                  <Link href="/terms" className="block text-white/40 hover:text-white transition-colors">Terms of Service</Link>
+                  <Link href="/privacy" className="block text-white/60 hover:text-white transition-colors">Privacy Policy</Link>
+                  <Link href="/terms" className="block text-white/60 hover:text-white transition-colors">Terms of Service</Link>
+                  <Link href="/refunds" className="block text-white/60 hover:text-white transition-colors">Refund Policy</Link>
                 </div>
               </div>
               <div>
                 <div className="text-white/60 font-medium mb-3">Company</div>
                 <div className="space-y-2">
-                  <Link href="/about" className="block text-white/40 hover:text-white transition-colors">About</Link>
-                  <a href="mailto:info@rank-mind.com" className="block text-white/40 hover:text-white transition-colors">Email Support</a>
-                  <Link href="/login" className="block text-white/40 hover:text-white transition-colors">Sign In</Link>
-                  <Link href="/signup" className="block text-white/40 hover:text-white transition-colors">Get Started</Link>
+                  <Link href="/about" className="block text-white/60 hover:text-white transition-colors">About</Link>
+                  <a href="mailto:info@rank-mind.com" className="block text-white/60 hover:text-white transition-colors">Email Support</a>
+                  <Link href="/login" className="block text-white/60 hover:text-white transition-colors">Sign In</Link>
+                  <Link href="/signup" className="block text-white/60 hover:text-white transition-colors">Get Started</Link>
                 </div>
               </div>
             </div>
@@ -602,8 +617,8 @@ export default function HomePage() {
             </a>
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
-            <p className="text-white/30 text-sm mb-1">&copy; 2026 RankMind AI. All rights reserved.</p>
-            <p className="text-white/35 text-xs mb-1.5">
+            <p className="text-white/60 text-sm mb-1">&copy; 2026 RankMind AI. All rights reserved.</p>
+            <p className="text-white/60 text-xs mb-1.5">
               Researched &amp; Developed by{' '}
               <a href="https://arabianailab.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white font-medium transition-colors">
                 Arabian AI Lab

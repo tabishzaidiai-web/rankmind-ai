@@ -2,15 +2,15 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'How the Agents Work — RankMind AI',
+  title: 'How the Agents Work',
   description:
-    'How RankMind AI agents work: RankBot audits 10 technical SEO factors, LinkBot finds prospects and drafts outreach, GEO-G prepares content for AI answer engines, and ContentAI drafts SEO content. You approve every pitch and every publish.',
+    'How RankMind AI agents work: RankBot audits 10 factors, LinkBot finds prospects and drafts outreach, GEO-G prepares AI-search content, ContentAI drafts it.',
   alternates: {
     canonical: 'https://www.rank-mind.com/how-agents-work',
   },
   openGraph: {
     url: 'https://www.rank-mind.com/how-agents-work',
-    title: 'How the Agents Work — RankMind AI',
+    title: 'How the Agents Work',
     description:
       'RankBot, LinkBot, GEO-G and ContentAI: what each agent does, and what you approve before anything is sent or published.',
     images: [{ url: 'https://www.rank-mind.com/og-image.png', width: 1200, height: 630 }],
