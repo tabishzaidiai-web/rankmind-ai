@@ -423,7 +423,7 @@ export default function HomePage() {
           <FadeSection>
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-              <p className="text-white/60 text-lg">Set it up once. The agents work forever.</p>
+              <p className="text-white/60 text-lg">Set it up once. The agents keep working while your subscription is active.</p>
             </div>
           </FadeSection>
           <div className="relative">
@@ -453,6 +453,29 @@ export default function HomePage() {
       </section>
 
       <ProductScreenshots />
+
+      {/* Sample weekly report — illustrative only, not a customer result */}
+      <section className="py-20 px-6">
+        <div className="max-w-3xl mx-auto">
+          <FadeSection>
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold mb-4">What a weekly report looks like</h2>
+              <p className="text-white/60 text-lg">Weekly reports show audits run, prospects contacted, replies received, content drafted, and links earned — with dates.</p>
+            </div>
+          </FadeSection>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+            <p className="text-white/60 text-sm mb-6">Sample report — illustrative data, not a customer result</p>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-3"><span className="text-white/60">Audits run</span><span className="font-semibold">4</span></div>
+              <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-3"><span className="text-white/60">Prospects contacted</span><span className="font-semibold">6</span></div>
+              <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-3"><span className="text-white/60">Replies received</span><span className="font-semibold">1</span></div>
+              <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-3"><span className="text-white/60">Content drafted</span><span className="font-semibold">2</span></div>
+              <div className="flex items-center justify-between gap-4"><span className="text-white/60">Links earned</span><span className="font-semibold">0</span></div>
+            </div>
+            <p className="text-white/40 text-xs mt-6">In a real report, each item carries its date. No customer is quoted here: RankMind AI publishes no customer testimonials or performance statistics without permission and evidence.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Founder Section */}
       <section className="py-20 px-6 bg-white/[0.015]">
@@ -534,6 +557,29 @@ export default function HomePage() {
             </div>
           </FadeSection>
         </div>
+
+          {/* Pricing FAQ — answers match /terms and /refunds exactly */}
+          <div className="mt-16 max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold mb-6 text-center">Pricing questions</h3>
+            <div className="space-y-3">
+              <FAQItem
+                q="What does the 7-day money-back guarantee cover?"
+                a="First-time subscribers may request a full refund of the initial subscription payment within 7 days of the initial charge, if they have not previously received a refund and their account is in good standing. Renewal charges after the initial 7-day period, partial months of service after cancellation, add-on credits or one-time purchases, and accounts terminated for Terms of Service violations are not eligible. Approved refunds are processed within 5–10 business days to the original payment method."
+              />
+              <FAQItem
+                q="How do I cancel?"
+                a="You may cancel at any time from your account Settings page or by contacting support. Cancellation stops future billing but does not automatically trigger a refund. Your access continues until the end of the current billing period. Subscriptions automatically renew unless cancelled before the renewal date."
+              />
+              <FAQItem
+                q="Can I change plans?"
+                a="The Terms of Service state that downgrading your plan takes effect at the end of the current billing period. Upgrade timing is not stated in the Terms of Service or the Refund Policy."
+              />
+              <FAQItem
+                q="What happens after 7 days?"
+                a="After the initial 7-day period, renewal charges are not eligible for refunds, and partial months of service after cancellation are not eligible. Your subscription continues on a monthly basis, billed in advance, and automatically renews unless you cancel before the renewal date. If you cancel, your access continues until the end of the current billing period."
+              />
+            </div>
+          </div>
       </section>
 
       {/* FAQ */}
@@ -559,7 +605,7 @@ export default function HomePage() {
       <section className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-3xl mx-auto text-center">
           <FadeSection>
-            <h2 className="text-4xl font-bold mb-4">Ready to Dominate Search Rankings?</h2>
+            <h2 className="text-4xl font-bold mb-4">Ready to see your SEO score?</h2>
             <p className="text-white/60 text-lg mb-8">Start with a free SEO audit. No credit card required.</p>
             <Link href="/free-audit" className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold px-10 py-4 rounded-xl transition-all text-lg">
               Get Your Free SEO Audit <ArrowRight className="w-5 h-5" />

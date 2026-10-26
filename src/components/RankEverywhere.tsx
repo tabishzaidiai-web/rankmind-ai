@@ -148,7 +148,7 @@ export default function RankEverywhere() {
         </div>
 
         <p className="text-white/50 text-sm mb-6">
-          RankMind AI optimises your content to appear across all of these — automatically.
+          RankMind AI optimises your content to appear across all of these — automatically. GEO optimisation is included on the Enterprise plan; audits and tracking run on every plan.
         </p>
         <a
           href="#how-it-works"

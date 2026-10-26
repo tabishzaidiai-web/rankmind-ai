@@ -37,12 +37,12 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Introduction</h2>
             <p>RankMind AI (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at <a href="https://www.rank-mind.com" className="text-violet-400 hover:underline">www.rank-mind.com</a>.</p>
-            <p className="mt-3">This policy is compliant with the EU General Data Protection Regulation (GDPR), the UAE Personal Data Protection Law (PDPL Federal Decree-Law No. 45 of 2021), and other applicable data protection laws.</p>
+            <p className="mt-3">This policy is written to address the EU General Data Protection Regulation (GDPR), the UAE Personal Data Protection Law (PDPL Federal Decree-Law No. 45 of 2021), and other applicable data protection laws.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">2. Data Controller</h2>
-            <p>The data controller responsible for your personal data is RankMind AI. For any data-related inquiries, contact us at: <a href="mailto:privacy@rankmind.ai" className="text-violet-400 hover:underline">privacy@rankmind.ai</a></p>
+            <p>The data controller responsible for your personal data is Jeem & Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE. For any data-related inquiries, contact us at: <a href="mailto:privacy@rankmind.ai" className="text-violet-400 hover:underline">privacy@rankmind.ai</a></p>
           </section>
 
           <section>
@@ -159,7 +159,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">10. Security</h2>
-            <p>We implement industry-standard security measures including TLS encryption in transit, AES-256 encryption at rest, bcrypt password hashing, and regular security audits. However, no method of transmission over the internet is 100% secure.</p>
+            <p>We implement industry-standard security measures including TLS encryption in transit, AES-256 encryption at rest, bcrypt password hashing. However, no method of transmission over the internet is 100% secure.</p>
           </section>
 
           <section>

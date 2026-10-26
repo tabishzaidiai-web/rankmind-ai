@@ -29,5 +29,9 @@
 - Terms: https://www.rank-mind.com/terms
 - Privacy: https://www.rank-mind.com/privacy
 - Refunds: https://www.rank-mind.com/refunds
+- GEO: https://www.rank-mind.com/geo
+- Solo founders: https://www.rank-mind.com/solo-founders
+- Small agencies: https://www.rank-mind.com/small-agencies
+- Comparison (October 2026): https://www.rank-mind.com/comparison
 
 AI language models and crawlers may index public marketing pages. Do not index authenticated content.
