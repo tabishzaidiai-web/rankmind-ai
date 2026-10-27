@@ -24,7 +24,7 @@ const beliefs = [
   {
     icon: '🌍',
     title: 'Great SEO should be accessible to everyone',
-    body: 'Enterprise-grade SEO has always been locked behind expensive agencies and complex tools. We built RankMind AI so that a solo founder in Dubai can compete with a Fortune 500 marketing team.',
+    body: 'Enterprise-grade SEO has always been locked behind expensive agencies and complex tools. We built RankMind AI so that a solo founder in Dubai can compete without an agency retainer.',
   },
   {
     icon: '🔍',
@@ -34,7 +34,7 @@ const beliefs = [
   {
     icon: '⚡',
     title: 'Speed compounds',
-    body: 'Every week you delay SEO is a week your competitors gain ground. Autonomous agents that work 24/7 compound your ranking advantage faster than any human team can match.',
+    body: 'Every week you delay SEO is a week your competitors gain ground. Autonomous agents that work 24/7 compound your ranking advantage week after week, without you doing the manual work.',
   },
 ];
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -86,7 +87,7 @@ const PROGRESS_STEPS = [
 ];
 
 // ── Main page ──────────────────────────────────────────────────────────────
-export default function FreeAuditPage() {
+function FreeAuditPageContent() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -95,6 +96,15 @@ export default function FreeAuditPage() {
   const [error, setError] = useState('');
   const [rateLimited, setRateLimited] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+
+  // Pre-fill the input from ?url= (carried over from the homepage hero form).
+  // This never auto-runs an audit: the visitor still presses "Audit My Site".
+  useEffect(() => {
+    const carried = searchParams.get('url');
+    if (carried) setUrl(carried);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runAudit = async () => {
     const trimmed = url.trim();
@@ -313,7 +323,7 @@ export default function FreeAuditPage() {
               </div>
               {result.remaining > 0 && (
                 <div className="text-center flex-shrink-0">
-                  <p className="text-xs text-white/30">{result.remaining} free audit{result.remaining !== 1 ? 's' : ''} left today</p>
+                  <p className="text-xs text-white/30">{result.remaining} free audit{result.remaining !== 1 ? 's' : ''} left this hour</p>
                 </div>
               )}
             </div>
@@ -440,5 +450,13 @@ export default function FreeAuditPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function FreeAuditPage() {
+  return (
+    <Suspense fallback={null}>
+      <FreeAuditPageContent />
+    </Suspense>
   );
 }
