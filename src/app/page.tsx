@@ -147,12 +147,10 @@ function PricingButton({ planKey, cta, className }: { planKey: string; cta: stri
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      window.location.href = `/api/stripe/checkout?plan=${planKey}`;
-    } catch {
-      setLoading(false);
-      window.location.href = `/signup?plan=${planKey}`;
-    }
+    // Paid-plan buttons route via signup so the visitor creates a free
+    // account first; checkout happens after account creation. The signup
+    // page renders a plan banner for a pre-selected plan.
+    window.location.href = `/signup?plan=${planKey}`;
   };
 
   return (
@@ -198,7 +196,7 @@ export default function HomePage() {
       planKey: 'starter',
       desc: 'Perfect for individual websites',
       features: ['Full SEO Audit (10 key factors)', 'Weekly automated reports', 'Keyword tracking (up to 20)', 'Email support', '1 website'],
-      cta: 'Start Ranking Free',
+      cta: 'Start with Starter',
       popular: false,
     },
     {
@@ -251,6 +249,7 @@ export default function HomePage() {
             <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+            <Link href="/help" className="hover:text-white transition-colors">Help</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="hidden md:block text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
@@ -269,7 +268,7 @@ export default function HomePage() {
         </div>
         {mobileOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-[#0a0a0f]/98 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-col gap-4 z-50">
-            {[['Features', '#features'], ['How It Works', '#how-it-works'], ['Pricing', '#pricing'], ['FAQ', '#faq']].map(([label, href]) => (
+            {[['Features', '#features'], ['How It Works', '#how-it-works'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['Help', '/help']].map(([label, href]) => (
               <a
                 key={label}
                 href={href}
@@ -294,10 +293,10 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-2 text-sm text-violet-300 mb-8">
             <Zap className="w-4 h-4" />
-            Real AI Agents. Real SEO Results.
+            Four AI agents. You approve everything.
           </div>
           <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-            AI agents that audit, fix and grow your search and AI visibility — every week.
+            Know your SEO score in seconds, then fix it weekly.
           </h1>
           {/* Section 3 — "your clients" → "your website" */}
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10">
@@ -509,6 +508,29 @@ export default function HomePage() {
             </div>
           </FadeSection>
 
+          {/* Free tier — published facts only: free account, full 10-factor
+              audit, 10 audits/month, weekly reports, no card required. */}
+          <div className="mb-8 rounded-2xl p-8 bg-white/5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <h3 className="text-xl font-bold">Free</h3>
+                <span className="text-4xl font-bold">$0</span>
+                <span className="text-white/50">/month</span>
+              </div>
+              <p className="text-white/50 text-sm mb-4">Start free — upgrade when you need more.</p>
+              <ul className="flex flex-wrap gap-x-6 gap-y-2">
+                {['Free account', 'Full 10-factor audit', '10 audits/month', 'Weekly reports', 'No card required'].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-white/80">
+                    <CheckCircle className="w-4 h-4 text-violet-400 flex-shrink-0" />{f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Link href="/signup" className="flex-shrink-0 text-center py-3 px-8 rounded-xl font-semibold transition-all bg-white/10 hover:bg-white/20 text-white">
+              Start Free
+            </Link>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
             {plans.map((plan, i) => (
               <FadeSection key={plan.name} delay={i * 80}>
@@ -647,6 +669,7 @@ export default function HomePage() {
                 <div className="text-white/60 font-medium mb-3">Company</div>
                 <div className="space-y-2">
                   <Link href="/about" className="block text-white/60 hover:text-white transition-colors">About</Link>
+                  <Link href="/help" className="block text-white/60 hover:text-white transition-colors">Help Centre</Link>
                   <a href="mailto:info@rank-mind.com" className="block text-white/60 hover:text-white transition-colors">Email Support</a>
                   <Link href="/login" className="block text-white/60 hover:text-white transition-colors">Sign In</Link>
                   <Link href="/signup" className="block text-white/60 hover:text-white transition-colors">Get Started</Link>

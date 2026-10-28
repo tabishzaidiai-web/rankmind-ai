@@ -49,7 +49,7 @@ export default function RefundsPage() {
             <h2 className="text-white font-semibold text-lg mb-3">4. How to Request a Refund</h2>
             <p className="mb-3">To request a refund, please contact us at:</p>
             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <p><strong className="text-white">Email:</strong> <a href="mailto:support@rank-mind.com" className="text-violet-400 hover:text-violet-300">support@rank-mind.com</a></p>
+              <p><strong className="text-white">Email:</strong> <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:text-violet-300">info@rank-mind.com</a></p>
               <p className="mt-1"><strong className="text-white">Subject:</strong> Refund Request — [Your Account Email]</p>
               <p className="mt-1 text-white/50 text-sm">Please include your account email address and the reason for your refund request. We aim to respond within 1 business day.</p>
             </div>
@@ -73,7 +73,7 @@ export default function RefundsPage() {
             <h2 className="text-white font-semibold text-lg mb-3">7. Contact</h2>
             <p>
               For any questions about this refund policy, please contact us at{' '}
-              <a href="mailto:support@rank-mind.com" className="text-violet-400 hover:text-violet-300">support@rank-mind.com</a>.
+              <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:text-violet-300">info@rank-mind.com</a>.
             </p>
           </section>
         </div>
