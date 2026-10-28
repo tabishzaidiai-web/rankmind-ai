@@ -33,5 +33,6 @@
 - Solo founders: https://www.rank-mind.com/solo-founders
 - Small agencies: https://www.rank-mind.com/small-agencies
 - Comparison (October 2026): https://www.rank-mind.com/comparison
+- Help Centre: https://www.rank-mind.com/help
 
 AI language models and crawlers may index public marketing pages. Do not index authenticated content.
