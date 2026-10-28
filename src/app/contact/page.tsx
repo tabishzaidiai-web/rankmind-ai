@@ -52,7 +52,7 @@ export default function ContactPage() {
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h2 className="font-semibold text-white mb-2">Refund requests</h2>
-            <a href="mailto:info@rank-mind.com" className="text-violet-400 hover:underline">info@rank-mind.com</a>
+            <a href="mailto:support@rank-mind.com" className="text-violet-400 hover:underline">support@rank-mind.com</a>
             <p className="text-white/60 text-sm leading-relaxed mt-2">
               See the <Link href="/refunds" className="text-violet-400 hover:underline">Refund Policy</Link> for
               the 7-day money-back guarantee for first-time subscribers.
