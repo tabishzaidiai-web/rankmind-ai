@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://www.rank-mind.com",
-              "frame-src https://js.stripe.com https://hooks.stripe.com",
+              "frame-src https://js.stripe.com https://hooks.stripe.com https://www.youtube.com https://youtube.com",
               "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.stripe.com https://google.serper.dev https://vitals.vercel-insights.com https://vercel.live",
               "object-src 'none'",
               "base-uri 'self'",
