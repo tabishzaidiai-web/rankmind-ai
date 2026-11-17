@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import CookieBanner from '@/components/CookieBanner';
+import Analytics from '@/components/Analytics';
 
 export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.rank-mind.com';
 
@@ -159,6 +160,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-[#0a0a0f] text-white antialiased">
         {children}
         <CookieBanner />
+        <Analytics />
       </body>
     </html>
   );

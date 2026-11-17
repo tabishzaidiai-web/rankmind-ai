@@ -89,7 +89,7 @@ export default function PrivacyPage() {
             <p>We use cookies and similar tracking technologies to operate and improve our service. Categories of cookies we use:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li><strong className="text-white">Strictly Necessary:</strong> Required for authentication, session management, and security. Cannot be disabled.</li>
-              <li><strong className="text-white">Analytics:</strong> Help us understand how users interact with our platform (e.g., page views, feature usage). Only activated after your consent.</li>
+              <li><strong className="text-white">Analytics:</strong> Google Analytics 4 helps us understand how users interact with our platform (e.g., page views, feature usage). Only activated after your consent; no advertising features are used.</li>
               <li><strong className="text-white">Preferences:</strong> Remember your settings and preferences (e.g., theme, language).</li>
             </ul>
             <p className="mt-3">You can manage your cookie preferences at any time via our cookie consent banner or your browser settings.</p>
