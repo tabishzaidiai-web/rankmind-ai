@@ -16,23 +16,38 @@ export default function CookieBanner() {
   useEffect(() => {
     if (!mounted) return;
     // Only access localStorage after the component has mounted on the client
-    const consent = localStorage.getItem('rankmind_cookie_consent');
-    if (!consent) {
+    // If storage can't be read (blocked/private mode), treat as "not answered"
+    // so the visitor still sees the banner instead of an exception.
+    let consent: string | null = null;
+    try {
+      consent = localStorage.getItem('rankmind_cookie_consent');
+    } catch {
+      consent = null;
+    }
+    if (consent !== 'accepted' && consent !== 'declined') {
       const timer = setTimeout(() => setVisible(true), 1200);
       return () => clearTimeout(timer);
     }
   }, [mounted]);
 
   const accept = () => {
-    localStorage.setItem('rankmind_cookie_consent', 'accepted');
-    localStorage.setItem('rankmind_cookie_consent_date', new Date().toISOString());
+    try {
+      localStorage.setItem('rankmind_cookie_consent', 'accepted');
+      localStorage.setItem('rankmind_cookie_consent_date', new Date().toISOString());
+    } catch {
+      /* storage blocked — consent can't be saved; banner still closes */
+    }
     setVisible(false);
     // Analytics scripts can now be enabled — dispatch custom event
     window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
   };
 
   const decline = () => {
-    localStorage.setItem('rankmind_cookie_consent', 'declined');
+    try {
+      localStorage.setItem('rankmind_cookie_consent', 'declined');
+    } catch {
+      /* storage blocked */
+    }
     setVisible(false);
     window.dispatchEvent(new CustomEvent('cookieConsentDeclined'));
   };
