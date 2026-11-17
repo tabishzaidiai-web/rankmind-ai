@@ -34,6 +34,7 @@ export default function CookieBanner() {
   const decline = () => {
     localStorage.setItem('rankmind_cookie_consent', 'declined');
     setVisible(false);
+    window.dispatchEvent(new CustomEvent('cookieConsentDeclined'));
   };
 
   // Don't render anything until mounted (prevents SSR/hydration mismatch)
