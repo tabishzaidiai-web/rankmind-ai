@@ -252,8 +252,8 @@ export default function HomePage() {
             <Link href="/help" className="hover:text-white transition-colors">Help</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="hidden md:block text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
-            <Link href="/signup" className="hidden md:block bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all">
+            <Link prefetch={false} href="/login" className="hidden md:block text-sm text-white/70 hover:text-white transition-colors">Sign In</Link>
+            <Link prefetch={false} href="/signup" className="hidden md:block bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all">
               Get Started Free
             </Link>
             <button
@@ -279,8 +279,8 @@ export default function HomePage() {
               </a>
             ))}
             <div className="border-t border-white/10 pt-4 flex flex-col gap-3">
-              <Link href="/login" onClick={() => setMobileOpen(false)} className="text-white/70 hover:text-white text-sm transition-colors">Sign In</Link>
-              <Link href="/signup" onClick={() => setMobileOpen(false)} className="bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg text-center">
+              <Link prefetch={false} href="/login" onClick={() => setMobileOpen(false)} className="text-white/70 hover:text-white text-sm transition-colors">Sign In</Link>
+              <Link prefetch={false} href="/signup" onClick={() => setMobileOpen(false)} className="bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg text-center">
                 Get Started Free
               </Link>
             </div>
@@ -526,7 +526,7 @@ export default function HomePage() {
                 ))}
               </ul>
             </div>
-            <Link href="/signup" className="flex-shrink-0 text-center py-3 px-8 rounded-xl font-semibold transition-all bg-white/10 hover:bg-white/20 text-white">
+            <Link prefetch={false} href="/signup" className="flex-shrink-0 text-center py-3 px-8 rounded-xl font-semibold transition-all bg-white/10 hover:bg-white/20 text-white">
               Start Free
             </Link>
           </div>
@@ -671,8 +671,8 @@ export default function HomePage() {
                   <Link href="/about" className="block text-white/60 hover:text-white transition-colors">About</Link>
                   <Link href="/help" className="block text-white/60 hover:text-white transition-colors">Help Centre</Link>
                   <a href="mailto:info@rank-mind.com" className="block text-white/60 hover:text-white transition-colors">Email Support</a>
-                  <Link href="/login" className="block text-white/60 hover:text-white transition-colors">Sign In</Link>
-                  <Link href="/signup" className="block text-white/60 hover:text-white transition-colors">Get Started</Link>
+                  <Link prefetch={false} href="/login" className="block text-white/60 hover:text-white transition-colors">Sign In</Link>
+                  <Link prefetch={false} href="/signup" className="block text-white/60 hover:text-white transition-colors">Get Started</Link>
                 </div>
               </div>
             </div>
