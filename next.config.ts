@@ -2,6 +2,19 @@ import type { NextConfig } from 'next';
 
 const SITE_URL = 'https://www.rank-mind.com';
 
+// GA4: NEXT_PUBLIC_GA_ID is baked into the JavaScript at BUILD time. If it is
+// missing in Vercel's Production environment, analytics silently never loads
+// (the banner still shows and Accept still works). Fail production builds
+// loudly instead, so a build without a valid ID can never go live.
+// Previews and local builds are not affected.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? '';
+if (process.env.VERCEL_ENV === 'production' && !/^G-[A-Z0-9]+$/.test(GA_ID)) {
+  throw new Error(
+    `NEXT_PUBLIC_GA_ID is ${GA_ID ? `invalid ("${GA_ID}")` : 'missing'} in Vercel's Production environment. ` +
+      'Set it to the RankMind GA4 measurement ID (G-DBWB1BDS2S) under Project → Settings → Environment Variables, then redeploy.'
+  );
+}
+
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
