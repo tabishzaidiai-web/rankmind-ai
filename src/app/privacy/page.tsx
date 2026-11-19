@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = 'May 15, 2026';
+const LAST_UPDATED = 'November 19, 2026';
 
 export default function PrivacyPage() {
   return (
@@ -66,7 +66,7 @@ export default function PrivacyPage() {
                 ['Service Delivery', 'To provide, operate, and maintain the RankMind AI platform and its AI agents.', 'Contract performance'],
                 ['Account Management', 'To create and manage your user account, authenticate you, and send transactional emails.', 'Contract performance'],
                 ['Billing & Payments', 'To process subscription payments, issue invoices, and manage plan upgrades.', 'Contract performance'],
-                ['Product Improvement', 'To analyze usage patterns and improve our AI models, features, and user experience.', 'Legitimate interests'],
+                ['Product Improvement', 'To analyze usage patterns and improve our features and user experience. Customer content is not used to train models.', 'Legitimate interests'],
                 ['Security', 'To detect fraud, prevent abuse, and protect the integrity of our platform.', 'Legitimate interests'],
                 ['Legal Compliance', 'To comply with applicable laws, regulations, and legal processes.', 'Legal obligation'],
                 ['Marketing (with consent)', 'To send product updates and promotional emails. You may opt out at any time.', 'Consent'],
@@ -82,6 +82,7 @@ export default function PrivacyPage() {
                 </div>
               ))}
             </div>
+            <p className="mt-4"><strong className="text-white">Customer content is not used to train models.</strong> We do not train AI models on your websites, audits, keywords or the content our agents draft for you.</p>
           </section>
 
           <section>
