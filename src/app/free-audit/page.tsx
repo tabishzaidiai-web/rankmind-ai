@@ -88,6 +88,22 @@ const PROGRESS_STEPS = [
 ];
 
 // ── Main page ──────────────────────────────────────────────────────────────
+/**
+ * Pre-fills the input from ?url= (carried over from the homepage hero form).
+ * Never auto-runs an audit: the visitor still presses "Audit My Site".
+ * Kept in its own small Suspense boundary so the rest of the page renders on
+ * the server (useSearchParams would otherwise blank the whole page's HTML).
+ */
+function CarryUrl({ onUrl }: { onUrl: (u: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const carried = searchParams.get('url');
+    if (carried) onUrl(carried);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 function FreeAuditPageContent() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,15 +113,6 @@ function FreeAuditPageContent() {
   const [error, setError] = useState('');
   const [rateLimited, setRateLimited] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchParams = useSearchParams();
-
-  // Pre-fill the input from ?url= (carried over from the homepage hero form).
-  // This never auto-runs an audit: the visitor still presses "Audit My Site".
-  useEffect(() => {
-    const carried = searchParams.get('url');
-    if (carried) setUrl(carried);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const runAudit = async () => {
     const trimmed = url.trim();
@@ -174,6 +181,9 @@ function FreeAuditPageContent() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <Suspense fallback={null}>
+        <CarryUrl onUrl={setUrl} />
+      </Suspense>
       {/* Nav */}
       <nav className="fixed top-0 w-full z-50 bg-[#0a0a0f]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -457,9 +467,5 @@ function FreeAuditPageContent() {
 }
 
 export default function FreeAuditPage() {
-  return (
-    <Suspense fallback={null}>
-      <FreeAuditPageContent />
-    </Suspense>
-  );
+  return <FreeAuditPageContent />;
 }
