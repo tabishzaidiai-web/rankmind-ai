@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import RelatedLinks from '@/components/RelatedLinks';
 
 export const metadata: Metadata = {
   title: 'What is GEO? Generative Engine Optimization',
@@ -80,6 +81,8 @@ export default function GeoPage() {
           </Link>
         </section>
       </div>
+
+      <RelatedLinks pages={['how-agents-work', 'comparison', 'solo-founders', 'small-agencies', 'free-audit']} />
 
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm mt-8">
         <Link href="/about" className="hover:text-white/60 transition-colors">About</Link>
