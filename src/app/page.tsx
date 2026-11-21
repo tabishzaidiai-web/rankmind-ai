@@ -8,6 +8,7 @@ import ProductScreenshots from '@/components/ProductScreenshots';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, Zap, ChevronDown, MessageCircle } from 'lucide-react';
+import RelatedLinks from '@/components/RelatedLinks';
 
 const AGENTS = [
   {
@@ -603,6 +604,8 @@ export default function HomePage() {
             </div>
           </div>
       </section>
+
+      <RelatedLinks pages={['how-agents-work', 'geo', 'comparison', 'solo-founders', 'small-agencies', 'help', 'contact']} />
 
       {/* FAQ */}
       <section id="faq" className="py-24 px-6">

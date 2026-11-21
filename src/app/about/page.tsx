@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import RelatedLinks from '@/components/RelatedLinks';
 
 export const metadata: Metadata = {
   title: 'About RankMind AI — Built by Arabian AI Lab, Dubai',
@@ -216,6 +217,8 @@ export default function AboutPage() {
       </div>
 
       {/* Footer */}
+      <RelatedLinks pages={['how-agents-work', 'help', 'contact']} />
+
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm mt-8">
         <Link href="/about" className="hover:text-white/60 transition-colors">About</Link>
         <span className="mx-3">·</span>

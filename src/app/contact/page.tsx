@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import RelatedLinks from '@/components/RelatedLinks';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -69,6 +70,8 @@ export default function ContactPage() {
           </p>
         </section>
       </div>
+
+      <RelatedLinks pages={['help', 'about']} />
 
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm mt-8">
         <Link href="/about" className="hover:text-white/60 transition-colors">About</Link>

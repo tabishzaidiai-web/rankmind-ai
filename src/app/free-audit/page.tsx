@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import RelatedLinks from '@/components/RelatedLinks';
 import {
   Search, CheckCircle, XCircle, AlertCircle, Lock,
   ArrowRight, Zap, BarChart3, ChevronRight
@@ -443,6 +444,8 @@ function FreeAuditPageContent() {
       )}
 
       {/* Footer */}
+      <RelatedLinks pages={['how-agents-work', 'geo', 'comparison']} />
+
       <footer className="border-t border-white/5 py-8 px-6 text-center">
         <p className="text-xs text-white/20">
           &copy; 2026 RankMind AI &bull; Jeem &amp; Co FZC LLC, Sharjah Publishing City Free Zone, Sharjah, UAE &bull;{' '}
