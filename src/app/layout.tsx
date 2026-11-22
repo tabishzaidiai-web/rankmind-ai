@@ -20,6 +20,10 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
   },
+  // Google Search Console ownership (URL-prefix property https://www.rank-mind.com/).
+  verification: {
+    google: 'pSPTY4fLO1Ry-umXzsR_kk02Hnr85RVlRLNO01v7Pqg',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
